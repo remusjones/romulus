@@ -4,11 +4,12 @@
 
 #include "Primative.h"
 
-void Primitive::Cleanup() {
-    Entity::Cleanup();
-    if (mRenderer) {
-        mRenderer->DestroyRenderer();
-        delete mRenderer;
-    }
-
+void Primitive::Cleanup()
+{
+	Entity::Cleanup();
+	if (renderer)
+	{
+		renderer->DestroyRenderer();
+		delete renderer;
+	}
 }

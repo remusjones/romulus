@@ -8,20 +8,20 @@
 
 
 void Entity::Construct() {
-    for (const auto &component: mComponentMap) {
+    for (const auto &component: componentMap) {
         component.second->Initialize();
     }
 }
 
 void Entity::Tick(const float aDeltaTime) {
-    for (const auto &component: mComponentMap) {
+    for (const auto &component: componentMap) {
         component.second->Tick(aDeltaTime);
     }
 }
 
 void Entity::Cleanup() {
 
-    const std::vector<std::pair<std::string, Component*>> copy(mComponentMap.begin(), mComponentMap.end());
+    const std::vector<std::pair<std::string, Component*>> copy(componentMap.begin(), componentMap.end());
     for (const auto &component: copy) {
         component.second->Destroy();
         delete component.second;
@@ -30,12 +30,12 @@ void Entity::Cleanup() {
 
 void Entity::AddComponent(Component *aComponent) {
     aComponent->SetEntity(this);
-    mComponentMap[aComponent->GetName()] = aComponent;
+    componentMap[aComponent->GetName()] = aComponent;
 }
 
 void Entity::RemoveComponent(Component *aComponent) {
-    if (const auto it = mComponentMap.find(aComponent->GetName()); it != mComponentMap.end()) {
-        mComponentMap.erase(it);
+    if (const auto it = componentMap.find(aComponent->GetName()); it != componentMap.end()) {
+        componentMap.erase(it);
     }
 }
 

@@ -485,20 +485,20 @@ bool LoadUtilities::LoadMeshFromDisk(const char* filePath, std::vector<Vertex>& 
 					// New unique Vertex
 					Vertex newVertex;
 
-					newVertex.mPosition.x = attrib.vertices[3 * idx.vertex_index + 0];
-					newVertex.mPosition.y = attrib.vertices[3 * idx.vertex_index + 1];
-					newVertex.mPosition.z = attrib.vertices[3 * idx.vertex_index + 2];
+					newVertex.position.x = attrib.vertices[3 * idx.vertex_index + 0];
+					newVertex.position.y = attrib.vertices[3 * idx.vertex_index + 1];
+					newVertex.position.z = attrib.vertices[3 * idx.vertex_index + 2];
 
-					newVertex.mNormal.x = attrib.normals[3 * idx.normal_index + 0];
-					newVertex.mNormal.y = attrib.normals[3 * idx.normal_index + 1];
-					newVertex.mNormal.z = attrib.normals[3 * idx.normal_index + 2];
+					newVertex.normal.x = attrib.normals[3 * idx.normal_index + 0];
+					newVertex.normal.y = attrib.normals[3 * idx.normal_index + 1];
+					newVertex.normal.z = attrib.normals[3 * idx.normal_index + 2];
 
-					newVertex.mColor = glm::vec3(attrib.colors[3 * idx.vertex_index + 0],
+					newVertex.color = glm::vec3(attrib.colors[3 * idx.vertex_index + 0],
 					                             attrib.colors[3 * idx.vertex_index + 1],
 					                             attrib.colors[3 * idx.vertex_index + 2]);
 
-					newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
-					newVertex.mUV.y = attrib.texcoords[2 * idx.texcoord_index + 1];
+					newVertex.uv.x = attrib.texcoords[2 * idx.texcoord_index + 0];
+					newVertex.uv.y = attrib.texcoords[2 * idx.texcoord_index + 1];
 
 					// Save it to the vector and store the index in our map
 					resultVertices.push_back(newVertex);

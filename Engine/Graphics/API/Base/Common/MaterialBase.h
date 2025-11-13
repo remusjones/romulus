@@ -8,16 +8,19 @@
 #include <vector>
 #include "Objects/ImGuiLayer.h"
 
-class MaterialBase : public ImGuiLayer{
+class MaterialBase : public ImGuiLayer
+{
 public:
-    virtual void OnImGuiRender() {};
-    virtual void Destroy();
-    void AddBinding(const uint32_t aBinding, const uint32_t aCount, const VkDescriptorType aType, const
-    VkShaderStageFlagBits aStage);
+	virtual void OnImGuiRender()
+	{
+	};
+	virtual void Destroy();
+	virtual void AddBinding(uint32_t inBinding, uint32_t inCount, VkDescriptorType inDescriptorType,
+	                        VkShaderStageFlagBits inStageFlags);
 
-    void Create();
+	void Create();
 
-    std::vector<VkDescriptorSetLayoutBinding> mBindings;
+	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-    VkDescriptorSetLayout mLayout;
+	VkDescriptorSetLayout mLayout;
 };

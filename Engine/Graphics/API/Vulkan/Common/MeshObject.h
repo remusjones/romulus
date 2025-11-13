@@ -23,7 +23,7 @@ class AllocatedVertexBuffer;
 class MeshObject : public Entity{
 public:
     void Construct() override;
-    void Tick(float aDeltaTime) override;
+    void Tick(float deltaTime) override;
     void Cleanup() override;
     void OnImGuiRender() override;
     void CreateObject(Material &aMaterial, const char *aName = "Default");

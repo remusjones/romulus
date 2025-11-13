@@ -21,8 +21,8 @@ public:
 	[[nodiscard]] std::vector<Vertex> GetVertices() const { return vertices; }
 	[[nodiscard]] std::vector<int32_t> GetIndices() const { return indices; }
 
-	[[nodiscard]] int32_t GetVerticesSize() const { return vertices.size(); }
-	[[nodiscard]] int32_t GetIndicesSize() const { return indices.size(); }
+	[[nodiscard]] uint32_t GetVerticesSize() const { return vertices.size(); }
+	[[nodiscard]] uint32_t GetIndicesSize() const { return indices.size(); }
 
 private:
 	std::vector<Vertex> vertices;

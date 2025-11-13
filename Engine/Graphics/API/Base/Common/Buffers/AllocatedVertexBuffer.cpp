@@ -7,23 +7,25 @@
 #include "AllocatedBuffer.h"
 #include "Base/Common/Data/Vertex.h"
 
-AllocatedVertexBuffer::AllocatedVertexBuffer(const std::vector<Vertex> &aVertices,
-                                             const std::vector<int32_t> &aIndices) {
-    mVerticesBuffer = new AllocatedBuffer(aVertices.data(),
-                                          sizeof(aVertices[0]) *
-                                          aVertices.size(),
-                                          VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                                          VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+AllocatedVertexBuffer::AllocatedVertexBuffer(const std::vector<Vertex>& vertices,
+                                             const std::vector<int32_t>& indices)
+{
+	verticesBuffer = new AllocatedBuffer(vertices.data(),
+	                                      sizeof(vertices[0]) *
+	                                      vertices.size(),
+	                                      VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+	                                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    mIndicesBuffer = new AllocatedBuffer(aIndices.data(),
-                                         sizeof(aIndices[0]) * aIndices.size(),
-                                         VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                                         VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	indicesBuffer = new AllocatedBuffer(indices.data(),
+	                                     sizeof(indices[0]) * indices.size(),
+	                                     VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+	                                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 }
 
-AllocatedVertexBuffer::~AllocatedVertexBuffer() {
-    mVerticesBuffer->Destroy();
-    delete mVerticesBuffer;
-    mIndicesBuffer->Destroy();
-    delete mIndicesBuffer;
+AllocatedVertexBuffer::~AllocatedVertexBuffer()
+{
+	verticesBuffer->Destroy();
+	delete verticesBuffer;
+	indicesBuffer->Destroy();
+	delete indicesBuffer;
 }

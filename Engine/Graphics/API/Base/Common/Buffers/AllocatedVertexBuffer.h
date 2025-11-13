@@ -9,15 +9,16 @@
 class AllocatedBuffer;
 class Vertex;
 
-class AllocatedVertexBuffer {
+class AllocatedVertexBuffer
+{
 public:
-    AllocatedVertexBuffer() = default;
-    AllocatedVertexBuffer(const std::vector<Vertex> &aVertices, const std::vector<int32_t>
-                          &aIndices);
+	AllocatedVertexBuffer() = default;
+	AllocatedVertexBuffer(const std::vector<Vertex>& vertices, const std::vector<int32_t>
+	                      & indices);
 
 
-    ~AllocatedVertexBuffer();
+	~AllocatedVertexBuffer();
 
-    AllocatedBuffer* mVerticesBuffer;
-    AllocatedBuffer* mIndicesBuffer;
+	AllocatedBuffer* verticesBuffer;
+	AllocatedBuffer* indicesBuffer;
 };

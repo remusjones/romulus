@@ -14,41 +14,46 @@
 class Texture;
 class Buffer;
 
-struct MaterialProperties {
-    glm::vec4 color = glm::vec4(1, 1, 1, 1);
-    // TODO: Input Images for thes properties?
-    float specularStrength = 0.4;
-    float shininess = 1;
-    float debugRenderState;
-    float _pad;
+struct MaterialProperties
+{
+	glm::vec4 color = glm::vec4(1, 1, 1, 1);
+	// TODO: Input Images for these properties?
+	float specularStrength = 0.4;
+	float shininess        = 1;
+	float debugRenderState;
+	float _pad;
 };
 
-class Material : public MaterialBase {
+class Material : public MaterialBase
+{
 public:
-    Material(const char* aMaterialName = "Default") : materialName(aMaterialName){}
-    virtual void Create(MaterialBase *baseMaterial);
-    virtual void CreateProperties(uint32_t aBinding, const MaterialProperties &aMaterialProperties);
-    virtual void BindTexture(const std::vector<VkDescriptorImageInfo> &textureInfo, uint8_t aBinding) const;
+	Material(const char* materialName = "Default") : materialName(materialName)
+	{
+	}
 
-    void BindTexture(const VkDescriptorImageInfo &imageInfo, uint8_t aBinding) const;
+	virtual void Create(MaterialBase* baseMaterial);
+	virtual void CreateProperties(uint32_t inBinding, const MaterialProperties& inMaterialProperties);
+	virtual void BindTexture(const std::vector<VkDescriptorImageInfo>& textureInfo, uint8_t aBinding) const;
 
-    virtual void AddBinding(uint32_t aBinding, uint32_t aCount,
-                            VkDescriptorType aType, VkShaderStageFlagBits aShaderStage);
-    virtual void SetBuffers(const AllocatedBuffer &aBuffer, uint8_t aBinding, uint8_t aIndex) const;
+	void BindTexture(const VkDescriptorImageInfo& imageInfo, uint8_t inBinding) const;
 
-    VkDescriptorSet GetDescriptorSet() const { return mDescriptorSet; }
-    VkDescriptorSetLayout GetDescriptorLayout() const { return mLayout; }
+	virtual void AddBinding(uint32_t inBinding, uint32_t inCount,
+	                        VkDescriptorType inType, VkShaderStageFlagBits inShaderStage);
+	virtual void SetBuffers(const AllocatedBuffer& inBuffer, uint8_t inBinding, uint8_t inIndex) const;
 
-    void Destroy() override;
+	VkDescriptorSet GetDescriptorSet() const { return descriptorSet; }
+	VkDescriptorSetLayout GetDescriptorLayout() const { return layout; }
 
-    MaterialProperties materialProperties;
-    AllocatedBuffer mPropertiesBuffer;
-    const char * materialName;
+	void Destroy() override;
+
+	MaterialProperties materialProperties;
+	AllocatedBuffer propertiesBuffer;
+	const char* materialName;
 
 protected:
-    MaterialBase *mMaterialBase;
-    VkDescriptorSetLayout mLayout = VK_NULL_HANDLE;
-    VkDescriptorSet mDescriptorSet;
+	MaterialBase* material;
+	VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+	VkDescriptorSet descriptorSet;
 
-    std::unordered_map<uint8_t, VkWriteDescriptorSet> mBoundTextures;
+	std::unordered_map<uint8_t, VkWriteDescriptorSet> boundTextureMap;
 };

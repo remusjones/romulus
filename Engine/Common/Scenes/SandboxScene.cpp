@@ -134,7 +134,7 @@ void SandboxScene::Construct() {
     //
     cubeMapMesh = new Primitive("Skybox");
     auto *mSkyboxRenderer = new SkyboxRenderer();
-    cubeMapMesh->mRenderer = mSkyboxRenderer;
+    cubeMapMesh->renderer = mSkyboxRenderer;
     mSkyboxRenderer->material = cubemap;
     mSkyboxRenderer->transform = &cubeMapMesh->transform;
     mSkyboxRenderer->BindRenderer(*cubemapRenderPipeline->m_graphicsPipeline);
@@ -149,7 +149,7 @@ void SandboxScene::Construct() {
     activeCamera->transform.SetLocalPosition({0, 0, -5.0f});
 
     lineRendererEntity = new Primitive("LineRenderer");
-    lineRendererEntity->mRenderer = lineRenderer;
+    lineRendererEntity->renderer = lineRenderer;
 
     lineRenderer = new LineRenderer();
     lineRenderer->mTransform = &lineRendererEntity->transform;

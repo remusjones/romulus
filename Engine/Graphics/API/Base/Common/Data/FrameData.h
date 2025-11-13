@@ -6,16 +6,15 @@
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 
 
-struct FrameData {
+struct FrameData
+{
+	VkCommandBuffer mCommandBuffer;
+	VkCommandPool mCommandPool;
+	VkSemaphore mRenderSemaphore;
+	VkSemaphore mPresentSemaphore;
+	VkFence mRenderFence;
 
-    VkCommandBuffer mCommandBuffer;
-    VkCommandPool mCommandPool;
-    VkSemaphore mRenderSemaphore;
-    VkSemaphore mPresentSemaphore;
-    VkFence mRenderFence;
 
-
-
-    //AllocatedBuffer mCameraBuffer;
-    AllocatedBuffer sceneBuffer;
+	//AllocatedBuffer mCameraBuffer;
+	AllocatedBuffer sceneBuffer;
 };

@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 
+// todo: this should probably just be a mixin
 class ImGuiLayer
 {
 public:

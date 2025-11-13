@@ -6,18 +6,20 @@
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include "glm/glm.hpp"
 
-class PushConstants {
+class PushConstants
+{
 public:
-    glm::mat4 model;
+	glm::mat4 model;
 };
 
-class LineRendererPushConstants {
-//public:
-//    int32_t vertexCount;
-//    int32_t _pad1;
-//    int32_t _pad2;
-//    int32_t _pad3;
-//
-//    glm::vec4 vertices[];
-//    glm::vec4 colors[];
+class LineRendererPushConstants
+{
+	//public:
+	//    int32_t vertexCount;
+	//    int32_t _pad1;
+	//    int32_t _pad2;
+	//    int32_t _pad3;
+	//
+	//    glm::vec4 vertices[];
+	//    glm::vec4 colors[];
 };

@@ -6,8 +6,9 @@
 #include <vulkan/vulkan_core.h>
 #include "AllocatedBuffer.h"
 
-class AllocatedImage {
+class AllocatedImage
+{
 public:
-    VkImage mImage;
-    VmaAllocation mAllocation;
+	VkImage mImage;
+	VmaAllocation mAllocation;
 };

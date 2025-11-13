@@ -9,9 +9,9 @@
 
 void Renderer::Render(VkCommandBuffer commandBuffer, const Scene &scene) {
     void *data;
-    if (material->mPropertiesBuffer.IsAllocated()) {
+    if (material->propertiesBuffer.IsAllocated()) {
         AllocatedBuffer::MapMemory(
-            gGraphics->allocator, &material->materialProperties, material->mPropertiesBuffer.GetAllocation(),
+            gGraphics->allocator, &material->materialProperties, material->propertiesBuffer.GetAllocation(),
             sizeof(MaterialProperties));
     }
 }

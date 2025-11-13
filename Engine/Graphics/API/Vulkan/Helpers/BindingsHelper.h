@@ -4,6 +4,7 @@
 
 #pragma once
 
-class BindingsHelper {
-    BindingsHelper() = default;
+class BindingsHelper
+{
+	BindingsHelper() = default;
 };

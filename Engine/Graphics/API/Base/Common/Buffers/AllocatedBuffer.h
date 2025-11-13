@@ -8,13 +8,13 @@
 class AllocatedBuffer {
 public:
     AllocatedBuffer() = default;
-    AllocatedBuffer(const void *aData, VkDeviceSize aBufferSize,
-    VkBufferUsageFlags aUsageFlags);
+    AllocatedBuffer(const void *inData, VkDeviceSize inBufferSize,
+    VkBufferUsageFlags inUsageFlags);
     ~AllocatedBuffer();
 
     void Create(VkDeviceSize aSize, VkBufferUsageFlags aUsage);
 
-    void AllocateBuffer(const void* aData, VkDeviceSize aBufferSize, VkBufferUsageFlags aUsageFlags);
+    void AllocateBuffer(const void* inData, VkDeviceSize inBufferSize, VkBufferUsageFlags inUsageFlags);
 
     // Copy void* data to buffer
     static void MapMemory(VmaAllocator aVmaAllocator, const void *aData, VmaAllocation aAllocation, VkDeviceSize aSize);
@@ -27,5 +27,5 @@ public:
 
 private:
     VkBuffer mBuffer = nullptr;
-    VmaAllocation mAllocation = nullptr;
+    VmaAllocation allocation = nullptr;
 };

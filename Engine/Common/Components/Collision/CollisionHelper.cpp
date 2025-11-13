@@ -36,9 +36,9 @@ btBvhTriangleMeshShape * CollisionHelper::MakeCollisionMesh(const std::vector<Ve
 
     for(int i = 0; i<aIndices.size(); i+=3)
     {
-        btVector3 vertex0(aVertices[aIndices[i]].mPosition.x, aVertices[aIndices[i]].mPosition.x, aVertices[aIndices[i]].mPosition.z);
-        btVector3 vertex1(aVertices[aIndices[i+1]].mPosition.x, aVertices[aIndices[i+1]].mPosition.y, aVertices[aIndices[i+1]].mPosition.z);
-        btVector3 vertex2(aVertices[aIndices[i+2]].mPosition.x, aVertices[aIndices[i+2]].mPosition.y, aVertices[aIndices[i+2]].mPosition.z);
+        btVector3 vertex0(aVertices[aIndices[i]].position.x, aVertices[aIndices[i]].position.x, aVertices[aIndices[i]].position.z);
+        btVector3 vertex1(aVertices[aIndices[i+1]].position.x, aVertices[aIndices[i+1]].position.y, aVertices[aIndices[i+1]].position.z);
+        btVector3 vertex2(aVertices[aIndices[i+2]].position.x, aVertices[aIndices[i+2]].position.y, aVertices[aIndices[i+2]].position.z);
         triangle_mesh->addTriangle(vertex0, vertex1, vertex2);
     }
 
@@ -49,18 +49,18 @@ btBvhTriangleMeshShape * CollisionHelper::MakeCollisionMesh(const std::vector<Ve
 btBoxShape* CollisionHelper::MakeAABBCollision(const std::vector<Vertex>& aVertices)
 {
     // Find min and max vertices along each axis
-    btVector3 minVertex(aVertices[0].mPosition.x, aVertices[0].mPosition.y, aVertices[0].mPosition.z);
-    btVector3 maxVertex(aVertices[0].mPosition.x, aVertices[0].mPosition.y, aVertices[0].mPosition.z);
+    btVector3 minVertex(aVertices[0].position.x, aVertices[0].position.y, aVertices[0].position.z);
+    btVector3 maxVertex(aVertices[0].position.x, aVertices[0].position.y, aVertices[0].position.z);
 
     for (const Vertex& vertex : aVertices)
     {
-        minVertex.setX(std::min(minVertex.x(), vertex.mPosition.x));
-        minVertex.setY(std::min(minVertex.y(), vertex.mPosition.y));
-        minVertex.setZ(std::min(minVertex.z(), vertex.mPosition.z));
+        minVertex.setX(std::min(minVertex.x(), vertex.position.x));
+        minVertex.setY(std::min(minVertex.y(), vertex.position.y));
+        minVertex.setZ(std::min(minVertex.z(), vertex.position.z));
 
-        maxVertex.setX(std::max(maxVertex.x(), vertex.mPosition.x));
-        maxVertex.setY(std::max(maxVertex.y(), vertex.mPosition.y));
-        maxVertex.setZ(std::max(maxVertex.z(), vertex.mPosition.z));
+        maxVertex.setX(std::max(maxVertex.x(), vertex.position.x));
+        maxVertex.setY(std::max(maxVertex.y(), vertex.position.y));
+        maxVertex.setZ(std::max(maxVertex.z(), vertex.position.z));
     }
 
     // Calculate extents and half extents for the box shape

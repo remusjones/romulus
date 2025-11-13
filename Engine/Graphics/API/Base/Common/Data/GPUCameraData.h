@@ -6,8 +6,9 @@
 
 #include <glm/glm.hpp>
 
-struct GPUCameraData {
-    glm::mat4 mPerspectiveMatrix;
-    glm::mat4 mViewMatrix;
-    glm::mat4 mViewProjectionMatrix;
+struct GPUCameraData
+{
+	glm::mat4 mPerspectiveMatrix;
+	glm::mat4 mViewMatrix;
+	glm::mat4 mViewProjectionMatrix;
 };

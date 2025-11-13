@@ -6,10 +6,12 @@
 
 class Material;
 
-class MaterialManager {
+class MaterialManager
+{
 public:
+	void AddMaterial(const std::shared_ptr<Material>& inMaterial);
+	Material* MakeMaterials() const;
 
-    void AddMaterial(const std::shared_ptr<Material> &aMaterial);
-    Material *MakeMaterials() const;
-    std::vector<std::shared_ptr<Material>> mMaterials;
+	// todo: evaluate usage of shared ptr here
+	std::vector<std::shared_ptr<Material>> materials;
 };

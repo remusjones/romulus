@@ -4,28 +4,29 @@
 
 #pragma once
 #include <vector>
-#include "Base/Common/Data/Vertex.h"
+#include <Base/Common/Data/Vertex.h>
 
 
 class AllocatedBuffer;
 
-class PrimitiveMesh {
+class PrimitiveMesh
+{
+
 public:
-    void Bind(VkCommandBuffer commandBuffer) const;
+	void Bind(VkCommandBuffer commandBuffer) const;
+	bool LoadFromObject(const char* filename);
 
-    bool LoadFromObject(const char *filename);
+	~PrimitiveMesh();
 
-    ~PrimitiveMesh();
+	[[nodiscard]] std::vector<Vertex> GetVertices() const { return vertices; }
+	[[nodiscard]] std::vector<int32_t> GetIndices() const { return indices; }
 
-    [[nodiscard]] std::vector<Vertex> GetVertices() const { return vertices; }
-    [[nodiscard]] std::vector<int32_t> GetIndices() const { return indices; }
-
-    [[nodiscard]] int32_t GetVerticesSize() const { return vertices.size(); }
-    [[nodiscard]] int32_t GetIndicesSize() const { return indices.size(); }
+	[[nodiscard]] int32_t GetVerticesSize() const { return vertices.size(); }
+	[[nodiscard]] int32_t GetIndicesSize() const { return indices.size(); }
 
 private:
-    std::vector<Vertex> vertices;
-    std::vector<int32_t> indices;
-    AllocatedBuffer* verticesBuffer = nullptr;
-    AllocatedBuffer* indicesBuffer = nullptr;
+	std::vector<Vertex> vertices;
+	std::vector<int32_t> indices;
+	AllocatedBuffer* verticesBuffer = nullptr;
+	AllocatedBuffer* indicesBuffer  = nullptr;
 };

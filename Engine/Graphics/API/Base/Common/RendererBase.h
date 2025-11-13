@@ -4,6 +4,6 @@
 
 #pragma once
 
-
-class RendererBase {
+class RendererBase
+{
 };
