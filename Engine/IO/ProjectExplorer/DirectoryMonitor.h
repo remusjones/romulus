@@ -12,39 +12,44 @@
 #include "Objects/ImGuiLayer.h"
 
 
-struct FileInfo {
-    std::string fileName;
-    std::filesystem::file_time_type lastWriteTime;
+struct FileInfo
+{
+	std::string fileName;
+	std::filesystem::file_time_type lastWriteTime;
 };
 
-enum class FileStatus {
-    CREATED,
-    MODIFIED,
-    ERASED
+enum class FileStatus
+{
+	CREATED,
+	MODIFIED,
+	ERASED
 };
-class DirectoryMonitor : ImGuiLayer {
-public:
-    void CreateDirectoryMonitor(const std::string &aPath);
-    void UpdateDirectoryMonitor();
-    const std::unordered_map<std::string, FileInfo>& GetDirectoryContent() const;
 
-    std::string GetMonitoredDirectory();
-    static void CreateDirectorySnapshot(const std::string &aPath, std::unordered_map<std::string, FileInfo> &aDirectoryContent);
-private:
-    void ValidateDirectorySnapshot(const std::unordered_map<std::string, FileInfo> &aDirectoryContent);
-    // Draws Directory Content
-    void ImportFile(const std::string &aPath, FileStatus aStatus);
-
+class DirectoryMonitor : ImGuiLayer
+{
 public:
-    void OnImGuiRender() override;
+	void CreateDirectoryMonitor(const std::string& aPath);
+	void UpdateDirectoryMonitor();
+	const std::unordered_map<std::string, FileInfo>& GetDirectoryContent() const;
+
+	std::string GetMonitoredDirectory();
+	static void CreateDirectorySnapshot(const std::string& aPath,
+	                                    std::unordered_map<std::string, FileInfo>& aDirectoryContent);
 
 private:
-    std::string mMonitoredDirectory;
-    // Create map of directory
-    std::unordered_map<std::string, FileInfo> mDirectoryContent;
+	void ValidateDirectorySnapshot(const std::unordered_map<std::string, FileInfo>& aDirectoryContent);
+	// Draws Directory Content
+	void ImportFile(const std::string& aPath, FileStatus aStatus);
 
-    std::atomic<bool> mIsFinishedImporting = false;
-    std::thread mImportingThread;
-    std::mutex mImportingThreadMtx;
+public:
+	void OnImGuiRender() override;
 
+private:
+	std::string mMonitoredDirectory;
+	// Create map of directory
+	std::unordered_map<std::string, FileInfo> mDirectoryContent;
+
+	std::atomic<bool> mIsFinishedImporting = false;
+	std::thread mImportingThread;
+	std::mutex mImportingThreadMtx;
 };

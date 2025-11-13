@@ -6,24 +6,24 @@
 #include <string>
 #include <unordered_map>
 
-class ImGuiLayer {
+class ImGuiLayer
+{
 public:
-    virtual ~ImGuiLayer() = default;
+	virtual ~ImGuiLayer() = default;
 
-    ImGuiLayer();
-    virtual void OnImGuiRender() = 0;
-    const char* GetUniqueLabel(const char* aLabel); // Todo: Refactor method of generating unique labels (Urgently)
+	ImGuiLayer();
+	virtual void OnImGuiRender() = 0;
+	const char* GetUniqueLabel(const char* aLabel); // Todo: Refactor method of generating unique labels (Urgently)
 
 
 private:
-
-    /**
-     * \brief
-     * Not Guaranteed to be Unique, but good enough for this use-case for now
-     * https://stackoverflow.com/questions/24365331/how-can-i-generate-uuid-in-c-without-using-boost-library
-     * \return
-     * Unique String
-     */
-    static std::string MakeGuid();
-    std::unordered_map<const char*, std::string> mConstructedLabels;
+	/**
+	 * \brief
+	 * Not Guaranteed to be Unique, but good enough for this use-case for now
+	 * https://stackoverflow.com/questions/24365331/how-can-i-generate-uuid-in-c-without-using-boost-library
+	 * \return
+	 * Unique String
+	 */
+	static std::string MakeGuid();
+	std::unordered_map<const char*, std::string> mConstructedLabels;
 };

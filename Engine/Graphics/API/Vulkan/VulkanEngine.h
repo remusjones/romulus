@@ -16,70 +16,71 @@ class GraphicsPipeline;
 
 struct UploadContext
 {
-    VkFence uploadContext;
-    VkCommandPool commandPool;
-    VkCommandBuffer commandBuffer;
+	VkFence uploadContext;
+	VkCommandPool commandPool;
+	VkCommandBuffer commandBuffer;
 };
 
-class VulkanEngine {
+class VulkanEngine
+{
 public:
-    void Initialize(const VkDevice& inLogicalDevice,
-                    VulkanSwapChain* inSwapChain,
-                    const VkPhysicalDevice& inPhysicalDevice,
-                    const VkQueue& inGraphicsQueue,
-                    const VkQueue& inPresentQueue
-    );
+	void Initialize(const VkDevice& inLogicalDevice,
+	                VulkanSwapChain* inSwapChain,
+	                const VkPhysicalDevice& inPhysicalDevice,
+	                const VkQueue& inGraphicsQueue,
+	                const VkQueue& inPresentQueue
+	);
 
-    const FrameData& GetCurrentFrame() { return frameData[currentFrame]; }
-    const FrameData& GetFrame(int32_t index) { return frameData[index]; }
+	const FrameData& GetCurrentFrame() { return frameData[currentFrame]; }
+	const FrameData& GetFrame(int32_t index) { return frameData[index]; }
 
-    void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const;
+	void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const;
 
-    void SubmitEndOfFrameTask(std::function<void()>&& task);
+	void SubmitEndOfFrameTask(std::function<void()>&& task);
 
-    void QueueFrameBufferRebuild() { rebuildBuffer = true; }
+	void QueueFrameBufferRebuild() { rebuildBuffer = true; }
 
-    void CreateUploadContext();
+	void CreateUploadContext();
 
-    void CreateCommandBuffers();
+	void CreateCommandBuffers();
 
-    void CreateCommandPool();
-    void DestroyCommandPool() const;
+	void CreateCommandPool();
+	void DestroyCommandPool() const;
 
-    void CreateDescriptorPool();
-    void DrawFrame(Scene &activeScene);
+	void CreateDescriptorPool();
+	void DrawFrame(Scene& activeScene);
 
-    void CreateSyncObjects();
-    void Cleanup();
+	void CreateSyncObjects();
+	void Cleanup();
 
 private:
-    void CleanupOldSyncObjects();
+	void CleanupOldSyncObjects();
 
 public:
-    std::vector<VkFence> imagesInFlight;
-    VulkanSwapChain* swapChain;
+	std::vector<VkFence> imagesInFlight;
+	VulkanSwapChain* swapChain;
 
-    VkQueue graphicsQueue;
-    VkQueue presentQueue;
-    VkDescriptorPool descriptorPool;
-    UploadContext uploadContext;
+	VkQueue graphicsQueue;
+	VkQueue presentQueue;
+	VkDescriptorPool descriptorPool;
+	UploadContext uploadContext;
 
-    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 private:
-    bool rebuildBuffer = false;
-    // Cached Variables for layouts
-    VkDevice logicalDevice;
-    VkPhysicalDevice physicalDevice;
-    VkPhysicalDeviceProperties deviceProperties;
+	bool rebuildBuffer = false;
+	// Cached Variables for layouts
+	VkDevice logicalDevice                      = nullptr;
+	VkPhysicalDevice physicalDevice             = nullptr;
+	VkPhysicalDeviceProperties deviceProperties = {};
 
-    std::vector<FrameData> frameData;
+	std::vector<FrameData> frameData;
 
-    std::vector<VkFence> inFlightFencesToDestroy;
-    std::vector<VkSemaphore> imageAvailableSemaphoresToDestroy;
-    std::vector<VkSemaphore> mRenderFinishedSemaphoresToDestroy;
-    std::vector<VkSemaphore> renderFinishedSemaphores;
+	std::vector<VkFence> inFlightFencesToDestroy;
+	std::vector<VkSemaphore> imageAvailableSemaphoresToDestroy;
+	std::vector<VkSemaphore> mRenderFinishedSemaphoresToDestroy;
+	std::vector<VkSemaphore> renderFinishedSemaphores;
 
-    std::queue<std::function<void()>> endOfFrameTasks;
-    size_t currentFrame = 0;
+	std::queue<std::function<void()>> endOfFrameTasks;
+	size_t currentFrame = 0;
 };

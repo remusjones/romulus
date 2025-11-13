@@ -12,26 +12,24 @@ struct KeyboardEvent;
 class FlyCamera : public Camera
 {
 public:
+	void Construct() override;
+	void OnImGuiRender() override;
+	void Tick(float aDeltaTime) override;
 
-    void Construct() override;
-    void OnImGuiRender() override;
-    void Tick(float aDeltaTime) override;
+	void Forward(const SDL_KeyboardEvent& keyboardEvent);
+	void Backward(const SDL_KeyboardEvent& keyboardEvent);
+	void Left(const SDL_KeyboardEvent& keyboardEvent);
+	void Right(const SDL_KeyboardEvent& keyboardEvent);
+	void Up(const SDL_KeyboardEvent& keyboardEvent);
+	void Down(const SDL_KeyboardEvent& keyboardEvent);
+	void MouseMovement(const SDL_MouseMotionEvent& aMouseMotion);
+	void MouseInput(const SDL_MouseButtonEvent& InMouseInput);
 
-    void Forward(const SDL_KeyboardEvent& keyboardEvent);
-    void Backward(const SDL_KeyboardEvent& keyboardEvent);
-    void Left(const SDL_KeyboardEvent& keyboardEvent);
-    void Right(const SDL_KeyboardEvent& keyboardEvent);
-    void Up(const SDL_KeyboardEvent& keyboardEvent);
-    void Down(const SDL_KeyboardEvent& keyboardEvent);
-    void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
-    void MouseInput(const SDL_MouseButtonEvent &InMouseInput);
-
-    bool IsCameraConsumingInput() const;
+	bool IsCameraConsumingInput() const;
 
 private:
-
-    glm::vec3 MoveVector = {};
-    bool Input[6] = {};
-    float_t Speed = 10;
-    bool RightMouseDown = false;
+	glm::vec3 MoveVector = {};
+	bool Input[6]        = {};
+	float_t Speed        = 10;
+	bool RightMouseDown  = false;
 };

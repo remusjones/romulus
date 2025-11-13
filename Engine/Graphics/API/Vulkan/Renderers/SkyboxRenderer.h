@@ -9,14 +9,15 @@
 class PrimitiveMesh;
 class Mesh;
 
-class SkyboxRenderer final : public Renderer {
+class SkyboxRenderer final : public Renderer
+{
 public:
-    void Render(VkCommandBuffer commandBuffer, const Scene& scene) override;
-    void BindRenderer(GraphicsPipeline& boundGraphicsPipeline) override;
-    void DestroyRenderer() override;
+	void Render(VkCommandBuffer commandBuffer, const Scene& scene) override;
+	void BindRenderer(GraphicsPipeline& boundGraphicsPipeline) override;
+	void DestroyRenderer() override;
 
-    void LoadMesh(const char* path);
+	void LoadMesh(const char* path);
 
-    Transform *transform;
-    PrimitiveMesh *mesh;
+	Transform* transform;
+	PrimitiveMesh* mesh;
 };

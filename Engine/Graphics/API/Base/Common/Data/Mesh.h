@@ -8,25 +8,26 @@
 
 class AllocatedVertexBuffer;
 
-class Mesh {
+class Mesh
+{
 public:
-    Mesh();
-    ~Mesh();
+	Mesh();
+	~Mesh();
 
-    void Bind(VkCommandBuffer commandBuffer) const;
-    bool LoadFromObject(const char* fileName);
-    void CalculateTangents(std::vector<Vertex>& vertices, const std::vector<int32_t>& indices);
+	void Bind(VkCommandBuffer commandBuffer) const;
+	bool LoadFromObject(const char* fileName);
+	void CalculateTangents(std::vector<Vertex>& vertices, const std::vector<int32_t>& indices);
 
-    [[nodiscard]] std::vector<Vertex> GetVertices() const { return vertices; }
-    [[nodiscard]] std::vector<int32_t> GetIndices() const { return indices; }
+	[[nodiscard]] std::vector<Vertex> GetVertices() const { return vertices; }
+	[[nodiscard]] std::vector<int32_t> GetIndices() const { return indices; }
 
-    [[nodiscard]] int32_t GetVerticesSize() const { return vertices.size(); }
-    [[nodiscard]] int32_t GetIndicesSize() const { return indices.size(); }
+	[[nodiscard]] int32_t GetVerticesSize() const { return vertices.size(); }
+	[[nodiscard]] int32_t GetIndicesSize() const { return indices.size(); }
 
 private:
-    std::vector<Vertex> vertices;
-    std::vector<int32_t> indices;
+	std::vector<Vertex> vertices;
+	std::vector<int32_t> indices;
 
-    // todo: this needs to be allocated in a collection
-    AllocatedVertexBuffer *vertexBuffer;
+	// todo: this needs to be allocated in a collection
+	AllocatedVertexBuffer* vertexBuffer;
 };
