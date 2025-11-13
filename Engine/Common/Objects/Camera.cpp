@@ -2,9 +2,9 @@
 // Created by Remus on 22/12/2023.
 //
 
-#include "Camera.h"
-#include "VulkanGraphicsImpl.h"
-#include "Physics/Ray.h"
+#include <Objects/Camera.h>
+#include <VulkanGraphicsImpl.h>
+#include <Physics/Ray.h>
 
 glm::mat4 Camera::GetViewProjectionMatrix() const {
     return GetPerspectiveMatrix() * GetViewMatrix();
@@ -12,23 +12,25 @@ glm::mat4 Camera::GetViewProjectionMatrix() const {
 
 glm::mat4 Camera::GetPerspectiveMatrix() const {
     const glm::mat4 perspective =
-            glm::perspective(glm::radians(mFOV),
-                             static_cast<float>(gGraphics->mSwapChain->
-                                 mSwapChainExtent.width) / static_cast<float>(gGraphics->mSwapChain->
-                                 mSwapChainExtent.height),
-                             mZNear,
-                             mZFar);
+            glm::perspective(glm::radians(fov),
+                             static_cast<float>(gGraphics->swapChain->
+                                 swapChainExtents.width) / static_cast<float>(gGraphics->swapChain->
+                                 swapChainExtents.height),
+                             zNear,
+                             zFar);
 
     return perspective;
 }
 
-glm::mat4 Camera::GetViewMatrix() const {
-    return glm::inverse(m_transform.GetTranslationMatrix() * m_transform.GetRotationMatrix());
+glm::mat4 Camera::GetViewMatrix() const
+{
+    return glm::inverse(transform.GetTranslationMatrix() * transform.GetRotationMatrix());
 }
 
-Ray Camera::GetRayTo(const int x, const int y) {
-    const float width = gGraphics->mSwapChain->mSwapChainExtent.width;
-    const float height = gGraphics->mSwapChain->mSwapChainExtent.height;
+Ray Camera::GetRayTo(const int x, const int y)
+{
+    const float width = gGraphics->swapChain->swapChainExtents.width;
+    const float height = gGraphics->swapChain->swapChainExtents.height;
 
     const float normalizedPointX = x / (width * 0.5f) - 1.0f;
     const float normalizedPointY = y / (height * 0.5f) - 1.0f;
@@ -40,7 +42,7 @@ Ray Camera::GetRayTo(const int x, const int y) {
     worldPos = worldPos / worldPos.w;
 
     Ray ray;
-    ray.origin = m_transform.GetWorldPosition();
+    ray.origin = transform.GetWorldPosition();
     ray.direction = glm::normalize(glm::vec3(worldPos) - ray.origin);
 
     return ray;

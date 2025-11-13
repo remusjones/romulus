@@ -6,17 +6,17 @@
 #include "Renderer.h"
 
 
-class PrimativeMesh;
+class PrimitiveMesh;
 class Mesh;
 
 class SkyboxRenderer final : public Renderer {
 public:
-    void Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) override;
-    void BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
+    void Render(VkCommandBuffer commandBuffer, const Scene& scene) override;
+    void BindRenderer(GraphicsPipeline& boundGraphicsPipeline) override;
     void DestroyRenderer() override;
 
-    void LoadMesh(const char *aPath, const char *aMtlPath = "");
+    void LoadMesh(const char* path);
 
-    Transform *mTransform;
-    PrimativeMesh *mMesh;
+    Transform *transform;
+    PrimitiveMesh *mesh;
 };

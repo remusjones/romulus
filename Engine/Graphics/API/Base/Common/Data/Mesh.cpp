@@ -8,33 +8,34 @@
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Buffers/AllocatedVertexBuffer.h"
 
-Mesh::Mesh(): mVertexBuffer(nullptr) {
+Mesh::Mesh(): vertexBuffer(nullptr) {
 }
 
 Mesh::~Mesh() {
-    delete mVertexBuffer;
+    delete vertexBuffer;
 }
 
-void Mesh::Bind(VkCommandBuffer aCommandBuffer) const {
-    const VkBuffer vertexBuffers[] = {mVertexBuffer->mVerticesBuffer->GetBuffer()};
+void Mesh::Bind(VkCommandBuffer commandBuffer) const {
+    const VkBuffer vertexBuffers[] = {vertexBuffer->mVerticesBuffer->GetBuffer()};
     const VkDeviceSize offsets[] = {0};
 
-    vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(aCommandBuffer, mVertexBuffer->mIndicesBuffer->GetBuffer(),
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, vertexBuffer->mIndicesBuffer->GetBuffer(),
                          0, VK_INDEX_TYPE_UINT32);
 }
 
-bool Mesh::LoadFromObject(const char *aFileName, const char *aMtlDirectory = "") {
-    if (LoadUtilities::LoadMeshFromDisk(aFileName, mVertices, mIndices, aMtlDirectory)) {
-        CalculateTangents(mVertices, mIndices);
-        mVertexBuffer = new AllocatedVertexBuffer(mVertices, mIndices);
+bool Mesh::LoadFromObject(const char *filename) {
+    if (LoadUtilities::LoadMeshFromDisk(filename, vertices, indices)) {
+        CalculateTangents(vertices, indices);
+
+        vertexBuffer = new AllocatedVertexBuffer(vertices, indices);
 
         std::string bufferName;
-        bufferName.append(aFileName);
-        vmaSetAllocationName(gGraphics->mAllocator, mVertexBuffer->mVerticesBuffer->GetAllocation(),
+        bufferName.append(filename);
+        vmaSetAllocationName(gGraphics->allocator, vertexBuffer->mVerticesBuffer->GetAllocation(),
                              (bufferName + " mVerticesBuffer").c_str());
 
-        vmaSetAllocationName(gGraphics->mAllocator, mVertexBuffer->mIndicesBuffer->GetAllocation(),
+        vmaSetAllocationName(gGraphics->allocator, vertexBuffer->mIndicesBuffer->GetAllocation(),
                              (bufferName + " mIndicesBuffer").c_str());
         return true;
     }

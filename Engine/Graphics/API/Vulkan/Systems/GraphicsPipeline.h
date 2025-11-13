@@ -4,7 +4,6 @@
 
 #pragma once
 #include <vector>
-
 #include "PipelineConfigInfo.h"
 #include "Base/Common/Material.h"
 
@@ -14,32 +13,35 @@ class Material;
 class MaterialBase;
 class Renderer;
 
-class GraphicsPipeline {
+class GraphicsPipeline
+{
 public:
-    enum class SubPasses {
+    enum SubPasses : uint8_t
+    {
         SUBPASS_GEOMETRY = 0,
         SUBPASS_LIGHTING,
         SUBPASS_TRANSPARENCY,
         NUMBER_OF_SUBPASSES
     };
 
-    GraphicsPipeline(const char *aPipelineName,
-        const PipelineConfigInfo &aConfigInfo) : mPipelineName(
-        aPipelineName) {
-        mPipelineConfig = aConfigInfo;
+    GraphicsPipeline(const char* pipelineName, const PipelineConfigInfo& configInfo) : pipelineName(pipelineName),
+        romulusPipelineConfig(nullptr),
+        depthStencilCreateInfo()
+    {
+        pipelineConfig = configInfo;
     }
 
-    void CreateShaderModule(const char *aPath, VkShaderStageFlagBits aStage);
-    void AddRenderer(Renderer *aRenderer);
-    void Draw(VkCommandBuffer aCommandBuffer, const Scene &aScene) const;
+    void CreateShaderModule(const char* path, VkShaderStageFlagBits stage);
+    void AddRenderer(Renderer* renderer);
+    void Draw(VkCommandBuffer commandBuffer, const Scene& scene) const;
     void Create();
     void Destroy();
-    static void DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo);
+    static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
-    const char *mPipelineName;
-    PipelineConfigInfo mPipelineConfig;
-    VkPipeline mGraphicsPipeline;
-    std::vector<VkPipelineShaderStageCreateInfo> mShadersInPipeline;
-    std::vector<Renderer *> mRenderers = {};
-    VkPipelineDepthStencilStateCreateInfo mDepthStencil;
+    const char* pipelineName;
+    PipelineConfigInfo pipelineConfig;
+    VkPipeline romulusPipelineConfig;
+    std::vector<VkPipelineShaderStageCreateInfo> shaders;
+    std::vector<Renderer*> renderers;
+    VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo;
 };

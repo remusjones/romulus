@@ -13,7 +13,7 @@ struct alignas(16) GPUSceneData {
     float ambientStrength = 0.0f;
 
 
-    glm::mat4 mViewMatrix;
-    glm::mat4 mViewProjectionMatrix;
-    glm::vec4 mViewPos;
+    glm::mat4 viewMatrix;
+    glm::mat4 viewProjectionMatrix;
+    glm::vec4 viewPos;
 };

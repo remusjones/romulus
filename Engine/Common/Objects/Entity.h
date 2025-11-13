@@ -65,7 +65,7 @@ public:
 
     void OnImGuiRender() override;
 
-    Transform m_transform;
+    Transform transform;
     const char *mName{"Default"};
 
     std::unordered_map<std::string, Component *> mComponentMap;

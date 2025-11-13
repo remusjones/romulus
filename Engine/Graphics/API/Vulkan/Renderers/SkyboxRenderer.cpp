@@ -5,29 +5,33 @@
 #include "SkyboxRenderer.h"
 
 #include "Base/Common/Data/PrimativeMesh.h"
+#include "Base/Common/Data/PrimitiveMesh.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
-void SkyboxRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
-    mMesh->Bind(aCommandBuffer);
-    vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
+void SkyboxRenderer::Render(const VkCommandBuffer commandBuffer, const Scene& scene)
+{
+    mesh->Bind(commandBuffer);
+    vkCmdPushConstants(commandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                       sizeof(PushConstants), &mPushConstants);
+                       sizeof(PushConstants), &pushConstants);
 
-    vkCmdDrawIndexed(aCommandBuffer, mMesh->GetIndicesSize(), 1, 0, 0, 0);
-    mPushConstants.model = mTransform->GetWorldMatrix();
+    vkCmdDrawIndexed(commandBuffer, mesh->GetIndicesSize(), 1, 0, 0, 0);
+    pushConstants.model = transform->GetWorldMatrix();
 }
 
-void SkyboxRenderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
-    mGraphicsPipeline = &aBoundGraphicsPipeline;
-    mGraphicsPipeline->AddRenderer(this);
+void SkyboxRenderer::BindRenderer(GraphicsPipeline& boundGraphicsPipeline) {
+    graphicsPipeline = &boundGraphicsPipeline;
+    graphicsPipeline->AddRenderer(this);
 }
 
-void SkyboxRenderer::DestroyRenderer() {
-    delete mMesh;
+void SkyboxRenderer::DestroyRenderer()
+{
+    delete mesh;
     Renderer::DestroyRenderer();
 }
 
-void SkyboxRenderer::LoadMesh(const char *aPath, const char *aMtlPath) {
-    mMesh = new PrimativeMesh();
-    mMesh->LoadFromObject(aPath, aMtlPath);
+void SkyboxRenderer::LoadMesh(const char *path)
+{
+    mesh = new PrimitiveMesh();
+    mesh->LoadFromObject(path);
 }

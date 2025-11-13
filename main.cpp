@@ -14,9 +14,9 @@ int main()
     {
         app->Run();
     }
-    catch (const std::exception& e)
+    catch (const std::exception& error)
     {
-        Logger::Log(spdlog::level::critical, e.what());
+        Logger::Log(spdlog::level::critical, error.what());
         return EXIT_FAILURE;
     }
 

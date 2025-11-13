@@ -11,34 +11,37 @@
 class MaterialFactory {
 public:
     template<typename T>
-    T* Create(const char* aMaterialName = "Default") {
+    T* Create(const char* materialName = "Default")
+    {
         static_assert(std::is_base_of_v<Material, T>, "T must derive from Material");
-        std::unique_ptr<T> material = std::make_unique<T>(aMaterialName);
+        std::unique_ptr<T> material = std::make_unique<T>(materialName);
         T* materialPtr = material.get();
-        mMaterials.push_back(std::move(material)); // move into array
+        materials.push_back(std::move(material)); // move into array
         return materialPtr;
     }
 
-    void MakeMaterials() const {
-        for (const auto& material: mMaterials) {
+    void Make() const {
+        for (const auto& material: materials)
+        {
             material->Create(material.get());
         }
     }
-    void DestroyMaterials() {
-        for(const auto& material : mMaterials) {
+    void Destroy()
+    {
+        for(const auto& material : materials) {
             material->Destroy();
         }
-        mMaterials.clear();
+        materials.clear();
     }
 
     [[nodiscard]] std::vector<VkDescriptorSetLayout> GetDescriptorLayouts() const {
-        std::vector<VkDescriptorSetLayout> descriptors(mMaterials.size());
+        std::vector<VkDescriptorSetLayout> descriptors(materials.size());
 
-        for(int i = 0; i < mMaterials.size(); i++)
-            descriptors[i] = mMaterials[i]->GetDescriptorLayout();
+        for(int i = 0; i < materials.size(); i++)
+            descriptors[i] = materials[i]->GetDescriptorLayout();
 
         return descriptors;
     }
 
-    std::vector<std::unique_ptr<Material>> mMaterials = {};
+    std::vector<std::unique_ptr<Material>> materials = {};
 };

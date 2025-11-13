@@ -28,5 +28,5 @@ public:
     void OnImGuiRender() override;
     void CreateObject(Material &aMaterial, const char *aName = "Default");
 
-    MeshRenderer mMeshRenderer;
+    MeshRenderer meshRenderer;
 };

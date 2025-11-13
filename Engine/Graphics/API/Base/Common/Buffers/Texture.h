@@ -13,17 +13,17 @@ class Texture {
 public:
     Texture() = default;
 
-    void LoadImagesFromDisk(const std::vector<std::string> &aPaths);
+    void LoadImagesFromDisk(const std::vector<std::string> &imagePaths);
 
-    virtual void Create(VkFilter aSamplerFilter = VK_FILTER_LINEAR,
-                        VkSamplerAddressMode aSamplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    virtual void Create(VkFilter sampleFilter = VK_FILTER_LINEAR,
+                        VkSamplerAddressMode samplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
 
     void Destroy() const;
 
-    AllocatedImage mAllocatedImage;
-    uint32_t mImageCount = 1;
-    std::vector<VkImageView> mImageViews;
-    VkSampler mSampler;
-    std::vector<VkDescriptorImageInfo> mImageBufferInfo;
+    AllocatedImage allocatedImage;
+    uint32_t imageCount = 1;
+    std::vector<VkImageView> imageViews;
+    VkSampler sampler;
+    std::vector<VkDescriptorImageInfo> imageBufferInfos;
 };

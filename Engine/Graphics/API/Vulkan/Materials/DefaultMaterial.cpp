@@ -6,11 +6,11 @@
 #include "../../../../IO/FileManagement.h"
 #include "Vulkan/VulkanEngine.h"
 
-DefaultMaterial::DefaultMaterial(const char *aMaterialName) {
-    mMaterialName = aMaterialName;
+DefaultMaterial::DefaultMaterial(const char* inMaterialName) {
+    materialName = inMaterialName;
 }
 
-void DefaultMaterial::Create(MaterialBase *aBaseMaterial) {
+void DefaultMaterial::Create(MaterialBase* baseMaterial) {
 
     AddBinding(SCENE_INFORMATION, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
     AddBinding(PROPERTIES, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
@@ -19,7 +19,7 @@ void DefaultMaterial::Create(MaterialBase *aBaseMaterial) {
     Material::Create(this);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, SCENE_INFORMATION, 0);
+        SetBuffers(gGraphics->vulkanEngine.GetFrame(i).sceneBuffer, SCENE_INFORMATION, 0);
 
     CreateProperties(PROPERTIES, MaterialProperties());
 
@@ -28,37 +28,43 @@ void DefaultMaterial::Create(MaterialBase *aBaseMaterial) {
 
 void DefaultMaterial::OnImGuiRender() {
     Material::OnImGuiRender();
+
     ImGui::SeparatorText("Material");
-    ImGui::ColorEdit4(GetUniqueLabel("Color"), &mMaterialProperties.mColor[0]);
-    if (ImGui::DragFloat(GetUniqueLabel("Shininess"),
-                         &mMaterialProperties.mShininess, 0.1f)) {
-    }
-    if (ImGui::DragFloat(GetUniqueLabel("Specular"),
-                         &mMaterialProperties.mSpecularStrength, 0.1f)) {
-    }
-    int tmp = mMaterialProperties.mDebugRenderState;
-    if (ImGui::Combo(GetUniqueLabel("Debug"), &tmp, mDebugColors.data(), mDebugColors.size())) {
-        mMaterialProperties.mDebugRenderState = tmp;
+    ImGui::ColorEdit4(GetUniqueLabel("Color"), &materialProperties.color[0]);
+    ImGui::DragFloat(GetUniqueLabel("Shininess"), &materialProperties.shininess, 0.1f);
+    ImGui::DragFloat(GetUniqueLabel("Specular"), &materialProperties.specularStrength, 0.1f);
+
+    int tmp = materialProperties.debugRenderState;
+    if (ImGui::Combo(GetUniqueLabel("Debug"), &tmp, debugColors.data(), debugColors.size()))
+    {
+        materialProperties.debugRenderState = static_cast<float>(tmp);
     }
 }
-static std::unique_ptr<Texture> mDefaultTexture = nullptr;
-void DefaultMaterial::MakeDefaults() const {
-    if (mDefaultTexture == nullptr) {
-        mDefaultTexture = std::make_unique<Texture>();
+static std::unique_ptr<Texture> gDefaultTexture = nullptr;
+void DefaultMaterial::MakeDefaults() const
+{
+    if (gDefaultTexture == nullptr)
+    {
+        gDefaultTexture = std::make_unique<Texture>();
         std::vector<Color_RGBA> defaultColors;
         std::vector<std::string> paths;
+
         paths.push_back(FileManagement::GetWorkingDirectory() + DefaultAssetPaths[ALBEDO]);
         paths.push_back(FileManagement::GetWorkingDirectory() + DefaultAssetPaths[NORMAL]);
-        mDefaultTexture->LoadImagesFromDisk(paths);
-        mDefaultTexture->Create();
+
+        gDefaultTexture->LoadImagesFromDisk(paths);
+        gDefaultTexture->Create();
     }
-    BindTexture(mDefaultTexture->mImageBufferInfo, TEXTURE);
+
+    BindTexture(gDefaultTexture->imageBufferInfos, TEXTURE);
 }
 
-void DefaultMaterial::Destroy() {
-    if (mDefaultTexture != nullptr) {
-        mDefaultTexture->Destroy();
-        mDefaultTexture.reset();
+void DefaultMaterial::Destroy()
+{
+    if (gDefaultTexture != nullptr)
+    {
+        gDefaultTexture->Destroy();
+        gDefaultTexture.reset();
     }
     Material::Destroy();
 }

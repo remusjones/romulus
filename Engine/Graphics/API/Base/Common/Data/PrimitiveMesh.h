@@ -1,21 +1,21 @@
 //
-// Created by Remus on 20/12/2023.
+// Created by Remus on 9/01/2024.
 //
 
 #pragma once
 #include <vector>
-#include "Vertex.h"
+#include "Base/Common/Data/Vertex.h"
 
-class AllocatedVertexBuffer;
 
-class Mesh {
+class AllocatedBuffer;
+
+class PrimitiveMesh {
 public:
-    Mesh();
-    ~Mesh();
-
     void Bind(VkCommandBuffer commandBuffer) const;
-    bool LoadFromObject(const char* fileName);
-    void CalculateTangents(std::vector<Vertex>& vertices, const std::vector<int32_t>& indices);
+
+    bool LoadFromObject(const char *filename);
+
+    ~PrimitiveMesh();
 
     [[nodiscard]] std::vector<Vertex> GetVertices() const { return vertices; }
     [[nodiscard]] std::vector<int32_t> GetIndices() const { return indices; }
@@ -26,7 +26,6 @@ public:
 private:
     std::vector<Vertex> vertices;
     std::vector<int32_t> indices;
-
-    // todo: this needs to be allocated in a collection
-    AllocatedVertexBuffer *vertexBuffer;
+    AllocatedBuffer* verticesBuffer = nullptr;
+    AllocatedBuffer* indicesBuffer = nullptr;
 };

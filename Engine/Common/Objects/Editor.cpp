@@ -21,8 +21,7 @@ void Editor::Create(){
 }
 
 void Editor::OnImGuiRender() {
-    //DrawContent();
-    gGraphics->mActiveScene->OnImGuiRender();
+    gGraphics->activeScene->OnImGuiRender();
     Profiler::GetInstance().OnImGuiRender();
     DrawContent();
 }

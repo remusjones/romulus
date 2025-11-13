@@ -7,10 +7,10 @@
 #include "Vulkan/Renderers/Renderer.h"
 
 /* Represents a position and a undefined renderer component */
-class Primative : public Entity {
+class Primitive : public Entity {
 public:
-    Primative() = default;
-    Primative(const char *aEntityName) { mName = aEntityName; }
+    Primitive() = default;
+    Primitive(const char *aEntityName) { mName = aEntityName; }
 
     void Cleanup() override;
 

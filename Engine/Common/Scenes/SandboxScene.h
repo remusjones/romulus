@@ -16,41 +16,42 @@
 
 class LineRenderer;
 class Cubemap;
-class Primative;
+class Primitive;
 class Texture;
 
-class SandboxScene final : public Scene {
+class SandboxScene final : public Scene
+{
 public:
-    void PreConstruct(const char *aSceneName) override;
+    void PreConstruct(const char* inSceneName) override;
 
     void Construct() override;
 
-    void Tick(float aDeltaTime) override;
+    void Tick(float deltaTime) override;
 
     void Cleanup() override;
 
     void OnImGuiRender() override;
 
 private:
-    PipelineConfigInfo mDefaultPipelineConfig;
+    PipelineConfigInfo defaultPipelineConfig;
 
-    VkSampler mBlockySampler;
+    VkSampler blockySampler;
 
     // TODO: Remove unmanaged pointer usage
-    MeshObject *mMonkey;
-    MeshObject *mTeapot;
-    MeshObject *mLight;
-    MeshObject *mFloor;
-    LineRenderer* mLineRenderer;
-    Primative *mCubemapMesh;
-    Primative *mLineRendererEntity;
+    MeshObject* monkey;
+    MeshObject* teapot;
+    MeshObject* light;
+    MeshObject* floor;
+    LineRenderer* lineRenderer;
+    Primitive* cubeMapMesh;
+    Primitive* lineRendererEntity;
 
-    Cubemap* mCubemap;
-    std::unique_ptr<SkyboxRenderSystem> mCubemapPipeline;
-    std::unique_ptr<UnlitRenderSystem> mUnlitPipeline;
-    std::unique_ptr<WireframeRenderSystem> mWireframeRenderSystem;
-    std::unique_ptr<PBRRenderSystem> mPBRPipeline;
-    std::unique_ptr<LineRenderSystem> mLineRenderPipeline;
+    Cubemap* cubemap;
+    std::unique_ptr<SkyboxRenderSystem> cubemapRenderPipeline;
+    std::unique_ptr<UnlitRenderSystem> unlitRenderPipeline;
+    std::unique_ptr<WireframeRenderSystem> wireframeRenderPipeline;
+    std::unique_ptr<PBRRenderSystem> pbrRenderPipeline;
+    std::unique_ptr<LineRenderSystem> lineRendererPipeline;
 
     MaterialFactory mMaterialUnlitFactory;
     MaterialFactory mMaterialPBRFactory;

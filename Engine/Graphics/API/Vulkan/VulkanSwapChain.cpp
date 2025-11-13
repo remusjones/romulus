@@ -6,7 +6,7 @@
 #include <iostream>
 #include "VulkanSwapChain.h"
 
-#include <SDL_events.h>
+#include <SDL3/SDL_events.h>
 
 #include <Logger.h>
 #include "VulkanSystemStructs.h"
@@ -17,10 +17,10 @@ void VulkanSwapChain::RecreateSwapChain()
 {
     int width = 0;
     int height = 0;
-    SDL_GetWindowSize(mApplication->mWindow, &width, &height);
+    SDL_GetWindowSize(mApplication->window, &width, &height);
     while (width == 0 || height == 0)
     {
-        SDL_GetWindowSize(mApplication->mWindow, &width, &height);
+        SDL_GetWindowSize(mApplication->window, &width, &height);
         //SDL_Event event;
         //SDL_WaitEvent(&event);
         Logger::Log(spdlog::level::info, "Window Minimized");
@@ -93,7 +93,7 @@ void VulkanSwapChain::CreateSwapChain()
         throw std::runtime_error("failed to create swap chain!");
     }
     mSwapChainImageFormat = surfaceFormat.format;
-    mSwapChainExtent = extent;
+    swapChainExtents = extent;
     mSwapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(mLogicalDevice, mSwapChain, &imageCount,
                             mSwapChainImages.data());
@@ -112,11 +112,11 @@ void VulkanSwapChain::CreateFrameBuffers()
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = mRenderPass;
+        framebufferInfo.renderPass = renderPass;
         framebufferInfo.attachmentCount = 2;
         framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = mSwapChainExtent.width;
-        framebufferInfo.height = mSwapChainExtent.height;
+        framebufferInfo.width = swapChainExtents.width;
+        framebufferInfo.height = swapChainExtents.height;
         framebufferInfo.layers = 1;
 
         if (vkCreateFramebuffer(mLogicalDevice, &framebufferInfo, nullptr,
@@ -161,8 +161,8 @@ void VulkanSwapChain::CreateDepthBufferView()
 {
     Logger::Log(spdlog::level::info, "Creating Depth Buffer View");
     const VkExtent3D depthImageExtent = {
-        mSwapChainExtent.width,
-        mSwapChainExtent.height,
+        swapChainExtents.width,
+        swapChainExtents.height,
         1
     };
 
@@ -176,7 +176,7 @@ void VulkanSwapChain::CreateDepthBufferView()
     dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
     dimg_allocinfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-    vmaCreateImage(gGraphics->mAllocator, &imageInfo, &dimg_allocinfo,
+    vmaCreateImage(gGraphics->allocator, &imageInfo, &dimg_allocinfo,
                    &mAllocatedDepthImage.mImage,
                    &mAllocatedDepthImage.mAllocation, nullptr);
 
@@ -199,7 +199,7 @@ void VulkanSwapChain::Cleanup()
         vkDestroyFramebuffer(mLogicalDevice, swapChainFrameBuffer, nullptr);
     }
 
-    vmaDestroyImage(gGraphics->mAllocator, mAllocatedDepthImage.mImage,
+    vmaDestroyImage(gGraphics->allocator, mAllocatedDepthImage.mImage,
                     mAllocatedDepthImage.mAllocation);
     vkDestroyImageView(mLogicalDevice, mDepthImageView, nullptr);
 
@@ -289,7 +289,7 @@ void VulkanSwapChain::CreateRenderPass()
 
 
     if (vkCreateRenderPass(mLogicalDevice, &renderPassInfo, nullptr,
-                           &mRenderPass) != VK_SUCCESS)
+                           &renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -304,7 +304,7 @@ void VulkanSwapChain::Initialize(VkDevice& aLogicalDevice,
     mLogicalDevice = aLogicalDevice;
     mPhysicalDevice = aPhysicalDevice;
     mSurface = aSurface;
-    mRenderPass = aRenderPass;
+    renderPass = aRenderPass;
     mApplication = aWindow;
 
     Logger::Log(spdlog::level::debug, "Constructing Swap Chain");

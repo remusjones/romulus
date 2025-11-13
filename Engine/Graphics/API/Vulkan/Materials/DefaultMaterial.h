@@ -18,11 +18,11 @@ public:
     };
 
 
-    DefaultMaterial(const char* aMaterialName);
+    DefaultMaterial(const char* inMaterialName);
     DefaultMaterial() = default;
 
 
-    void Create(MaterialBase *aBaseMaterial = nullptr) override;
+    void Create(MaterialBase *baseMaterial = nullptr) override;
 
     void OnImGuiRender() override;
 
@@ -32,7 +32,7 @@ public:
 
     std::unique_ptr<Texture> mTextures;
 
-    std::vector<const char *> mDebugColors{
+    std::vector<const char *> debugColors{
         "Default",
         "normal",
         "lightDirection",

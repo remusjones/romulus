@@ -6,9 +6,9 @@
 
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
-void MeshRenderer::LoadMesh(const char *aPath, const char *aMtlPath) {
+void MeshRenderer::LoadMesh(const char *aPath) {
     mMesh = new Mesh();
-    mMesh->LoadFromObject(aPath, aMtlPath);
+    mMesh->LoadFromObject(aPath);
 }
 
 void MeshRenderer::DestroyRenderer() {
@@ -17,16 +17,16 @@ void MeshRenderer::DestroyRenderer() {
 }
 
 void MeshRenderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
-    mGraphicsPipeline = &aBoundGraphicsPipeline;
-    mGraphicsPipeline->AddRenderer(this);
+    graphicsPipeline = &aBoundGraphicsPipeline;
+    graphicsPipeline->AddRenderer(this);
 }
 
 void MeshRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     mMesh->Bind(aCommandBuffer);
-    mPushConstants.model = mTransform->GetWorldMatrix();
-    vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
+    pushConstants.model = mTransform->GetWorldMatrix();
+    vkCmdPushConstants(aCommandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                       sizeof(PushConstants), &mPushConstants);
+                       sizeof(PushConstants), &pushConstants);
 
     vkCmdDrawIndexed(aCommandBuffer, mMesh->GetIndicesSize(), 1, 0, 0, 0);
     Renderer::Render(aCommandBuffer, aScene);

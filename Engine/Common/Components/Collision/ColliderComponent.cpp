@@ -40,8 +40,8 @@ void ColliderComponent::Tick(const float aDeltaTime) {
 
         // Test to see whether matrix was modified externally since last frame
         // TODO: investigate on how to only wake up nearby colliders
-        if (m_matrixLastFrame != m_attachedEntity->m_transform.GetWorldMatrix()) {
-            m_rigidBody->proceedToTransform(CollisionHelper::TransformToBulletTransform(m_attachedEntity->m_transform));
+        if (m_matrixLastFrame != m_attachedEntity->transform.GetWorldMatrix()) {
+            m_rigidBody->proceedToTransform(CollisionHelper::TransformToBulletTransform(m_attachedEntity->transform));
             m_rigidBody->clearForces();
             m_rigidBody->clearGravity();
 
@@ -51,18 +51,18 @@ void ColliderComponent::Tick(const float aDeltaTime) {
         glm::mat4 rigidBodyMatrix;
         m_rigidBody->getWorldTransform().getOpenGLMatrix(value_ptr(rigidBodyMatrix));
 
-        m_attachedEntity->m_transform.SetWorldPosition(CollisionHelper::BulletToGlm(
+        m_attachedEntity->transform.SetWorldPosition(CollisionHelper::BulletToGlm(
                 m_rigidBody->getWorldTransform().getOrigin()));
 
-        m_attachedEntity->m_transform.SetWorldRotation(CollisionHelper::BulletToGlm(
+        m_attachedEntity->transform.SetWorldRotation(CollisionHelper::BulletToGlm(
                 m_rigidBody->getWorldTransform().getRotation()));
 
-        m_matrixLastFrame = m_attachedEntity->m_transform.GetWorldMatrix();
+        m_matrixLastFrame = m_attachedEntity->transform.GetWorldMatrix();
     }
 }
 
 void ColliderComponent::Initialize() {
     Component::Initialize();
-    m_rigidBody->setWorldTransform(CollisionHelper::TransformToBulletTransform(m_attachedEntity->m_transform));
-    m_matrixLastFrame = m_attachedEntity->m_transform.GetWorldMatrix();
+    m_rigidBody->setWorldTransform(CollisionHelper::TransformToBulletTransform(m_attachedEntity->transform));
+    m_matrixLastFrame = m_attachedEntity->transform.GetWorldMatrix();
 }

@@ -12,9 +12,9 @@ AllocatedBuffer::AllocatedBuffer(const void *aData, const VkDeviceSize aBufferSi
     void *data;
     Create(aBufferSize, aUsageFlags);
     //copy vertex data
-    vmaMapMemory(gGraphics->mAllocator, mAllocation, &data);
+    vmaMapMemory(gGraphics->allocator, mAllocation, &data);
     memcpy(data, aData, aBufferSize);
-    vmaUnmapMemory(gGraphics->mAllocator, mAllocation);
+    vmaUnmapMemory(gGraphics->allocator, mAllocation);
 }
 
 AllocatedBuffer::~AllocatedBuffer() = default;
@@ -23,9 +23,9 @@ void AllocatedBuffer::AllocateBuffer(const void *aData, const VkDeviceSize aBuff
                                      const VkBufferUsageFlags aUsageFlags) {
     void *data;
     Create(aBufferSize, aUsageFlags);
-    vmaMapMemory(gGraphics->mAllocator, mAllocation, &data);
+    vmaMapMemory(gGraphics->allocator, mAllocation, &data);
     memcpy(data, aData, aBufferSize);
-    vmaUnmapMemory(gGraphics->mAllocator, mAllocation);
+    vmaUnmapMemory(gGraphics->allocator, mAllocation);
 }
 
 void AllocatedBuffer::MapMemory(const VmaAllocator aVmaAllocator, const void *aData, VmaAllocation aAllocation, VkDeviceSize aSize) {
@@ -53,7 +53,7 @@ void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags 
     vmaallocInfo.usage = VMA_MEMORY_USAGE_AUTO;
     vmaallocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
                          VMA_ALLOCATION_CREATE_MAPPED_BIT;
-    if (const VkResult result = vmaCreateBuffer(gGraphics->mAllocator, &bufferInfo, &vmaallocInfo,
+    if (const VkResult result = vmaCreateBuffer(gGraphics->allocator, &bufferInfo, &vmaallocInfo,
                                                 &mBuffer,
                                                 &mAllocation,nullptr); result != VK_SUCCESS) {
         Logger::Log(spdlog::level::critical, "Failed to create AllocatedBuffer");
@@ -62,7 +62,7 @@ void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags 
 
 
 void AllocatedBuffer::Destroy() {
-    vmaDestroyBuffer(gGraphics->mAllocator, mBuffer, mAllocation);
+    vmaDestroyBuffer(gGraphics->allocator, mBuffer, mAllocation);
     mBuffer = nullptr;
     mAllocation = nullptr;
 }

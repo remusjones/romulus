@@ -4,7 +4,7 @@
 
 #include "Primative.h"
 
-void Primative::Cleanup() {
+void Primitive::Cleanup() {
     Entity::Cleanup();
     if (mRenderer) {
         mRenderer->DestroyRenderer();

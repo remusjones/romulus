@@ -15,18 +15,18 @@ class Texture;
 class Buffer;
 
 struct MaterialProperties {
-    glm::vec4 mColor = glm::vec4(1, 1, 1, 1);
+    glm::vec4 color = glm::vec4(1, 1, 1, 1);
     // TODO: Input Images for thes properties?
-    float mSpecularStrength = 0.4;
-    float mShininess = 1;
-    float mDebugRenderState;
+    float specularStrength = 0.4;
+    float shininess = 1;
+    float debugRenderState;
     float _pad;
 };
 
 class Material : public MaterialBase {
 public:
-    Material(const char* aMaterialName = "Default") : mMaterialName(aMaterialName){}
-    virtual void Create(MaterialBase *aBaseMaterial);
+    Material(const char* aMaterialName = "Default") : materialName(aMaterialName){}
+    virtual void Create(MaterialBase *baseMaterial);
     virtual void CreateProperties(uint32_t aBinding, const MaterialProperties &aMaterialProperties);
     virtual void BindTexture(const std::vector<VkDescriptorImageInfo> &textureInfo, uint8_t aBinding) const;
 
@@ -41,9 +41,9 @@ public:
 
     void Destroy() override;
 
-    MaterialProperties mMaterialProperties;
+    MaterialProperties materialProperties;
     AllocatedBuffer mPropertiesBuffer;
-    const char * mMaterialName;
+    const char * materialName;
 
 protected:
     MaterialBase *mMaterialBase;

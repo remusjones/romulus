@@ -6,29 +6,29 @@
 #include <stdexcept>
 #include "VulkanGraphicsImpl.h"
 
-void Material::Create(MaterialBase *aBaseMaterial) {
+void Material::Create(MaterialBase* baseMaterial) {
 
-    mMaterialBase = aBaseMaterial;
+    mMaterialBase = baseMaterial;
     const VkDescriptorSetLayoutCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         .bindingCount = static_cast<uint32_t>(mBindings.size()),
         .pBindings = mBindings.data(),
     };
-    vkCreateDescriptorSetLayout(gGraphics->mLogicalDevice, &createInfo, nullptr, &mLayout);
+    vkCreateDescriptorSetLayout(gGraphics->logicalDevice, &createInfo, nullptr, &mLayout);
 
     VkDescriptorSetAllocateInfo alloc_info = {};
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    alloc_info.descriptorPool = gGraphics->mVulkanEngine.mDescriptorPool;
+    alloc_info.descriptorPool = gGraphics->vulkanEngine.descriptorPool;
     alloc_info.descriptorSetCount = 1;
     alloc_info.pSetLayouts = &mLayout;
-    VkResult err = vkAllocateDescriptorSets(gGraphics->mLogicalDevice, &alloc_info, &mDescriptorSet);
+    VkResult err = vkAllocateDescriptorSets(gGraphics->logicalDevice, &alloc_info, &mDescriptorSet);
     if (err == VK_ERROR_OUT_OF_POOL_MEMORY) {
         throw std::runtime_error("Out of pool memory");
     }
 }
 
 void Material::CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties) {
-    mMaterialProperties = aMaterialProperties;
+    materialProperties = aMaterialProperties;
     mPropertiesBuffer =AllocatedBuffer();
     mPropertiesBuffer.Create(sizeof(MaterialProperties), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
@@ -47,7 +47,7 @@ void Material::BindTexture(const std::vector<VkDescriptorImageInfo>& textureInfo
     writeDescriptorSet.descriptorCount = static_cast<uint32_t>(textureInfo.size()); // setting to the total number of textures in the array
     writeDescriptorSet.pImageInfo = textureInfo.data(); // pointer to the images' information array
 
-    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+    vkUpdateDescriptorSets(gGraphics->logicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }
 void Material::BindTexture(const VkDescriptorImageInfo& imageInfo, const uint8_t aBinding) const
 {
@@ -60,7 +60,7 @@ void Material::BindTexture(const VkDescriptorImageInfo& imageInfo, const uint8_t
     writeDescriptorSet.descriptorCount = 1;
     writeDescriptorSet.pImageInfo = &imageInfo;
 
-    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+    vkUpdateDescriptorSets(gGraphics->logicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }
 void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,
                           const VkDescriptorType aType, VkShaderStageFlagBits aShaderStage) {
@@ -92,12 +92,12 @@ void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding
     writeDescription.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writeDescription.pBufferInfo = descriptors;
 
-    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescription, 0, nullptr);
+    vkUpdateDescriptorSets(gGraphics->logicalDevice, 1, &writeDescription, 0, nullptr);
 }
 
 void Material::Destroy() {
-    vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mLayout, nullptr);
-    vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mVulkanEngine.mDescriptorPool, 1, &mDescriptorSet);
+    vkDestroyDescriptorSetLayout(gGraphics->logicalDevice, mLayout, nullptr);
+    vkFreeDescriptorSets(gGraphics->logicalDevice, gGraphics->vulkanEngine.descriptorPool, 1, &mDescriptorSet);
 
     if (mPropertiesBuffer.IsAllocated())
         mPropertiesBuffer.Destroy();

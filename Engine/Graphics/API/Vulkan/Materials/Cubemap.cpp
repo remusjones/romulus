@@ -48,7 +48,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial) {
     samplerCreateInfo.anisotropyEnable = VK_TRUE;
     samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
 
-    const VkResult samplerCreateResult = vkCreateSampler(gGraphics->mLogicalDevice, &samplerCreateInfo, nullptr, &mSampler);
+    const VkResult samplerCreateResult = vkCreateSampler(gGraphics->logicalDevice, &samplerCreateInfo, nullptr, &mSampler);
     if (samplerCreateResult != VK_SUCCESS) {
         Logger::Log(spdlog::level::critical, "failed to create Sampler!");
     }
@@ -65,7 +65,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial) {
     view.subresourceRange.levelCount = mipLevel;
     view.image = mAllocatedImage.mImage;
 
-    const VkResult imageCreateResult = vkCreateImageView(gGraphics->mLogicalDevice, &view, nullptr, &mImageView);
+    const VkResult imageCreateResult = vkCreateImageView(gGraphics->logicalDevice, &view, nullptr, &mImageView);
     if (imageCreateResult != VK_SUCCESS) {
         Logger::Log(spdlog::level::critical, "failed to create image view!");
     }
@@ -81,7 +81,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial) {
     Material::Create(this);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 0, 0);
+        SetBuffers(gGraphics->vulkanEngine.GetFrame(i).sceneBuffer, 0, 0);
 
     std::vector<VkDescriptorImageInfo> descriptorInfos;
     descriptorInfos.push_back(mDescriptorImageInfo);
@@ -90,8 +90,8 @@ void Cubemap::Create(MaterialBase *aBaseMaterial) {
 }
 
 void Cubemap::Destroy() {
-    vkDestroyImageView(gGraphics->mLogicalDevice, mImageView, nullptr);
-    vkDestroySampler(gGraphics->mLogicalDevice, mSampler, nullptr);
-    vmaDestroyImage(gGraphics->mAllocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);
+    vkDestroyImageView(gGraphics->logicalDevice, mImageView, nullptr);
+    vkDestroySampler(gGraphics->logicalDevice, mSampler, nullptr);
+    vmaDestroyImage(gGraphics->allocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);
     Material::Destroy();
 }

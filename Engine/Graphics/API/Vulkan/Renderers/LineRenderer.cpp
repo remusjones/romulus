@@ -105,15 +105,15 @@ void LineRenderer::DestroyRenderer() {
 }
 
 void LineRenderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
-    mGraphicsPipeline = &aBoundGraphicsPipeline;
-    mGraphicsPipeline->AddRenderer(this);
+    graphicsPipeline = &aBoundGraphicsPipeline;
+    graphicsPipeline->AddRenderer(this);
 }
 
 void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     if (mAllocatedPositions) {
 
         AllocatedBuffer::MapMemory(
-            gGraphics->mAllocator,
+            gGraphics->allocator,
             mLinePositions.data(),
             mAllocatedPositions->GetAllocation(),
             sizeof(Vertex) * mLinePositions.size());
@@ -122,10 +122,10 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
         const VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
 
-        mPushConstants.model = mTransform->GetWorldMatrix();
-        vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
+        pushConstants.model = mTransform->GetWorldMatrix();
+        vkCmdPushConstants(aCommandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(PushConstants), &mPushConstants);
+                           sizeof(PushConstants), &pushConstants);
 
         switch (mLineRenderMode) {
             case LINES_CONTINUOUS:
@@ -144,7 +144,7 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     if (!mTemporaryLines.empty()) {
 
         AllocatedBuffer::MapMemory(
-            gGraphics->mAllocator,
+            gGraphics->allocator,
             mTemporaryLines.data(),
             mTemporaryAllocatedPositions->GetAllocation(),
             sizeof(Vertex) * mLinePositions.size());
@@ -153,9 +153,9 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
         const VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
 
-        vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
+        vkCmdPushConstants(aCommandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(PushConstants), &mPushConstants);
+                           sizeof(PushConstants), &pushConstants);
 
 
         for (int i = 0; i < mTemporaryLines.size() - 1; i += 2) {

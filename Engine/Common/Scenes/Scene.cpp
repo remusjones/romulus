@@ -44,26 +44,26 @@ void Scene::PreConstruct(const char *aSceneName) {
 
     m_physicsSystem->Create();
     m_SceneInteractionPhysicsSystem->Create();
-    gInputManager->RegisterMouseInput([&](const SDL_MouseMotionEvent &motion) { MouseMovement(motion); },
+    gInputSystem->RegisterMouseInput([&](const SDL_MouseMotionEvent &motion) { MouseMovement(motion); },
                                       "Scene Mouse Movement");
-    gInputManager->RegisterMouseInput([&](const SDL_MouseButtonEvent &input) { MouseInput(input); },
+    gInputSystem->RegisterMouseInput([&](const SDL_MouseButtonEvent &input) { MouseInput(input); },
                                       "Scene Mouse Press");
 
-    gInputManager->RegisterKeyCodeInput(SDLK_w,
-                                        [this](KeyboardEvent) {
-                                            if (!m_ActiveSceneCamera->IsCameraConsumingInput())
+    gInputSystem->RegisterKeyCodeInput(SDLK_W,
+                                        [this](SDL_KeyboardEvent) {
+                                            if (!activeCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::TRANSLATE);
                                         }, "Scene Gizmo Translate");
 
-    gInputManager->RegisterKeyCodeInput(SDLK_e,
-                                        [this](KeyboardEvent) {
-                                            if (!m_ActiveSceneCamera->IsCameraConsumingInput())
+    gInputSystem->RegisterKeyCodeInput(SDLK_E,
+                                        [this](SDL_KeyboardEvent) {
+                                            if (!activeCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::ROTATE);
                                         }, "Scene Gizmo Rotate");
 
-    gInputManager->RegisterKeyCodeInput(SDLK_r,
-                                        [this](KeyboardEvent) {
-                                            if (!m_ActiveSceneCamera->IsCameraConsumingInput())
+    gInputSystem->RegisterKeyCodeInput(SDLK_R,
+                                        [this](SDL_KeyboardEvent) {
+                                            if (!activeCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::SCALE);
                                         }, "Scene Gizmo Scale");
     PROFILE_END();
@@ -76,11 +76,11 @@ void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
 }
 
 void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
-    if (m_ActiveSceneCamera->IsCameraConsumingInput())
+    if (activeCamera->IsCameraConsumingInput())
         return;
 
     if (aMouseInput.button == SDL_BUTTON_LEFT
-        && aMouseInput.state == SDL_PRESSED
+        && aMouseInput.type == SDL_EVENT_MOUSE_BUTTON_DOWN
         && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
         && !ImGuizmo::IsOver()) {
         const auto pickedRigidBody = PickRigidBody(m_mouseX, m_mouseY);
@@ -98,7 +98,7 @@ void Scene::Construct() {
     for (const auto& obj: mObjects) {
         obj->Construct();
     }
-    assert(m_ActiveSceneCamera != nullptr);
+    assert(activeCamera != nullptr);
 }
 
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
@@ -118,7 +118,7 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw) {
 
     ImGuiTreeNodeFlags nodeFlag = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-    if (entityToDraw.m_transform.GetChildCount() == 0)
+    if (entityToDraw.transform.GetChildCount() == 0)
         nodeFlag = ImGuiTreeNodeFlags_Leaf;
 
     if (m_PickedEntity == &entityToDraw) {
@@ -130,7 +130,7 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw) {
     }
 
     if (ImGui::TreeNodeEx(nodeLabel, nodeFlag)) {
-        for (auto childTransform: entityToDraw.m_transform.GetChildren()) {
+        for (auto childTransform: entityToDraw.transform.GetChildren()) {
             Entity& childEntity = *mTransformEntityRelationships[childTransform];
             DrawObjectsRecursive(childEntity);
         }
@@ -147,7 +147,7 @@ bool Scene::IsParentOfPickedEntity(const Entity& obj){
         return false;
     }
     for (const Entity *parentEntity = m_PickedEntity; parentEntity != nullptr;
-         parentEntity = mTransformEntityRelationships[parentEntity->m_transform.GetParent()]) {
+         parentEntity = mTransformEntityRelationships[parentEntity->transform.GetParent()]) {
         if (parentEntity == &obj) {
             return true;
         }
@@ -166,7 +166,7 @@ void Scene::OnImGuiRender() {
     ImGui::SeparatorText("Controls");
     ImGui::BeginChild(GetUniqueLabel("Controls"),
                       ImVec2(0.0f, 0.0f),
-                      ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY); {
+                      ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY); {
         if (ImGui::RadioButton(GetUniqueLabel("Translate"), currentGizmoOperation == ImGuizmo::TRANSLATE))
             currentGizmoOperation = ImGuizmo::TRANSLATE;
 
@@ -191,27 +191,27 @@ void Scene::OnImGuiRender() {
     if (ImGui::CollapsingHeader("Scene Information")) {
         ImGui::Indent();
         if (ImGui::CollapsingHeader("Lighting")) {
-            ImGui::ColorEdit3(GetUniqueLabel("Point Light Color"), &mSceneData.color[0]);
-            ImGui::DragFloat(GetUniqueLabel("Point Light Intensity"), &mSceneData.lightIntensity, 0.0125f);
-            ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
+            ImGui::ColorEdit3(GetUniqueLabel("Point Light Color"), &sceneData.color[0]);
+            ImGui::DragFloat(GetUniqueLabel("Point Light Intensity"), &sceneData.lightIntensity, 0.0125f);
+            ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &sceneData.ambientStrength, 0.1f);
         }
         if (ImGui::CollapsingHeader("Camera")) {
-            m_ActiveSceneCamera->OnImGuiRender();
+            activeCamera->OnImGuiRender();
         }
         ImGui::Unindent();
     }
 
     if (m_PickedEntity != nullptr) {
         // Draw Gizmos
-        glm::mat4 matrix = m_PickedEntity->m_transform.GetWorldMatrix();
+        glm::mat4 matrix = m_PickedEntity->transform.GetWorldMatrix();
 
         ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
         ImGuizmo::AllowAxisFlip(false);
-        if (ImGuizmo::Manipulate(glm::value_ptr(m_ActiveSceneCamera->GetViewMatrix()),
-                                 glm::value_ptr(m_ActiveSceneCamera->GetPerspectiveMatrix()),
+        if (ImGuizmo::Manipulate(glm::value_ptr(activeCamera->GetViewMatrix()),
+                                 glm::value_ptr(activeCamera->GetPerspectiveMatrix()),
                                  currentGizmoOperation, currentGizmoMode,
                                  glm::value_ptr(matrix), nullptr)) {
-            m_PickedEntity->m_transform.SetMatrix(matrix);
+            m_PickedEntity->transform.SetMatrix(matrix);
         }
     }
 
@@ -219,7 +219,7 @@ void Scene::OnImGuiRender() {
         for (const auto& obj: mObjects) {
             ImGui::BeginGroup();
             ImGui::Indent(); {
-                if (obj->m_transform.GetParent() == nullptr) {
+                if (obj->transform.GetParent() == nullptr) {
                     DrawObjectsRecursive(*obj);
                 }
             }
@@ -232,7 +232,7 @@ void Scene::OnImGuiRender() {
     ImGui::SeparatorText("Statistics");
     ImGui::BeginChild(GetUniqueLabel("Statistics"),
                       ImVec2(0.0f, 0.0f),
-                      ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY); {
+                      ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY); {
         ImGui::Text("FPS: ");
         ImGui::SameLine();
         ImGui::Text(std::to_string(static_cast<int32_t>(gGraphics->GetFps())).c_str());
@@ -251,9 +251,9 @@ void Scene::OnImGuiRender() {
         ImGui::Text(std::to_string(static_cast<int32_t>(mRenderSystems.size())).c_str());
         if (ImGui::CollapsingHeader("Graphic Systems Info")) {
             if (ImGui::Button(GetUniqueLabel("Rebuild All"))) {
-                gGraphics->mVulkanEngine.SubmitEndOfFrameTask([this] {
+                gGraphics->vulkanEngine.SubmitEndOfFrameTask([this] {
                     for (const auto& renderSystem: mRenderSystems) {
-                        vkDeviceWaitIdle(gGraphics->mLogicalDevice);
+                        vkDeviceWaitIdle(gGraphics->logicalDevice);
                         renderSystem->m_graphicsPipeline->Destroy();
                         renderSystem->Create(renderSystem->GetBoundDescriptors());
                         renderSystem->m_graphicsPipeline->Create();
@@ -262,13 +262,13 @@ void Scene::OnImGuiRender() {
             }
             ImGui::Indent();
             for (const auto system: mRenderSystems) {
-                if (ImGui::CollapsingHeader(system->m_graphicsPipeline->mPipelineName)) {
+                if (ImGui::CollapsingHeader(system->m_graphicsPipeline->pipelineName)) {
                     ImGui::Indent();
                     ImGui::Text("Material Count: ");
                     ImGui::SameLine();
-                    ImGui::Text(std::to_string(system->m_graphicsPipeline->mRenderers.size()).c_str());
-                    for (const auto renderer: system->m_graphicsPipeline->mRenderers) {
-                        ImGui::Text(renderer->mMaterial->mMaterialName);
+                    ImGui::Text(std::to_string(system->m_graphicsPipeline->renderers.size()).c_str());
+                    for (const auto renderer: system->m_graphicsPipeline->renderers) {
+                        ImGui::Text(renderer->material->materialName);
                     }
                     ImGui::Unindent();
                 }
@@ -297,7 +297,7 @@ void Scene::Cleanup() {
         obj->Cleanup();
     }
 
-    delete m_ActiveSceneCamera;
+    delete activeCamera;
     for (const auto system: mRenderSystems) {
         system->m_graphicsPipeline->Destroy();
         delete system->m_graphicsPipeline.get();
@@ -323,12 +323,12 @@ MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Materi
 
     auto object = std::make_unique<MeshObject>();
     object->CreateObject(aMaterial, aName);
-    object->mMeshRenderer.BindRenderer(aPipeline);
-    object->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
+    object->meshRenderer.BindRenderer(aPipeline);
+    object->meshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
 
-    object->m_transform.SetLocalPosition(aPos);
-    object->m_transform.SetLocalRotation(aRot);
-    object->m_transform.SetLocalScale(aScale);
+    object->transform.SetLocalPosition(aPos);
+    object->transform.SetLocalRotation(aRot);
+    object->transform.SetLocalScale(aScale);
 
     //auto *sceneCollider = new ColliderComponent();
     //sceneCollider->SetName("SceneCollider");
@@ -346,7 +346,7 @@ MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Materi
 }
 
 void Scene::AddEntity(std::unique_ptr<Entity> aEntity) {
-    mTransformEntityRelationships[&aEntity->m_transform] = aEntity.get();
+    mTransformEntityRelationships[&aEntity->transform] = aEntity.get();
     mObjects.push_back(std::move(aEntity));
 }
 
@@ -373,9 +373,9 @@ void Scene::AttachBoxCollider(Entity &aEntity, const glm::vec3 aHalfExtents, con
 }
 
 const btRigidBody *Scene::PickRigidBody(const int x, const int y) const {
-    const Ray ray = m_ActiveSceneCamera->GetRayTo(x, y);
+    const Ray ray = activeCamera->GetRayTo(x, y);
     const btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
-    const btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * m_ActiveSceneCamera->mZFar));
+    const btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * activeCamera->zFar));
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
 
@@ -412,6 +412,6 @@ Entity* Scene::MakeEntity() {
 }
 
 void Scene::AddEntity(Entity* aEntity) {
-    mTransformEntityRelationships[&aEntity->m_transform] = aEntity;
+    mTransformEntityRelationships[&aEntity->transform] = aEntity;
     mObjects.push_back(std::unique_ptr<Entity>(aEntity));
 }

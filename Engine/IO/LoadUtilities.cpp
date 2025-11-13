@@ -64,9 +64,9 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char 
     dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     //allocate and create the image
-    vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
+    vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
+    aEngine->vulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.baseMipLevel = 0;
@@ -114,7 +114,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char 
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
                              0, nullptr, 1, &imageBarrier_toReadable);
     });
-    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+    vmaDestroyBuffer(aEngine->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
     aResult = newImage;
     return true;
 }
@@ -151,11 +151,11 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
 
     std::string bufferName;
     bufferName.append(aPaths[0]);
-    vmaSetAllocationName(gGraphics->mAllocator, stagingBuffer.GetAllocation(), (bufferName + " staging buffer").c_str());
+    vmaSetAllocationName(gGraphics->allocator, stagingBuffer.GetAllocation(), (bufferName + " staging buffer").c_str());
 
     // Map the memory
     void *data;
-    vmaMapMemory(gGraphics->mAllocator, stagingBuffer.GetAllocation(), &data);
+    vmaMapMemory(gGraphics->allocator, stagingBuffer.GetAllocation(), &data);
     uint64_t memAddress = reinterpret_cast<uint64_t>(data);
 
     for (int i = 0; i < imageCount; i++) {
@@ -212,7 +212,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
         }
     }
 
-    vmaUnmapMemory(gGraphics->mAllocator, stagingBuffer.GetAllocation());
+    vmaUnmapMemory(gGraphics->allocator, stagingBuffer.GetAllocation());
 
 
     VkExtent3D imageExtent;
@@ -240,24 +240,24 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
     VmaAllocationCreateInfo dimg_allocinfo = {};
     dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    const VkResult result = vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
+    const VkResult result = vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
                                            &newImage.mAllocation, nullptr);
 
 
-    vmaSetAllocationName(gGraphics->mAllocator, newImage.mAllocation,
+    vmaSetAllocationName(gGraphics->allocator, newImage.mAllocation,
                          (bufferName + "  VkImage").c_str());
 
     if (result != VK_SUCCESS) {
         Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
-        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+        vmaDestroyBuffer(gGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
         return false;
     }
     if (!newImage.mImage || !newImage.mAllocation) {
         Logger::Log(spdlog::level::err, "Image or allocation from vmaCreateImage is null!");
-        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+        vmaDestroyBuffer(gGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
         return false;
     }
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
+    aEngine->vulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.baseMipLevel = 0;
@@ -306,7 +306,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
                              0, nullptr, 1, &imageBarrier_toReadable);
     });
     // Cleanup staging buffer
-    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+    vmaDestroyBuffer(aEngine->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
     aResult = newImage;
     return true;
 }
@@ -348,9 +348,9 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
     dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     //allocate and create the image
-    vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
+    vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
+    aEngine->vulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.baseMipLevel = 0;
@@ -404,9 +404,8 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
 }
 
 
-bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
-                                     std::vector<Vertex> &aResultVertices, std::vector<int32_t> &aResultIndices,
-                                     const char *aMtlDirectory = "") {
+bool LoadUtilities::LoadMeshFromDisk(const char* filePath, std::vector<Vertex>& resultVertices, std::vector<int32_t>& resultIndices)
+{
     //attrib will contain the vertex arrays of the file
     tinyobj::attrib_t attrib;
     //shapes contains the info for each separate object in the file
@@ -418,34 +417,39 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
     std::string warn;
     std::string err;
 
-    if (!FileManagement::FileExists(aFilePath))
-        Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + aFilePath).c_str());
+    if (!FileManagement::FileExists(filePath))
+    {
+        Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + filePath).c_str());
+    }
 
-    //load the OBJ file
-    LoadObj(&attrib, &shapes, &materials, &warn, &err, aFilePath, aMtlDirectory);
+    //l oad the OBJ file
+    LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath, nullptr);
 
-    if (!warn.empty()) {
+    if (!warn.empty())
+    {
         Logger::Log(spdlog::level::warn, warn.c_str());
     }
-    //if we have any error, print it to the console, and break the mesh loading.
-    //This happens if the file can't be found or is malformed
-    if (!err.empty()) {
+
+    if (!err.empty())
+    {
         Logger::Log(spdlog::level::err, err.c_str());
         return false;
     }
 
     std::map<tinyobj::index_t, int, IndexComparator> uniqueVertices = {};
 
-    for (size_t s = 0; s < shapes.size(); s++) {
-        size_t index_offset = 0;
+    for (size_t s = 0; s < shapes.size(); s++)
+    {
+        size_t indexOffset = 0;
         for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
             int fv = 3;
 
             for (size_t v = 0; v < fv; v++) {
-                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+                tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
 
                 // Check if vertex with these attributes was already processed
-                if (!uniqueVertices.contains(idx)) {
+                if (!uniqueVertices.contains(idx))
+                {
                     // If not found
                     // New unique Vertex
                     Vertex newVertex;
@@ -466,14 +470,14 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
                     newVertex.mUV.y = attrib.texcoords[2 * idx.texcoord_index + 1];
 
                     // Save it to the vector and store the index in our map
-                    aResultVertices.push_back(newVertex);
-                    uniqueVertices[idx] = static_cast<int>(aResultVertices.size()) - 1;
+                    resultVertices.push_back(newVertex);
+                    uniqueVertices[idx] = static_cast<int>(resultVertices.size()) - 1;
                 }
 
                 // The vertex already exists in our vector, simply use the index
-                aResultIndices.push_back(uniqueVertices[idx]);
+                resultIndices.push_back(uniqueVertices[idx]);
             }
-            index_offset += fv;
+            indexOffset += fv;
         }
     }
 

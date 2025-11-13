@@ -6,7 +6,7 @@
 
 class Cubemap : public Material {
 public:
-    Cubemap(const char* aMaterialName) {mMaterialName = aMaterialName;}
+    Cubemap(const char* aMaterialName) {materialName = aMaterialName;}
     void Create(MaterialBase *aBaseMaterial) override;
     void Destroy() override;
 

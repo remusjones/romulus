@@ -53,7 +53,7 @@ public:
 
 private:
 
-    bool mSerializeTrace = true;
+    bool mSerializeTrace = false;
     bool mRunning = true;
     std::stack<ManagedProfileTimer> mTimerStack;
     std::unordered_map<std::string, std::deque<TimerResult>> mTimerHistory;

@@ -1,14 +1,15 @@
+cmake_minimum_required(VERSION 4.0)
+
 # Find Vulkan
 find_package(Vulkan REQUIRED)
-include_directories("$ENV{VULKAN_SDK}/Include")
 
 # https://github.com/gabime/spdlog.git
 message("Adding spdlog")
 add_subdirectory(spdlog)
-include_directories(spdlog/include)
 # ------------------------------------
 
 # https://github.com/g-truc/glm.git
+add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 message("Adding glm")
 add_subdirectory(glm glm)
 # ------------------------------------
@@ -27,12 +28,14 @@ add_subdirectory(VulkanMemoryAllocator VulkanMemoryAllocator)
 # https://github.com/tinyobjloader/tinyobjloader.git
 message("Adding tinyobjloader")
 add_subdirectory(tinyobjloader tinyobjloader)
+#target_include_directories(tinyobjloader INTERFACE tinyobjloader)
+
 # ------------------------------------
 
 # https://github.com/ocornut/imgui.git
 message("Adding ImGui")
 set(IMGUI_PATH imgui)
-add_library(imgui STATIC ${IMGUI_PATH})
+add_library(imgui STATIC)
 set(IMGUI_SOURCES
         "${IMGUI_PATH}/imgui.h"
         "${IMGUI_PATH}/imgui.cpp"
@@ -51,8 +54,8 @@ target_link_libraries(imgui SDL3::SDL3-static)
 # https://github.com/CedricGuillemet/ImGuizmo.git
 message("Adding ImGuizmo")
 set(IMGUIZMO_PATH imguizmo)
-add_library(imguizmo STATIC ${IMGUIZMO_PATH})
-target_sources(imguizmo PUBLIC
+add_library(imguizmo STATIC)
+target_sources(imguizmo PRIVATE
         "${IMGUIZMO_PATH}/GraphEditor.h"
         "${IMGUIZMO_PATH}/ImCurveEdit.h"
         "${IMGUIZMO_PATH}/ImGradient.h"
@@ -66,7 +69,7 @@ target_sources(imguizmo PUBLIC
         "${IMGUIZMO_PATH}/ImSequencer.cpp"
 )
 target_include_directories(imguizmo PUBLIC ${IMGUIZMO_PATH})
-target_link_libraries(imguizmo imgui)
+target_link_libraries(imguizmo PRIVATE imgui)
 # ------------------------------------
 
 # https://github.com/nothings/stb.git
@@ -81,6 +84,8 @@ set(BUILD_UNIT_TESTS OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/bullet3 EXCLUDE_FROM_ALL)
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/bullet3/src")
 list(APPEND BULLET_LIBRARIES BulletSoftBody BulletDynamics BulletCollision Bullet3Common LinearMath)
+
+cmake_policy(SET CMP0079 NEW)
 
 # ------------------------------------
 # Link libraries

@@ -34,13 +34,13 @@ public:
     VulkanGraphicsImpl *mApplication{};
     VkSwapchainKHR mSwapChain{};
     VkFormat mSwapChainImageFormat;
-    VkExtent2D mSwapChainExtent{};
+    VkExtent2D swapChainExtents{};
     std::vector<VkImage> mSwapChainImages;
     std::vector<VkImageView> mSwapChainImageViews;
     VkDevice mLogicalDevice;
     VkSurfaceKHR mSurface;
     std::vector<VkFramebuffer> mSwapChainFrameBuffers;
-    VkRenderPass mRenderPass;
+    VkRenderPass renderPass;
 
     VkImageView mDepthImageView;
     AllocatedImage mAllocatedDepthImage;

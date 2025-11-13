@@ -7,16 +7,16 @@
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Material.h"
 
-void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
+void Renderer::Render(VkCommandBuffer commandBuffer, const Scene &scene) {
     void *data;
-    if (mMaterial->mPropertiesBuffer.IsAllocated()) {
+    if (material->mPropertiesBuffer.IsAllocated()) {
         AllocatedBuffer::MapMemory(
-            gGraphics->mAllocator, &mMaterial->mMaterialProperties, mMaterial->mPropertiesBuffer.GetAllocation(),
+            gGraphics->allocator, &material->materialProperties, material->mPropertiesBuffer.GetAllocation(),
             sizeof(MaterialProperties));
     }
 }
 
-void Renderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
+void Renderer::BindRenderer(GraphicsPipeline &boundGraphicsPipeline) {
 }
 
 void Renderer::DestroyRenderer() {

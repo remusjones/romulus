@@ -16,20 +16,20 @@ void MeshObject::Tick(float aDeltaTime) {
 }
 
 void MeshObject::Cleanup() {
-    mMeshRenderer.DestroyRenderer();
+    meshRenderer.DestroyRenderer();
     Entity::Cleanup();
 }
 
 void MeshObject::CreateObject(
-    Material &aMaterial,
-    const char *aName) {
+    Material& aMaterial,
+    const char* aName) {
     mName = aName;
     Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
-    mMeshRenderer.mMaterial = &aMaterial;
-    mMeshRenderer.mTransform = &m_transform;
+    meshRenderer.material = &aMaterial;
+    meshRenderer.mTransform = &transform;
 }
 
 void MeshObject::OnImGuiRender() {
     Entity::OnImGuiRender();
-    mMeshRenderer.mMaterial->OnImGuiRender();
+    meshRenderer.material->OnImGuiRender();
 }

@@ -5,11 +5,11 @@
 #pragma once
 #include <memory>
 #include <vector>
-#include <SDL_video.h>
+#include <SDL3/SDL_video.h>
 
 #include "DequeBuffer.h"
 #include "IApplication.h"
-#include "InputManager.h"
+#include "InputSystem.h"
 #include "Vulkan/VulkanEngine.h"
 #include "Vulkan/VulkanSystemStructs.h"
 
@@ -22,142 +22,113 @@ class MeshObject;
 // TODO: should probably go within the Engine class
 class VulkanGraphicsImpl : public IApplication {
 public:
+    VulkanGraphicsImpl(const char* inWindowTitle, int inWindowWidth, int inWindowHeight);
+    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
+
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device) const;
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
+    QueueFamilyIndices GetQueueFamilyIndices() const { return familyIndices; }
+
     void Run() override;
-
-    VulkanGraphicsImpl(const char *aWindowName, int aWindowWidth, int aWindowHeight);
-
-    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &aAvailableFormats);
-
-    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &aAvailablePresentModes);
-
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &aCapabilities) const;
-
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice aDevice) const;
-
-    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice) const;
-
-    QueueFamilyIndices GetQueueFamilyIndices() const { return mFamilyIndices; }
-    float DeltaTimeUnscaled() const { return mDeltaTime; }
-    float GetFps() const { return mFps; }
-
-    DequeBuffer &GetFpsHistory() {return mFPSCircularBuffer;}
+    float DeltaTimeUnscaled() const { return deltaTime; }
+    float GetFps() const { return fps; }
+    DequeBuffer &GetFpsHistory() {return fpsCircularBuffer;}
 
 private:
-    // Init Vulkan & Supporting Vulkan
     void InitializeVulkan();
-
     void InitializeImgui();
 
     void ShutdownImgui() const;
-
-    // void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
     void ShutdownVulkan() const;
 
-    // Create Window
     void InitializeWindow();
-
     void ShutdownWindow() const;
-
-    // Main Engine Loop
     void Update();
-
-    // Deconstructor
     void Cleanup();
 
-    // Create Instance of Vulkan
     void CreateInstance();
-
     void DestroyInstance() const;
 
-    // Setup Debug Messenger for debug conditions
     void CreateDebugMessenger();
-
     void DestroyDebugMessenger();
 
-    // specify queues to be created & features for engine
     void CreateLogicalDevice();
-
     void DestroyLogicalDevice() const;
 
-    // Create WSI > Vulkan bridge
     void CreateSurface();
-
     void DestroySurface() const;
 
     void CreateGraphicsPipeline();
-
     void DestroyGraphicsPipeline();
 
     void CreateScenes();
-
     void DestroyScenes() const;
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT aMessageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT aMessageType,
-        const VkDebugUtilsMessengerCallbackDataEXT *aCallbackData,
-        void *aUserData);
-
-    std::vector<const char *> GetRequiredExtensions() const;
-
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *aCreateInfo,
-                                          const VkAllocationCallbacks *aAllocator,
-                                          VkDebugUtilsMessengerEXT *aDebugMessenger);
-
-    void DestroyDebugUtilsMessengerEXT(VkInstance aInstance, VkDebugUtilsMessengerEXT aDebugMessenger,
-                                       const VkAllocationCallbacks *aAllocator);
-
-    void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &aCreateInfo);
-
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT *callbackData,
+        void* userData);
+    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* createInfo,
+                                          const VkAllocationCallbacks* allocator,
+                                          VkDebugUtilsMessengerEXT* debugMessenger);
+    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                       const VkAllocationCallbacks* allocator);
+    void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     bool CheckValidationLayerSupport() const;
+    std::vector<const char*> GetRequiredExtensions() const;
 
 public:
-    VulkanEngine mVulkanEngine;
-    std::unique_ptr<VulkanSwapChain> mSwapChain;
-    VkInstance mVulkanInstance;
-    SDL_Window *mWindow{nullptr}; // TODO: Move to interface
-    VkDevice mLogicalDevice{};
-    VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-    VkSurfaceKHR mSurface;
-    VmaAllocator mAllocator;
-    InputManager mInputManager;
-    std::unique_ptr<Scene> mActiveScene;
+    VulkanEngine vulkanEngine;
+    std::unique_ptr<VulkanSwapChain> swapChain;
+    VkInstance vulcanInstance;
+    SDL_Window *window{nullptr}; // TODO: Move to interface
+    VkDevice logicalDevice{};
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkSurfaceKHR surface;
+    VmaAllocator allocator;
+    InputSystem inputManager;
+    std::unique_ptr<Scene> activeScene;
 
 private:
-    std::unique_ptr<Editor> mEditor;
-    QueueFamilyIndices mFamilyIndices;
-    // TODO: Move these to IApplication
-    int mWindowWidth;
-    int mWindowHeight;
-    const char *mWindowName;
-    float mDeltaTime;
-    float mFps;
-    VkDescriptorPool mImguiPool;
+    std::unique_ptr<Editor> romulusEditor;
+    QueueFamilyIndices familyIndices;
 
-    DequeBuffer mFPSCircularBuffer;
-    // Vulkan Impls
-    std::vector<VkExtensionProperties> mExtensions;
-    VkQueue mGraphicsQueue;
-    VkQueue mPresentQueue;
-    VkRenderPass mRenderPass{};
-    const std::vector<const char *> m_deviceExtensions = {
+    // TODO: Move these to IApplication
+    int windowWidth;
+    int windowHeight;
+    const char* windowTitle;
+
+
+    float deltaTime;
+    float fps;
+
+    VkDescriptorPool imguiDescriptionPool;
+    DequeBuffer fpsCircularBuffer;
+    std::vector<VkExtensionProperties> Extensions;
+    VkQueue graphicsQueue;
+    VkQueue PresentQueue;
+    VkRenderPass renderPass{};
+
+    void InitializePhysicalDevice();
+    bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const;
+    bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice) const;
+
+    VkPhysicalDeviceFeatures deviceFeatures{};
+
+    const std::vector<const char *> deviceExtensions =
+    {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    void InitializePhysicalDevice();
-
-    bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const;
-
-    bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice) const;
-
-
-    VkPhysicalDeviceFeatures mDeviceFeatures{};
-
-    const std::vector<const char *> mValidationLayers = {
+    const std::vector<const char*> validationLayers =
+    {
         "VK_LAYER_KHRONOS_validation"
     };
 
-    VkDebugUtilsMessengerEXT mDebugMessenger;
+    VkDebugUtilsMessengerEXT debugMessenger;
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;

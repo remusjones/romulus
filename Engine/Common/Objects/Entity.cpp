@@ -40,5 +40,5 @@ void Entity::RemoveComponent(Component *aComponent) {
 }
 
 void Entity::OnImGuiRender() {
-    m_transform.OnImGuiRender();
+    transform.OnImGuiRender();
 }

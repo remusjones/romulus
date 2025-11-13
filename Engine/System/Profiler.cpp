@@ -50,16 +50,20 @@ void Profiler::EndProfile() {
     mTimerStack.pop();
 }
 
-void Profiler::EnsureProfilerLimits(const std::string& aName) {
+void Profiler::EnsureProfilerLimits(const std::string& aName)
+{
     auto& history = mTimerHistory[aName];
-    while (history.size() > mMaxDisplayedHistorySize) {
+    while (history.size() > mMaxDisplayedHistorySize)
+    {
         history.pop_front();
     }
 }
 
 // TODO: Migrate to protobuf format instead of JSON
-void Profiler::StartTraceSession() {
-    if (mSessionOutputStream.is_open()) {
+void Profiler::StartTraceSession()
+{
+    if (mSessionOutputStream.is_open())
+    {
         EndTraceSession();
     }
 
@@ -67,8 +71,10 @@ void Profiler::StartTraceSession() {
     mSessionOutputStream << "{\"otherData\": {}, \"traceEvents\":[";
     mSessionOutputStream.flush();
 }
+
 // TODO: Convert to ProtoBuf format
-void Profiler::ExportTraceFrame(const TimerResult &aResult) {
+void Profiler::ExportTraceFrame(const TimerResult &aResult)
+{
     if (!mSessionOutputStream.is_open())
         return;
 
@@ -81,7 +87,8 @@ void Profiler::ExportTraceFrame(const TimerResult &aResult) {
     std::string name = aResult.Name;
     std::replace(name.begin(), name.end(), '"', '\'');
 
-    if (!name.empty()) {
+    if (!name.empty())
+    {
         name.append("_");
     }
     name.append(std::string(aResult.Metadata.FunctionSignature) + ":"+ std::to_string(aResult.Metadata.LineNumber));
@@ -98,37 +105,53 @@ void Profiler::ExportTraceFrame(const TimerResult &aResult) {
     mTraceWriteMutex.unlock();
 }
 
-void Profiler::EndTraceSession() {
+void Profiler::EndTraceSession()
+{
     if (!mSessionOutputStream.is_open())
+    {
         return;
+    }
+
     mSessionOutputStream << "]}";
     mSessionOutputStream.flush();
     mSessionOutputStream.close();
 }
-void Profiler::OnImGuiRender() {
+void Profiler::OnImGuiRender()
+{
     ImGui::Begin("Profiler");
-    if (ImGui::Checkbox("Running", &mRunning)) {
-        if (!mRunning) {
-            while(!mTimerStack.empty()) {
+    if (ImGui::Checkbox("Running", &mRunning))
+    {
+        if (!mRunning)
+        {
+            while(!mTimerStack.empty())
+            {
                 mTimerStack.top().StopTimer();
                 mTimerStack.pop();
             }
             EndTraceSession();
-        } else {
-            if (mSerializeTrace) {
+        }
+        else
+        {
+            if (mSerializeTrace)
+            {
                 StartTraceSession();
             }
         }
     }
-    if (ImGui::Checkbox("Serialize Trace", &mSerializeTrace)) {
-        if (mSerializeTrace) {
+    if (ImGui::Checkbox("Serialize Trace", &mSerializeTrace))
+    {
+        if (mSerializeTrace)
+        {
             StartTraceSession();
-        } else {
+        }
+        else
+        {
             EndTraceSession();
         }
     }
 
-    for (auto&[fst, snd] : mTimerHistory) {
+    for (auto&[fst, snd] : mTimerHistory)
+    {
         if (snd.empty())
             continue;
 
@@ -138,7 +161,8 @@ void Profiler::OnImGuiRender() {
         float sum = 0.0f;
         const int count = tempDeque.size();
 
-        for(auto& info : tempDeque) {
+        for(auto& info : tempDeque)
+        {
             float duration = info.GetDurationMilliseconds().count();
             durations.push_back(duration);
             sum += duration;
@@ -147,7 +171,8 @@ void Profiler::OnImGuiRender() {
         const float average = count > 0 ? sum / static_cast<float>(count) : 0.0f;
         char overlay[32];
         sprintf(overlay, "%.3f ms", average);
-        if (!durations.empty()) {
+        if (!durations.empty())
+        {
             ImGui::PlotHistogram(fst.c_str(), &durations[0], count, 0, overlay, 0.0f, 2.0f);
         }
     }

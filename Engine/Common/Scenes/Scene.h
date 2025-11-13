@@ -76,9 +76,9 @@ private:
 
 public:
     // TODO: Make unique ptr
-    FlyCamera* m_ActiveSceneCamera;
+    FlyCamera* activeCamera;
     std::vector<RenderSystemBase*> mRenderSystems;
-    GPUSceneData mSceneData;
+    GPUSceneData sceneData;
     const char* m_sceneName; //
     PhysicsSystem* m_physicsSystem;
 

@@ -8,7 +8,8 @@
 #include "Math/Transform.h"
 
 struct Ray;
-class Camera : public Entity{
+class Camera : public Entity
+{
 public:
     // TODO: Only update vpm when m_transform gets marked dirty
     glm::mat4 GetViewProjectionMatrix() const;
@@ -19,7 +20,7 @@ public:
 
     GPUCameraData GetCameraInformation() const;
 
-    float_t mFOV = 70.0f;
-    float_t mZNear = 0.1f;
-    float_t mZFar = 200.0f;
+    float_t fov = 70.0f;
+    float_t zNear = 0.1f;
+    float_t zFar = 200.0f;
 };

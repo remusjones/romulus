@@ -24,5 +24,5 @@ void MaterialBase::Create() {
             .bindingCount = static_cast<uint32_t>(mBindings.size()),
             .pBindings = mBindings.data(),
     };
-    vkCreateDescriptorSetLayout(gGraphics->mLogicalDevice, &createInfo, nullptr, &mLayout);
+    vkCreateDescriptorSetLayout(gGraphics->logicalDevice, &createInfo, nullptr, &mLayout);
 }

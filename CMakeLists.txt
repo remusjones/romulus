@@ -1,30 +1,55 @@
-cmake_minimum_required(VERSION 3.4...3.20 FATAL_ERROR)
-project(Artemis)
-set(CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 20) #Issues with static compiles with 23 selected
+cmake_minimum_required(VERSION 4.0)
+project(Artemis VERSION 1.0)
 
-file(GLOB_RECURSE PROJECT_SOURCE_FILES CONFIGURE_DEPENDS "Engine/*.cpp")
-file(GLOB_RECURSE PROJECT_HEADER_FILES CONFIGURE_DEPENDS "Engine/*.h")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_EXE_LINKER_FLAGS
-        "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS} -static-libgcc -static-libstdc++ -static")
+find_package(Vulkan REQUIRED)
 
+file(GLOB_RECURSE PROJECT_SOURCE_FILES CONFIGURE_DEPENDS
+        "Engine/*.cpp"
+        "Engine/*.h"
+)
+
+# Define the executable target
 add_executable(
         ${PROJECT_NAME}
         main.cpp
-        ${PROJECT_HEADER_FILES}
-        ${PROJECT_SOURCE_FILES})
+        ${PROJECT_SOURCE_FILES}
+)
 
+include_directories(${Vulkan_INCLUDE_DIRS})
 
-# Shorten some common include directories
-include_directories(Engine/Graphics/API)
-include_directories(Engine/Applications)
-include_directories(Engine/IO)
-include_directories(Engine/Common)
-include_directories(Engine/System)
-
-# Link Dependencies
 add_subdirectory(vendor)
-
-# Make assets
 add_subdirectory(Assets)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+        GLM_ENABLE_EXPERIMENTAL
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+        Engine/Graphics/API
+        Engine/Applications
+        Engine/IO
+        Engine/Common
+        Engine/System
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        Vulkan::Vulkan
+        SDL3-static
+        imgui
+        imguizmo
+        spdlog
+        glm
+        tinyobjloader
+        BulletSoftBody
+        BulletDynamics
+        BulletCollision
+        LinearMath
+)
+
+target_link_options(${PROJECT_NAME} PRIVATE
+        "-static-libgcc"
+        "-static-libstdc++"
+)
