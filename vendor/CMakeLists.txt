@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
-
-# Find Vulkan
-find_package(Vulkan REQUIRED)
+cmake_minimum_required(VERSION 3.20)
 
 # https://github.com/gabime/spdlog.git
 message("Adding spdlog")
@@ -9,7 +6,6 @@ add_subdirectory(spdlog)
 # ------------------------------------
 
 # https://github.com/g-truc/glm.git
-add_compile_definitions(GLM_ENABLE_EXPERIMENTAL)
 message("Adding glm")
 add_subdirectory(glm glm)
 # ------------------------------------
@@ -28,8 +24,6 @@ add_subdirectory(VulkanMemoryAllocator VulkanMemoryAllocator)
 # https://github.com/tinyobjloader/tinyobjloader.git
 message("Adding tinyobjloader")
 add_subdirectory(tinyobjloader tinyobjloader)
-#target_include_directories(tinyobjloader INTERFACE tinyobjloader)
-
 # ------------------------------------
 
 # https://github.com/ocornut/imgui.git
@@ -48,7 +42,7 @@ set(IMGUI_SOURCES
 )
 target_include_directories(imgui PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends)
 target_sources(imgui PUBLIC ${IMGUI_SOURCES})
-target_link_libraries(imgui SDL3::SDL3-static)
+target_link_libraries(imgui PUBLIC SDL3::SDL3-static Vulkan::Vulkan)
 # ------------------------------------
 
 # https://github.com/CedricGuillemet/ImGuizmo.git
@@ -74,7 +68,7 @@ target_link_libraries(imguizmo PRIVATE imgui)
 
 # https://github.com/nothings/stb.git
 message("Adding stb")
-target_include_directories(${PROJECT_NAME} PRIVATE "stb/")
+# The include directory is now handled by the main CMakeLists.txt
 # ------------------------------------
 
 
@@ -82,23 +76,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE "stb/")
 message("Adding bullet3")
 set(BUILD_UNIT_TESTS OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/bullet3 EXCLUDE_FROM_ALL)
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/bullet3/src")
+
+target_include_directories(LinearMath INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/src)
+target_include_directories(BulletCollision INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/src)
+target_include_directories(BulletDynamics INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/src)
+target_include_directories(BulletSoftBody INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/src)
+
 list(APPEND BULLET_LIBRARIES BulletSoftBody BulletDynamics BulletCollision Bullet3Common LinearMath)
 
 cmake_policy(SET CMP0079 NEW)
-
-# ------------------------------------
-# Link libraries
-target_link_libraries(
-        ${PROJECT_NAME}
-        PRIVATE
-        Vulkan::Vulkan
-        glm::glm
-        spdlog::spdlog
-        SDL3::SDL3-static
-        GPUOpen::VulkanMemoryAllocator
-        tinyobjloader
-        imguizmo
-        imgui
-        ${BULLET_LIBRARIES})
-
