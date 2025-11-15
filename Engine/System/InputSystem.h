@@ -1,10 +1,8 @@
 #pragma once
 #include <functional>
 #include <queue>
-#include <SDL3/SDL_events.h>
 #include <unordered_map>
-
-#include "Base/Common/Buffers/Texture.h"
+#include <SDL3/SDL_events.h>
 
 struct KeyCodeInputBinding
 {

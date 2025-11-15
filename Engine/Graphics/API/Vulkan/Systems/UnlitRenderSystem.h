@@ -3,10 +3,10 @@
 //
 
 #pragma once
-#include "RenderSystemBase.h"
+#include "GraphicsPipelineFactory.h"
 
 
-class UnlitRenderSystem : public RenderSystemBase{
+class UnlitRenderSystem : public GraphicsPipelineFactory{
     void CreatePipelineLayout() override;
     void CreatePipeline() override;
 };

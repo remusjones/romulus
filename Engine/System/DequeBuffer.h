@@ -5,7 +5,7 @@ template<typename T>
 class DequeBuffer
 {
 public:
-	DequeBuffer(const size_t size)
+	explicit DequeBuffer(const size_t size)
 		: size(size)
 	{
 	}

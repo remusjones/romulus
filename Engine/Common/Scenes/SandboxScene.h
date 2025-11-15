@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include <Base/Common/Buffers/Texture.h>
 #include <Scenes/Scene.h>
 #include <Vulkan/Common/MaterialFactory.h>
 #include <Vulkan/Systems/LineRenderSystem.h>
@@ -17,7 +18,6 @@
 class LineRenderer;
 class Cubemap;
 class Primitive;
-class Texture;
 
 class SandboxScene final : public Scene
 {
@@ -34,7 +34,6 @@ public:
 
 private:
 	PipelineConfigInfo defaultPipelineConfig;
-
 	VkSampler blockySampler;
 
 	// TODO: Remove unmanaged pointer usage

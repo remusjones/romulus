@@ -4,20 +4,21 @@
 
 #include "SandboxScene.h"
 
-#include "VulkanGraphicsImpl.h"
-#include "Base/Common/Color.h"
-#include "Base/Common/Material.h"
-#include "Components/Collision/ColliderComponent.h"
-#include "../../IO/FileManagement.h"
-#include "Objects/Camera.h"
-#include "Objects/FlyCamera.h"
-#include "Vulkan/Common/MeshObject.h"
-#include "Vulkan/Common/Primative.h"
-#include "Vulkan/Renderers/SkyboxRenderer.h"
-#include "Vulkan/Materials/Cubemap.h"
-#include "Vulkan/Materials/DefaultMaterial.h"
-#include "Vulkan/Renderers/LineRenderer.h"
-#include "Vulkan/Systems/GraphicsPipeline.h"
+#include <FileManagement.h>
+#include <VulkanGraphicsImpl.h>
+#include <Base/Common/Color.h>
+#include <Base/Common/Material.h>
+#include <Base/Common/Buffers/Texture.h>
+#include <Components/Collision/ColliderComponent.h>
+#include <Objects/Camera.h>
+#include <Objects/FlyCamera.h>
+#include <Vulkan/Common/MeshObject.h>
+#include <Vulkan/Common/Primative.h>
+#include <Vulkan/Materials/Cubemap.h>
+#include <Vulkan/Materials/DefaultMaterial.h>
+#include <Vulkan/Renderers/LineRenderer.h>
+#include <Vulkan/Renderers/SkyboxRenderer.h>
+#include <Vulkan/Systems/GraphicsPipeline.h>
 
 void SandboxScene::PreConstruct(const char* inSceneName)
 {
@@ -27,9 +28,8 @@ void SandboxScene::PreConstruct(const char* inSceneName)
 void SandboxScene::Construct()
 {
 	// Todo move rendering setup to a separate function
-	//
+
 	// Create Render Pipelines
-	//
 	GraphicsPipeline::DefaultPipelineConfigInfo(defaultPipelineConfig);
 
 	// todo: do I need to actually allocate these
@@ -39,21 +39,17 @@ void SandboxScene::Construct()
 	wireframeRenderPipeline = std::make_unique<WireframeRenderSystem>();
 	lineRendererPipeline    = std::make_unique<LineRenderSystem>();
 
-	//
 	// Define Material Usages
-	//
 	// todo: do I need to actually allocate these
-	Material* monkeyTexturedMaterial = materialUnlitFactory.Create<DefaultMaterial>("Monkey Unlit");
-	Material* unlitMaterial          = materialUnlitFactory.Create<DefaultMaterial>("Unlit");
-	Material* teapotMaterial         = materialPBRFactory.Create<DefaultMaterial>("Teapot PBR");
-	Material* lightMaterial          = materialUnlitFactory.Create<DefaultMaterial>("Light Unlit");
-	Material* sphereMaterial         = materialPBRFactory.Create<DefaultMaterial>("Sphere PBR");
-	Material* cubeMaterial           = materialPBRFactory.Create<DefaultMaterial>("Cube PBR");
-	cubemap                          = genericMaterialFactory.Create<Cubemap>("Skybox Cubemap");
+	Material& monkeyTexturedMaterial = materialUnlitFactory.Create<DefaultMaterial>("Monkey Unlit");
+	Material& unlitMaterial          = materialUnlitFactory.Create<DefaultMaterial>("Unlit");
+	Material& teapotMaterial         = materialPBRFactory.Create<DefaultMaterial>("Teapot PBR");
+	Material& lightMaterial          = materialUnlitFactory.Create<DefaultMaterial>("Light Unlit");
+	Material& sphereMaterial         = materialPBRFactory.Create<DefaultMaterial>("Sphere PBR");
+	Material& cubeMaterial           = materialPBRFactory.Create<DefaultMaterial>("Cube PBR");
+	cubemap                          = &genericMaterialFactory.Create<Cubemap>("Skybox Cubemap");
 
-	//
 	// Make Materials
-	//
 	materialUnlitFactory.Make();
 	materialPBRFactory.Make();
 	genericMaterialFactory.Make();
@@ -75,7 +71,7 @@ void SandboxScene::Construct()
 	// TODO: Create constructor helper to make this smaller?
 	//
 	monkey = CreateObject("Monkey",
-	                      "/Assets/Models/monkey_smooth.obj", *monkeyTexturedMaterial,
+	                      "/Assets/Models/monkey_smooth.obj", monkeyTexturedMaterial,
 	                      *wireframeRenderPipeline->graphicsPipeline,
 	                      glm::vec3(2, 0, -5),
 	                      glm::vec3(0),
@@ -83,14 +79,14 @@ void SandboxScene::Construct()
 
 
 	teapot = CreateObject("Teapot",
-	                      "/Assets/Models/teapot.obj", *teapotMaterial,
+	                      "/Assets/Models/teapot.obj", teapotMaterial,
 	                      *pbrRenderPipeline->graphicsPipeline,
 	                      glm::vec3(2, 0, -20),
 	                      glm::vec3(0),
 	                      glm::vec3(0.1f));
 
 	light = CreateObject("Light",
-	                     "/Assets/Models/sphere.obj", *lightMaterial,
+	                     "/Assets/Models/sphere.obj", lightMaterial,
 	                     *unlitRenderPipeline->graphicsPipeline,
 	                     glm::vec3(0, 0, 0),
 	                     glm::vec3(0),
@@ -107,7 +103,7 @@ void SandboxScene::Construct()
 			{
 				constexpr float sphereRadius = 0.5f;
 				MeshObject* sphere           = CreateObject("Physics Sphere",
-				                                            "/Assets/Models/sphere.obj", *sphereMaterial,
+				                                            "/Assets/Models/sphere.obj", sphereMaterial,
 				                                            *pbrRenderPipeline->graphicsPipeline,
 				                                            glm::vec3(i, j, k),
 				                                            glm::vec3(0),
@@ -121,7 +117,7 @@ void SandboxScene::Construct()
 
 	constexpr glm::vec3 floorScale(50, 0.5f, 50);
 	floor = CreateObject("Floor", "/Assets/Models/cube.obj",
-	                     *cubeMaterial, *pbrRenderPipeline->graphicsPipeline,
+	                     cubeMaterial, *pbrRenderPipeline->graphicsPipeline,
 	                     glm::vec3(0, -10, 0), glm::vec3(0), floorScale);
 
 	AttachBoxCollider(*floor, floorScale, 0);
@@ -131,7 +127,7 @@ void SandboxScene::Construct()
 		FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall_NRM.png"
 	};
 	const auto stoneTexture = CreateTexture("stoneTexture", stoneSet);
-	teapotMaterial->BindTexture(stoneTexture->imageBufferInfos, DefaultMaterial::TEXTURE);
+	teapotMaterial.BindTexture(stoneTexture->imageBufferInfos, DefaultMaterial::TEXTURE);
 
 	//
 	// Skybox TODO: Skybox Constructor Required
@@ -165,7 +161,7 @@ void SandboxScene::Construct()
 			glm::vec3(10, -10, 0)
 		});
 
-	lineRenderer->material = unlitMaterial;
+	lineRenderer->material = &unlitMaterial;
 	lineRenderer->BindRenderer(*lineRendererPipeline->graphicsPipeline);
 
 	//
@@ -178,11 +174,11 @@ void SandboxScene::Construct()
 	//
 	// Setup Draw Order
 	//
-	AddRenderSystem(cubemapRenderPipeline.get());
-	AddRenderSystem(unlitRenderPipeline.get());
-	AddRenderSystem(pbrRenderPipeline.get());
-	AddRenderSystem(wireframeRenderPipeline.get());
-	AddRenderSystem(lineRendererPipeline.get());
+	AddRenderPipeline(cubemapRenderPipeline.get());
+	AddRenderPipeline(unlitRenderPipeline.get());
+	AddRenderPipeline(pbrRenderPipeline.get());
+	AddRenderPipeline(wireframeRenderPipeline.get());
+	AddRenderPipeline(lineRendererPipeline.get());
 	//
 	// Construct Scene
 	//
@@ -228,7 +224,7 @@ void SandboxScene::Tick(float deltaTime)
 
 void SandboxScene::Cleanup()
 {
-	for (const auto& loadedTextures : mLoadedTextures)
+	for (const auto& loadedTextures : sceneTextures)
 	{
 		loadedTextures.second->Destroy();
 	}

@@ -11,7 +11,7 @@
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
-class RenderSystemBase;
+class GraphicsPipelineFactory;
 class Texture;
 class btRigidBody;
 class btVector3;
@@ -21,77 +21,73 @@ class GraphicsPipeline;
 class Camera;
 class MeshObject;
 
-class Scene : public ImGuiLayer {
+class Scene : public ImGuiLayer
+{
 public:
-    virtual ~Scene() = default;
+	virtual ~Scene();
 
-    virtual void PreConstruct(const char *aSceneName);
+	virtual void PreConstruct(const char* aSceneName);
+	virtual void Construct();
+	virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
+	                    uint32_t aCurrentFrame);
 
+	virtual void Tick(float aDeltaTime);
+	virtual void Cleanup();
+	void OnImGuiRender() override;
 
-    virtual void Construct();
-
-    virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                        uint32_t aCurrentFrame);
-
-
-    virtual void Tick(float aDeltaTime);
-
-    virtual void Cleanup();
-
-    void OnImGuiRender() override;
-
-    void AddRenderSystem(RenderSystemBase * aRenderSystem);
+	void AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory);
 
 
-    MeshObject *CreateObject(const char *aName,
-                           const char *aMeshPath,
-                           Material &aMaterial,
-                           GraphicsPipeline &aPipeline,
-                           glm::vec3 aPos = glm::vec3(0),
-                           glm::vec3 aRot = glm::vec3(0),
-                           glm::vec3 aScale = glm::vec3(1)
-    );
+	MeshObject* CreateObject(const char* aName,
+	                         const char* aMeshPath,
+	                         Material& inMaterial,
+	                         GraphicsPipeline& inPipeline,
+	                         const glm::vec3& aPos = glm::vec3(0),
+	                         const glm::vec3& aRot = glm::vec3(0),
+	                         const glm::vec3& aScale = glm::vec3(1)
+	);
 
-    void AddEntity(std::unique_ptr<Entity> aEntity);
-    void AddEntity(Entity* aEntity);
+	// todo: inconsistent pointer semantics here with & or *
+	void AddEntity(std::unique_ptr<Entity> aEntity);
+	void AddEntity(Entity* aEntity);
 
-    void AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction = 0.5f) const;
+	void AttachSphereCollider(Entity& aEntity, const float radius, const float mass, float friction = 0.5f) const;
+	void AttachBoxCollider(Entity& inEntity, glm::vec3 halfExtents, float mass, float friction = 0.5f) const;
 
-    void AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction = 0.5f) const;
+	// TODO: probably bind these to flycam instead?
+	void MouseMovement(const SDL_MouseMotionEvent& aMouseMotion);
 
-    // TODO: probably bind these to flycam instead?
-    void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
+	void MouseInput(const SDL_MouseButtonEvent& aMouseInput);
 
-    void MouseInput(const SDL_MouseButtonEvent &aMouseInput);
+	const btRigidBody* PickRigidBody(int x, int y) const;
 
-    const btRigidBody *PickRigidBody(int x, int y) const;
-
-    Texture* CreateTexture(const char *aName, std::vector<std::string> aPathsSet);
-protected:
-    virtual Entity* MakeEntity(); // todo: move to factory
-private:
-    void DrawObjectsRecursive(Entity& entityToDraw);
-    bool IsParentOfPickedEntity(const Entity& obj);
-    void ChangeImGuizmoOperation(int aOperation);
-
-public:
-    // TODO: Make unique ptr
-    FlyCamera* activeCamera;
-    std::vector<RenderSystemBase*> mRenderSystems;
-    GPUSceneData sceneData;
-    const char* m_sceneName; //
-    PhysicsSystem* m_physicsSystem;
+	Texture* CreateTexture(const char* aName, std::vector<std::string> aPathsSet);
 
 protected:
-    // TODO: Make unique ptr
-    std::vector<std::unique_ptr<Entity>> mObjects;
-    std::unordered_map<Transform*, Entity*> mTransformEntityRelationships;
-    std::unordered_map<std::string, std::unique_ptr<Texture>> mLoadedTextures;
+	virtual Entity* MakeEntity(); // todo: move to factory
 private:
-    // TODO: Make unique ptr
-    PhysicsSystem* m_SceneInteractionPhysicsSystem;
-    Entity* m_PickedEntity{nullptr};
-    int m_mouseX{0}, m_mouseY{0};
+	void DrawObjectsRecursive(Entity& entityToDraw);
+	bool IsParentOfPickedEntity(const Entity& obj);
+	void ChangeImGuizmoOperation(int aOperation);
 
+public:
+	// TODO: Make unique ptr
+	FlyCamera* activeCamera;
+	std::vector<GraphicsPipelineFactory*> renderPipelines;
+	GPUSceneData sceneData;
+	const char* m_sceneName; //
+	PhysicsSystem* physicsSystem;
 
+protected:
+	// todo: feels like these probably shouldn't be here
+	std::vector<std::unique_ptr<Entity>> sceneObjects;
+	std::unordered_map<Transform*, Entity*> sceneTransformRelationships;
+	std::unordered_map<std::string, std::unique_ptr<Texture>> sceneTextures;
+
+private:
+	// TODO: Make unique ptr
+	// todo: we don't really have a need for this!
+	PhysicsSystem* sceneInteractionPhysicsSystem = nullptr;
+	Entity* pickedEntity{nullptr};
+	int mouseX{0}, mouseY{0};
 };

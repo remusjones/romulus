@@ -84,9 +84,9 @@ void Cubemap::Create(MaterialBase* inBaseMaterial)
 
 	Material::Create(this);
 
-	for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
+	for (int i = 0; i < RomulusVulkanRenderer::MAX_FRAMES_IN_FLIGHT; i++)
 	{
-		SetBuffers(gGraphics->vulkanEngine.GetFrame(i).sceneBuffer, 0, 0);
+		SetBuffers(gGraphics->vulkanRenderer->GetFrame(i).sceneBuffer, 0, 0);
 	}
 
 	std::vector<VkDescriptorImageInfo> descriptorInfos;

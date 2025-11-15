@@ -3,12 +3,12 @@
 //
 
 #pragma once
-#include "RenderSystemBase.h"
+#include "GraphicsPipelineFactory.h"
 
 
 class Cubemap;
 
-class SkyboxRenderSystem : public RenderSystemBase {
+class SkyboxRenderSystem : public GraphicsPipelineFactory {
 protected:
     void CreatePipelineLayout() override;
     void CreatePipeline() override;

@@ -10,9 +10,10 @@
 #include "GraphicsPipeline.h"
 
 
-class RenderSystemBase
+class GraphicsPipelineFactory
 {
 public:
+	virtual ~GraphicsPipelineFactory() = default;
 	virtual void Create(const std::vector<VkDescriptorSetLayout>& descriptorLayouts);
 
 protected:

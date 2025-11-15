@@ -18,7 +18,7 @@ void Material::Create(MaterialBase* baseMaterial)
 
 	VkDescriptorSetAllocateInfo alloc_info = {};
 	alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	alloc_info.descriptorPool = gGraphics->vulkanEngine.descriptorPool;
+	alloc_info.descriptorPool = gGraphics->vulkanRenderer->descriptorPool;
 	alloc_info.descriptorSetCount = 1;
 	alloc_info.pSetLayouts = &layout;
 
@@ -36,7 +36,7 @@ void Material::CreateProperties(const uint32_t inBinding, const MaterialProperti
 	propertiesBuffer  = AllocatedBuffer();
 	propertiesBuffer.Create(sizeof(MaterialProperties), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
-	for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
+	for (int i = 0; i < RomulusVulkanRenderer::MAX_FRAMES_IN_FLIGHT; i++)
 		SetBuffers(propertiesBuffer, inBinding, 0);
 }
 
@@ -108,8 +108,10 @@ void Material::SetBuffers(const AllocatedBuffer& inBuffer, const uint8_t inBindi
 void Material::Destroy()
 {
 	vkDestroyDescriptorSetLayout(gGraphics->logicalDevice, layout, nullptr);
-	vkFreeDescriptorSets(gGraphics->logicalDevice, gGraphics->vulkanEngine.descriptorPool, 1, &descriptorSet);
+	vkFreeDescriptorSets(gGraphics->logicalDevice, gGraphics->vulkanRenderer->descriptorPool, 1, &descriptorSet);
 
 	if (propertiesBuffer.IsAllocated())
+	{
 		propertiesBuffer.Destroy();
+	}
 }

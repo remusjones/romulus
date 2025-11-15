@@ -3,19 +3,18 @@
 //
 #pragma once
 #include <vector>
+#include <Base/Common/Buffers/AllocatedImage.h>
 #include <vulkan/vulkan_core.h>
-
-#include "../Base/Common/Buffers/AllocatedImage.h"
 
 class VulkanGraphicsImpl;
 
 class VulkanSwapChain {
 public:
-    void Initialize(VkDevice &aLogicalDevice,
-                    VkPhysicalDevice &aPhysicalDevice,
-                    VkSurfaceKHR &aSurface,
-                    VkRenderPass &aRenderPass,
-                    VulkanGraphicsImpl *aWindow);
+    void Initialize(const VkDevice &inLogicalDevice,
+                    const VkPhysicalDevice &inPhysicalDevice,
+                    const VkSurfaceKHR &inSurface,
+                    const VkRenderPass &inRenderPass,
+                    VulkanGraphicsImpl& inWindow);
 
     void RecreateSwapChain();
 
@@ -30,15 +29,15 @@ public:
     void Cleanup();
 
 
-    VkPhysicalDevice mPhysicalDevice;
-    VulkanGraphicsImpl *mApplication{};
+    VkPhysicalDevice physicalDevice;
+    VulkanGraphicsImpl *application{};
     VkSwapchainKHR mSwapChain{};
     VkFormat mSwapChainImageFormat;
     VkExtent2D swapChainExtents{};
     std::vector<VkImage> mSwapChainImages;
     std::vector<VkImageView> mSwapChainImageViews;
-    VkDevice mLogicalDevice;
-    VkSurfaceKHR mSurface;
+    VkDevice logicalDevice;
+    VkSurfaceKHR surface;
     std::vector<VkFramebuffer> mSwapChainFrameBuffers;
     VkRenderPass renderPass;
 

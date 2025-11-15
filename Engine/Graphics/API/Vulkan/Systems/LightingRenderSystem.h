@@ -6,12 +6,12 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-#include "RenderSystemBase.h"
+#include "GraphicsPipelineFactory.h"
 
 
 class Cubemap;
 
-class LightingRenderSystem : public RenderSystemBase {
+class LightingRenderSystem : public GraphicsPipelineFactory {
 public:
     LightingRenderSystem(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts);
 protected:

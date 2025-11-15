@@ -223,7 +223,7 @@ void GraphicsPipeline::Draw(VkCommandBuffer commandBuffer, const Scene &scene) c
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       romulusPipelineConfig);
 
-    const FrameData& currentFrame = gGraphics->vulkanEngine.GetCurrentFrame();
+    const FrameData& currentFrame = gGraphics->vulkanRenderer->GetCurrentFrame();
 
     AllocatedBuffer::MapMemory(
     gGraphics->allocator, &scene.sceneData,  currentFrame.sceneBuffer.GetAllocation(),

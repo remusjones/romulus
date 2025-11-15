@@ -30,17 +30,19 @@ void InputSystem::ProcessInput(const SDL_Event* inputEvent)
 				{
 					binding.callback(inputEvent->key);
 				}
+				break;
 			case SDL_EVENT_KEY_UP:
 				for (const auto& binding : keyboardBindings[inputEvent->key.key])
 				{
 					binding.callback(inputEvent->key);
 				}
+				break;
 			case SDL_EVENT_MOUSE_MOTION:
 				for (const auto& binding : mouseInputMotionBindings)
 				{
 					binding.callback(inputEvent->motion);
 				}
-
+				break;
 			case SDL_EVENT_MOUSE_BUTTON_UP:
 				for (const auto& binding : mouseInputBindings)
 				{

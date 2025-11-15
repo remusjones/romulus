@@ -11,7 +11,7 @@
 class Scene;
 class Mesh;
 class Material;
-class VulkanEngine;
+class RomulusVulkanRenderer;
 class GraphicsPipeline;
 class Buffer;
 class CameraInformationBuffer;

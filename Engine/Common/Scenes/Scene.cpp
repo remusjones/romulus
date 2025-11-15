@@ -11,40 +11,46 @@
 #include "imgui.h"
 #include "ImGuizmo.h"
 
-#include "VulkanGraphicsImpl.h"
 #include <FileManagement.h>
+#include <VulkanGraphicsImpl.h>
 
-#include "Profiler.h"
-#include "BulletCollision/CollisionDispatch/btCollisionWorld.h"
-#include "BulletCollision/CollisionShapes/btBoxShape.h"
-#include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
-#include "BulletCollision/CollisionShapes/btSphereShape.h"
-#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
-#include "BulletDynamics/Dynamics/btRigidBody.h"
-#include "Components/Component.h"
-#include "Components/Collision/ColliderComponent.h"
-#include "Components/Collision/CollisionHelper.h"
-#include "glm/gtx/string_cast.hpp"
-#include "Physics/PhysicsSystem.h"
-#include "Physics/Ray.h"
-#include "Vulkan/Common/MeshObject.h"
-#include "Vulkan/Systems/GraphicsPipeline.h"
-#include "Vulkan/Systems/RenderSystemBase.h"
+#include <Profiler.h>
+#include <Base/Common/Buffers/Texture.h>
+#include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
+#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
+#include <BulletCollision/CollisionShapes/btSphereShape.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+#include <BulletDynamics/Dynamics/btRigidBody.h>
+#include <Components/Component.h>
+#include <Components/Collision/ColliderComponent.h>
+#include <Components/Collision/CollisionHelper.h>
+#include <glm/gtx/string_cast.hpp>
+#include <Physics/PhysicsSystem.h>
+#include <Physics/Ray.h>
+#include <Vulkan/Common/MeshObject.h>
+#include <Vulkan/Systems/GraphicsPipeline.h>
+#include <Vulkan/Systems/GraphicsPipelineFactory.h>
 
 
 static ImGuizmo::MODE currentGizmoMode(ImGuizmo::WORLD);
 static ImGuizmo::OPERATION currentGizmoOperation(ImGuizmo::TRANSLATE);
+
+Scene::~Scene()
+{
+	// do nothing
+}
 
 void Scene::PreConstruct(const char* aSceneName)
 {
 	PROFILE_BEGIN("SCENE CONSTRUCT");
 	m_sceneName = aSceneName;
 
-	m_physicsSystem                 = new PhysicsSystem();
-	m_SceneInteractionPhysicsSystem = new PhysicsSystem();
+	physicsSystem                 = new PhysicsSystem();
+	sceneInteractionPhysicsSystem = new PhysicsSystem();
 
-	m_physicsSystem->Create();
-	m_SceneInteractionPhysicsSystem->Create();
+	physicsSystem->Create();
+	sceneInteractionPhysicsSystem->Create();
 	gInputSystem->RegisterMouseInput([&](const SDL_MouseMotionEvent& motion) { MouseMovement(motion); },
 	                                 "Scene Mouse Movement");
 	gInputSystem->RegisterMouseInput([&](const SDL_MouseButtonEvent& input) { MouseInput(input); },
@@ -78,8 +84,8 @@ void Scene::PreConstruct(const char* aSceneName)
 
 void Scene::MouseMovement(const SDL_MouseMotionEvent& aMouseMotion)
 {
-	m_mouseX = static_cast<int>(aMouseMotion.x);
-	m_mouseY = static_cast<int>(aMouseMotion.y);
+	mouseX = static_cast<int>(aMouseMotion.x);
+	mouseY = static_cast<int>(aMouseMotion.y);
 }
 
 void Scene::MouseInput(const SDL_MouseButtonEvent& aMouseInput)
@@ -92,13 +98,13 @@ void Scene::MouseInput(const SDL_MouseButtonEvent& aMouseInput)
 		&& !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
 		&& !ImGuizmo::IsOver())
 	{
-		const auto pickedRigidBody = PickRigidBody(m_mouseX, m_mouseY);
-		for (const auto& object : mObjects)
+		const auto pickedRigidBody = PickRigidBody(mouseX, mouseY);
+		for (const auto& object : sceneObjects)
 		{
 			if (ColliderComponent comp; object->GetComponent<ColliderComponent>(comp)
 				&& pickedRigidBody == comp.GetRigidBody())
 			{
-				m_PickedEntity = object.get();
+				pickedEntity = object.get();
 				break;
 			}
 		}
@@ -107,7 +113,7 @@ void Scene::MouseInput(const SDL_MouseButtonEvent& aMouseInput)
 
 void Scene::Construct()
 {
-	for (const auto& obj : mObjects)
+	for (const auto& obj : sceneObjects)
 	{
 		obj->Construct();
 	}
@@ -117,7 +123,7 @@ void Scene::Construct()
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                    uint32_t aCurrentFrame)
 {
-	for (const auto obj : mRenderSystems)
+	for (const auto obj : renderPipelines)
 	{
 		obj->graphicsPipeline->Draw(aCommandBuffer, *this);
 	}
@@ -138,11 +144,11 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw)
 	if (entityToDraw.transform.GetChildCount() == 0)
 		nodeFlag = ImGuiTreeNodeFlags_Leaf;
 
-	if (m_PickedEntity == &entityToDraw)
+	if (pickedEntity == &entityToDraw)
 	{
 		nodeFlag |= ImGuiTreeNodeFlags_Selected;
 		ImGui::Begin("Picked Object");
-		ImGui::Text(m_PickedEntity->mName);
+		ImGui::Text(pickedEntity->mName);
 		entityToDraw.OnImGuiRender();
 		ImGui::End();
 	}
@@ -151,7 +157,7 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw)
 	{
 		for (auto childTransform : entityToDraw.transform.GetChildren())
 		{
-			Entity& childEntity = *mTransformEntityRelationships[childTransform];
+			Entity& childEntity = *sceneTransformRelationships[childTransform];
 			DrawObjectsRecursive(childEntity);
 		}
 		ImGui::TreePop();
@@ -159,18 +165,18 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw)
 
 	if (ImGui::IsItemClicked())
 	{
-		m_PickedEntity = &entityToDraw;
+		pickedEntity = &entityToDraw;
 	}
 }
 
 bool Scene::IsParentOfPickedEntity(const Entity& obj)
 {
-	if (m_PickedEntity == nullptr)
+	if (pickedEntity == nullptr)
 	{
 		return false;
 	}
-	for (const Entity* parentEntity = m_PickedEntity; parentEntity != nullptr;
-	     parentEntity               = mTransformEntityRelationships[parentEntity->transform.GetParent()])
+	for (const Entity* parentEntity = pickedEntity; parentEntity != nullptr;
+	     parentEntity               = sceneTransformRelationships[parentEntity->transform.GetParent()])
 	{
 		if (parentEntity == &obj)
 		{
@@ -233,10 +239,10 @@ void Scene::OnImGuiRender()
 		ImGui::Unindent();
 	}
 
-	if (m_PickedEntity != nullptr)
+	if (pickedEntity != nullptr)
 	{
 		// Draw Gizmos
-		glm::mat4 matrix = m_PickedEntity->transform.GetWorldMatrix();
+		glm::mat4 matrix = pickedEntity->transform.GetWorldMatrix();
 
 		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 		ImGuizmo::AllowAxisFlip(false);
@@ -245,13 +251,13 @@ void Scene::OnImGuiRender()
 		                         currentGizmoOperation, currentGizmoMode,
 		                         glm::value_ptr(matrix), nullptr))
 		{
-			m_PickedEntity->transform.SetMatrix(matrix);
+			pickedEntity->transform.SetMatrix(matrix);
 		}
 	}
 
 	if (ImGui::CollapsingHeader("Objects"))
 	{
-		for (const auto& obj : mObjects)
+		for (const auto& obj : sceneObjects)
 		{
 			ImGui::BeginGroup();
 			ImGui::Indent();
@@ -284,17 +290,17 @@ void Scene::OnImGuiRender()
 
 		ImGui::Text("Objects: ");
 		ImGui::SameLine();
-		ImGui::Text(std::to_string(static_cast<int32_t>(mObjects.size())).c_str());
+		ImGui::Text(std::to_string(static_cast<int32_t>(sceneObjects.size())).c_str());
 		ImGui::Text("Graphic Systems: ");
 		ImGui::SameLine();
-		ImGui::Text(std::to_string(static_cast<int32_t>(mRenderSystems.size())).c_str());
+		ImGui::Text(std::to_string(static_cast<int32_t>(renderPipelines.size())).c_str());
 		if (ImGui::CollapsingHeader("Graphic Systems Info"))
 		{
 			if (ImGui::Button(GetUniqueLabel("Rebuild All")))
 			{
-				gGraphics->vulkanEngine.SubmitEndOfFrameTask([this]
+				gGraphics->vulkanRenderer->SubmitEndOfFrameTask([this]
 				{
-					for (const auto& renderSystem : mRenderSystems)
+					for (const auto& renderSystem : renderPipelines)
 					{
 						vkDeviceWaitIdle(gGraphics->logicalDevice);
 						renderSystem->graphicsPipeline->Destroy();
@@ -304,7 +310,7 @@ void Scene::OnImGuiRender()
 				});
 			}
 			ImGui::Indent();
-			for (const auto system : mRenderSystems)
+			for (const auto system : renderPipelines)
 			{
 				if (ImGui::CollapsingHeader(system->graphicsPipeline->pipelineName))
 				{
@@ -330,9 +336,9 @@ void Scene::OnImGuiRender()
 void Scene::Tick(const float aDeltaTime)
 {
 	PROFILE_BEGIN("Scene Physics");
-	m_physicsSystem->Tick(aDeltaTime);
-	m_SceneInteractionPhysicsSystem->Tick(aDeltaTime);
-	for (const auto& obj : mObjects)
+	physicsSystem->Tick(aDeltaTime);
+	sceneInteractionPhysicsSystem->Tick(aDeltaTime);
+	for (const auto& obj : sceneObjects)
 	{
 		obj->Tick(aDeltaTime);
 	}
@@ -342,40 +348,41 @@ void Scene::Tick(const float aDeltaTime)
 void Scene::Cleanup()
 {
 	Logger::Log(spdlog::level::info, (std::string("Cleaning up scene ") + m_sceneName).c_str());
-	for (const auto& obj : mObjects)
+	for (const auto& obj : sceneObjects)
 	{
 		obj->Cleanup();
 	}
 
 	delete activeCamera;
-	for (const auto system : mRenderSystems)
+	for (const auto system : renderPipelines)
 	{
 		system->graphicsPipeline->Destroy();
 		delete system->graphicsPipeline.get();
 	}
-	m_physicsSystem->Destroy();
-	delete m_physicsSystem;
-	m_physicsSystem = nullptr;
+	physicsSystem->Destroy();
+	delete physicsSystem;
+	physicsSystem = nullptr;
 
-	m_SceneInteractionPhysicsSystem->Destroy();
-	delete m_SceneInteractionPhysicsSystem;
-	m_SceneInteractionPhysicsSystem = nullptr;
+	sceneInteractionPhysicsSystem->Destroy();
+	delete sceneInteractionPhysicsSystem;
+	sceneInteractionPhysicsSystem = nullptr;
 }
 
-void Scene::AddRenderSystem(RenderSystemBase* aRenderSystem)
+void Scene::AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory)
 {
-	mRenderSystems.push_back(aRenderSystem);
-	aRenderSystem->graphicsPipeline->Create();
+	renderPipelines.push_back(inPipelineFactory);
+	// todo this is wack
+	inPipelineFactory->graphicsPipeline->Create();
 }
 
 // TODO: Make pointers managed
-MeshObject* Scene::CreateObject(const char* aName, const char* aMeshPath, Material& aMaterial,
-                                GraphicsPipeline& aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
-                                const glm::vec3 aScale)
+MeshObject* Scene::CreateObject(const char* aName, const char* aMeshPath, Material& inMaterial,
+                                GraphicsPipeline& inPipeline, const glm::vec3& aPos, const glm::vec3& aRot,
+                                const glm::vec3& aScale)
 {
 	auto object = std::make_unique<MeshObject>();
-	object->CreateObject(aMaterial, aName);
-	object->meshRenderer.BindRenderer(aPipeline);
+	object->CreateObject(inMaterial, aName);
+	object->meshRenderer.BindRenderer(inPipeline);
 	object->meshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
 
 	object->transform.SetLocalPosition(aPos);
@@ -391,6 +398,7 @@ MeshObject* Scene::CreateObject(const char* aName, const char* aMeshPath, Materi
 	//sceneCollider->Create(m_SceneInteractionPhysicsSystem, colliderInfo);
 	//object->AddComponent(sceneCollider);
 
+	// todo: this is wack
 	MeshObject* rawPtr = object.get();
 	AddEntity(std::move(object));
 	return rawPtr;
@@ -398,32 +406,33 @@ MeshObject* Scene::CreateObject(const char* aName, const char* aMeshPath, Materi
 
 void Scene::AddEntity(std::unique_ptr<Entity> aEntity)
 {
-	mTransformEntityRelationships[&aEntity->transform] = aEntity.get();
-	mObjects.push_back(std::move(aEntity));
+	// todo this is wack
+	sceneTransformRelationships[&aEntity->transform] = aEntity.get();
+	sceneObjects.push_back(std::move(aEntity));
 }
 
-void Scene::AttachSphereCollider(Entity& aEntity, const float aRadius, const float aMass,
-                                 float aFriction) const
+void Scene::AttachSphereCollider(Entity& aEntity, const float radius, const float mass,
+                                 const float friction) const
 {
 	auto* sphereCollider = new ColliderComponent();
 	ColliderCreateInfo sphereColliderInfo{};
-	sphereColliderInfo.collisionShape = new btSphereShape(aRadius);
-	sphereColliderInfo.mass           = aMass;
-	sphereColliderInfo.friction       = aFriction;
-	sphereCollider->Create(m_physicsSystem, sphereColliderInfo);
+	sphereColliderInfo.collisionShape = new btSphereShape(radius);
+	sphereColliderInfo.mass           = mass;
+	sphereColliderInfo.friction       = friction;
+	sphereCollider->Create(physicsSystem, sphereColliderInfo);
 	aEntity.AddComponent(sphereCollider);
 }
 
-void Scene::AttachBoxCollider(Entity& aEntity, const glm::vec3 aHalfExtents, const float aMass,
-                              const float aFriction) const
+void Scene::AttachBoxCollider(Entity& inEntity, const glm::vec3 halfExtents, const float mass,
+                              const float friction) const
 {
 	auto* boxCollider = new ColliderComponent();
 	ColliderCreateInfo boxColliderInfo{};
-	boxColliderInfo.collisionShape = new btBoxShape(btVector3(aHalfExtents.x, aHalfExtents.y, aHalfExtents.z));
-	boxColliderInfo.mass           = aMass;
-	boxColliderInfo.friction       = aFriction;
-	boxCollider->Create(m_physicsSystem, boxColliderInfo);
-	aEntity.AddComponent(boxCollider);
+	boxColliderInfo.collisionShape = new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z));
+	boxColliderInfo.mass           = mass;
+	boxColliderInfo.friction       = friction;
+	boxCollider->Create(physicsSystem, boxColliderInfo);
+	inEntity.AddComponent(boxCollider);
 }
 
 const btRigidBody* Scene::PickRigidBody(const int x, const int y) const
@@ -434,7 +443,7 @@ const btRigidBody* Scene::PickRigidBody(const int x, const int y) const
 
 	btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
 
-	m_physicsSystem->GetDynamicsWorld()->rayTest(rayFrom, rayTo, RayCallback);
+	physicsSystem->GetDynamicsWorld()->rayTest(rayFrom, rayTo, RayCallback);
 	if (RayCallback.hasHit())
 	{
 		if (const btRigidBody* pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject))
@@ -448,11 +457,11 @@ const btRigidBody* Scene::PickRigidBody(const int x, const int y) const
 
 Texture* Scene::CreateTexture(const char* aName, std::vector<std::string> aPathsSet)
 {
-	if (!mLoadedTextures.contains(aName))
+	if (!sceneTextures.contains(aName))
 	{
-		mLoadedTextures[aName] = std::make_unique<Texture>();
+		sceneTextures[aName] = std::make_unique<Texture>();
 
-		auto* texture = mLoadedTextures[aName].get();
+		auto* texture = sceneTextures[aName].get();
 		texture->LoadImagesFromDisk(aPathsSet);
 		texture->Create();
 
@@ -467,12 +476,12 @@ Entity* Scene::MakeEntity()
 {
 	std::unique_ptr<Entity> entity = std::make_unique<Entity>();
 	Entity* entityPtr              = entity.get();
-	mObjects.push_back(std::move(entity));
+	sceneObjects.push_back(std::move(entity));
 	return entityPtr;
 }
 
 void Scene::AddEntity(Entity* aEntity)
 {
-	mTransformEntityRelationships[&aEntity->transform] = aEntity;
-	mObjects.push_back(std::unique_ptr<Entity>(aEntity));
+	sceneTransformRelationships[&aEntity->transform] = aEntity;
+	sceneObjects.push_back(std::unique_ptr<Entity>(aEntity));
 }

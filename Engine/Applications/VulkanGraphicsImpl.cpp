@@ -4,7 +4,6 @@
 #define VMA_IMPLEMENTATION
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <chrono>
-#include <cstdint>
 #include <cstring>
 #include <set>
 #include <stdexcept>
@@ -43,9 +42,9 @@ void VulkanGraphicsImpl::InitializeVulkan()
 	CreateLogicalDevice();
 
 	VmaAllocatorCreateInfo allocatorInfo = {};
-	allocatorInfo.physicalDevice         = physicalDevice;
-	allocatorInfo.device                 = logicalDevice;
-	allocatorInfo.instance               = vulcanInstance;
+	allocatorInfo.physicalDevice = physicalDevice;
+	allocatorInfo.device = logicalDevice;
+	allocatorInfo.instance = vulcanInstance;
 	vmaCreateAllocator(&allocatorInfo, &allocator);
 
 	swapChain = std::make_unique<VulkanSwapChain>();
@@ -53,7 +52,7 @@ void VulkanGraphicsImpl::InitializeVulkan()
 	                      physicalDevice,
 	                      surface,
 	                      renderPass,
-	                      this);
+	                      *this);
 	CreateGraphicsPipeline();
 	InitializeImgui();
 	romulusEditor = std::make_unique<Editor>();
@@ -79,11 +78,11 @@ void VulkanGraphicsImpl::InitializeImgui()
 	};
 
 	VkDescriptorPoolCreateInfo pool_info = {};
-	pool_info.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	pool_info.flags                      = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	pool_info.maxSets                    = 1000;
-	pool_info.poolSizeCount              = std::size(pool_sizes);
-	pool_info.pPoolSizes                 = pool_sizes;
+	pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	pool_info.maxSets = 1000;
+	pool_info.poolSizeCount = std::size(pool_sizes);
+	pool_info.pPoolSizes = pool_sizes;
 
 	vkCreateDescriptorPool(logicalDevice, &pool_info, nullptr, &imguiDescriptionPool);
 
@@ -91,13 +90,13 @@ void VulkanGraphicsImpl::InitializeImgui()
 	ImGui_ImplSDL3_InitForVulkan(window);
 
 	ImGui_ImplVulkan_InitInfo init_info = {};
-	init_info.Instance                  = vulcanInstance;
-	init_info.PhysicalDevice            = physicalDevice;
-	init_info.Device                    = logicalDevice;
-	init_info.Queue                     = graphicsQueue;
-	init_info.DescriptorPool            = imguiDescriptionPool;
-	init_info.MinImageCount             = 3; // Use swap chain's min image count
-	init_info.ImageCount                = 3; // Use swap chain's actual image count
+	init_info.Instance = vulcanInstance;
+	init_info.PhysicalDevice = physicalDevice;
+	init_info.Device = logicalDevice;
+	init_info.Queue = graphicsQueue;
+	init_info.DescriptorPool = imguiDescriptionPool;
+	init_info.MinImageCount = 3; // Use swap chain's min image count
+	init_info.ImageCount = 3;    // Use swap chain's actual image count
 	//init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT; // Only if you use MSAA
 	init_info.PipelineInfoMain.RenderPass = swapChain->renderPass;
 	ImGui_ImplVulkan_Init(&init_info);
@@ -118,9 +117,9 @@ void VulkanGraphicsImpl::ShutdownVulkan() const
 void VulkanGraphicsImpl::Update()
 {
 	// Start Clock for FPS Monitoring
-	auto startTime    = std::chrono::high_resolution_clock::now();
+	auto startTime = std::chrono::high_resolution_clock::now();
 	auto fpsStartTime = std::chrono::high_resolution_clock::now();
-	ImGuiIO& io       = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	// Create FPS Window Header
 
@@ -145,7 +144,7 @@ void VulkanGraphicsImpl::Update()
 
 			if (event.type == SDL_EVENT_WINDOW_RESIZED)
 			{
-				gGraphics->vulkanEngine.QueueFrameBufferRebuild();
+				gGraphics->vulkanRenderer->QueueFrameBufferRebuild();
 			}
 		}
 		if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED))
@@ -171,7 +170,7 @@ void VulkanGraphicsImpl::Update()
 			PROFILE_END();
 
 			PROFILE_BEGIN("Scene Draw");
-			vulkanEngine.DrawFrame(*activeScene);
+			vulkanRenderer->DrawFrame(*activeScene);
 			PROFILE_END();
 
 
@@ -182,7 +181,7 @@ void VulkanGraphicsImpl::Update()
 		// Calculate Frames-Per-Second
 		frameCount++;
 		auto currentTime = std::chrono::high_resolution_clock::now();
-		deltaTime        = std::chrono::duration_cast<std::chrono::duration<float>>
+		deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>
 			(currentTime - startTime).count();
 
 		if (const auto elapsedTime = std::chrono::duration_cast<
@@ -191,7 +190,7 @@ void VulkanGraphicsImpl::Update()
 		{
 			fps = frameCount / elapsedTime;
 			fpsCircularBuffer.AddElement(fps);
-			frameCount   = -1;
+			frameCount = -1;
 			fpsStartTime = currentTime;
 		}
 		startTime = currentTime;
@@ -216,10 +215,14 @@ void VulkanGraphicsImpl::Cleanup()
 
 VulkanGraphicsImpl::VulkanGraphicsImpl(const char* inWindowTitle,
                                        const int inWindowWidth,
-                                       const int inWindowHeight) : fpsCircularBuffer(100)
+                                       const int inWindowHeight) : vulkanRenderer(nullptr), deltaTime(0), fps(0),
+                                                                   imguiDescriptionPool(nullptr),
+                                                                   fpsCircularBuffer(100), graphicsQueue(nullptr),
+                                                                   PresentQueue(nullptr),
+                                                                   debugMessenger(nullptr)
 {
-	windowTitle  = inWindowTitle;
-	windowWidth  = inWindowWidth;
+	windowTitle = inWindowTitle;
+	windowWidth = inWindowWidth;
 	windowHeight = inWindowHeight;
 }
 
@@ -248,6 +251,7 @@ void VulkanGraphicsImpl::ShutdownWindow() const
 
 void VulkanGraphicsImpl::CreateInstance()
 {
+	vulkanRenderer = new RomulusVulkanRenderer();
 	Logger::Log(spdlog::level::debug, "Creating Vulkan Instance");
 
 	if (enableValidationLayers && !CheckValidationLayerSupport())
@@ -255,15 +259,15 @@ void VulkanGraphicsImpl::CreateInstance()
 		throw std::runtime_error("validation layers requested, but not available!");
 	}
 	VkApplicationInfo appInfo{};
-	appInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName   = windowTitle;
+	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	appInfo.pApplicationName = windowTitle;
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.pEngineName        = "";
-	appInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.apiVersion         = VK_API_VERSION_1_1;
+	appInfo.pEngineName = "";
+	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.apiVersion = VK_API_VERSION_1_1;
 
 	VkInstanceCreateInfo createInfo{};
-	createInfo.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
@@ -285,11 +289,11 @@ void VulkanGraphicsImpl::CreateInstance()
 		createInfo.pNext = nullptr;
 	}
 
-	const auto extensions              = GetRequiredExtensions();
-	createInfo.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
+	const auto extensions = GetRequiredExtensions();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
-	createInfo.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
 	if (vkCreateInstance(&createInfo, nullptr, &vulcanInstance) !=
@@ -302,6 +306,7 @@ void VulkanGraphicsImpl::CreateInstance()
 void VulkanGraphicsImpl::DestroyInstance() const
 {
 	vkDestroyInstance(vulcanInstance, nullptr);
+	delete vulkanRenderer;
 }
 
 void VulkanGraphicsImpl::CreateSurface()
@@ -331,20 +336,20 @@ void VulkanGraphicsImpl::DestroyScenes() const
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline()
 {
-	vulkanEngine.Initialize(logicalDevice,
+	vulkanRenderer->Initialize(logicalDevice,
 	                        swapChain.get(),
 	                        physicalDevice,
 	                        graphicsQueue,
 	                        PresentQueue);
 
-	vulkanEngine.CreateSyncObjects();
+	vulkanRenderer->CreateSyncObjects();
 	swapChain->CreateFrameBuffers();
 	CreateScenes();
 }
 
 void VulkanGraphicsImpl::DestroyGraphicsPipeline()
 {
-	vulkanEngine.Cleanup();
+	vulkanRenderer->Cleanup();
 	swapChain->Cleanup();
 }
 
@@ -380,7 +385,7 @@ bool VulkanGraphicsImpl::CheckValidationLayerSupport() const
 
 std::vector<const char*> VulkanGraphicsImpl::GetRequiredExtensions() const
 {
-	Uint32 count                = 0;
+	Uint32 count = 0;
 	const auto windowExtensions = SDL_Vulkan_GetInstanceExtensions(&count);
 
 	std::vector extensions(windowExtensions, windowExtensions + count);
@@ -397,8 +402,8 @@ std::vector<const char*> VulkanGraphicsImpl::GetRequiredExtensions() const
 void VulkanGraphicsImpl::PopulateDebugMessengerCreateInfo(
 	VkDebugUtilsMessengerCreateInfoEXT& createInfo)
 {
-	createInfo                 = {};
-	createInfo.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.messageSeverity =
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
@@ -695,25 +700,25 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
 	for (const uint32_t queueFamily : uniqueQueueFamilies)
 	{
 		VkDeviceQueueCreateInfo queueCreateInfo{};
-		queueCreateInfo.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
-		queueCreateInfo.queueCount       = 1;
+		queueCreateInfo.queueCount = 1;
 		queueCreateInfo.pQueuePriorities = &queuePriority;
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
 	VkDeviceQueueCreateInfo queueCreateInfo{};
-	queueCreateInfo.sType              = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	const uint32_t graphicsFamilyIndex = familyIndices.mGraphicsFamily.value();
 
 	queueCreateInfo.queueFamilyIndex = graphicsFamilyIndex;
-	queueCreateInfo.queueCount       = 1;
+	queueCreateInfo.queueCount = 1;
 	queueCreateInfo.pQueuePriorities = &queuePriority;
 
 
 	VkDeviceCreateInfo createInfo{};
-	createInfo.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.pQueueCreateInfos    = queueCreateInfos.data();
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.
 		size());
 
@@ -725,7 +730,7 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
 
 	if (enableValidationLayers)
 	{
-		createInfo.enabledLayerCount   = 0;
+		createInfo.enabledLayerCount = 0;
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	}
 	else

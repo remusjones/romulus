@@ -2,7 +2,7 @@
 // Created by Remus on 6/11/2021.
 //
 #include <fstream>
-#include "VulkanEngine.h"
+#include "RomulusVulkanRenderer.h"
 
 #include <imgui_impl_vulkan.h>
 
@@ -17,7 +17,7 @@
 #include "Helpers/VulkanInitialization.h"
 #include "Scenes/Scene.h"
 
-void VulkanEngine::Initialize(const VkDevice& inLogicalDevice,
+void RomulusVulkanRenderer::Initialize(const VkDevice& inLogicalDevice,
                               VulkanSwapChain* inSwapChain,
                               const VkPhysicalDevice& inPhysicalDevice,
                               const VkQueue& inGraphicsQueue,
@@ -38,7 +38,7 @@ void VulkanEngine::Initialize(const VkDevice& inLogicalDevice,
     CreateCommandPool();
 }
 
-void VulkanEngine::Cleanup()
+void RomulusVulkanRenderer::Cleanup()
 {
     CleanupOldSyncObjects();
 
@@ -65,7 +65,7 @@ void VulkanEngine::Cleanup()
     vkDestroyRenderPass(logicalDevice, swapChain->renderPass, nullptr);
 }
 
-void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const
+void RomulusVulkanRenderer::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const
 {
     VkCommandBuffer cmd = uploadContext.commandBuffer;
     const VkCommandBufferBeginInfo cmdBeginInfo = VulkanInitialization::CommandBufferBeginInfo(
@@ -84,12 +84,12 @@ void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&
     vkResetFences(logicalDevice, 1, &uploadContext.uploadContext);
     vkResetCommandPool(logicalDevice, uploadContext.commandPool, 0);
 }
-void VulkanEngine::SubmitEndOfFrameTask(std::function<void()> && task)
+void RomulusVulkanRenderer::SubmitEndOfFrameTask(std::function<void()> && task)
 {
     endOfFrameTasks.emplace(std::move(task));
 }
 
-void VulkanEngine::CreateUploadContext()
+void RomulusVulkanRenderer::CreateUploadContext()
 {
     QueueFamilyIndices queueFamilies = gGraphics->GetQueueFamilyIndices();
     VkCommandPoolCreateInfo poolInfo{};
@@ -115,7 +115,7 @@ void VulkanEngine::CreateUploadContext()
     inFlightFencesToDestroy.push_back(uploadContext.uploadContext);
 }
 
-void VulkanEngine::CreateCommandPool()
+void RomulusVulkanRenderer::CreateCommandPool()
 {
     Logger::Log(spdlog::level::debug, "Creating Command Pool");
 
@@ -137,7 +137,7 @@ void VulkanEngine::CreateCommandPool()
     CreateCommandBuffers();
 }
 
-void VulkanEngine::CreateCommandBuffers()
+void RomulusVulkanRenderer::CreateCommandBuffers()
 {
     for (int i = 0; i < frameData.size(); i++)
     {
@@ -154,7 +154,7 @@ void VulkanEngine::CreateCommandBuffers()
     }
 }
 
-void VulkanEngine::DestroyCommandPool() const {
+void RomulusVulkanRenderer::DestroyCommandPool() const {
     vkDestroyCommandPool(logicalDevice, uploadContext.commandPool, nullptr);
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -162,7 +162,7 @@ void VulkanEngine::DestroyCommandPool() const {
     }
 }
 
-void VulkanEngine::CreateDescriptorPool()
+void RomulusVulkanRenderer::CreateDescriptorPool()
 {
     std::vector<VkDescriptorPoolSize> sizes =
     {
@@ -194,7 +194,7 @@ void VulkanEngine::CreateDescriptorPool()
 
 bool semaphoresNeedToBeRecreated = false;
 
-void VulkanEngine::DrawFrame(Scene& activeScene)
+void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 {
     FrameData currentFrameData = frameData[currentFrame];
     vkWaitForFences(logicalDevice, 1, &currentFrameData.mRenderFence, VK_TRUE,
@@ -360,7 +360,7 @@ void VulkanEngine::DrawFrame(Scene& activeScene)
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanEngine::CleanupOldSyncObjects()
+void RomulusVulkanRenderer::CleanupOldSyncObjects()
 {
     for (const auto& i : mRenderFinishedSemaphoresToDestroy)
     {
@@ -381,7 +381,7 @@ void VulkanEngine::CleanupOldSyncObjects()
     imageAvailableSemaphoresToDestroy.clear();
 }
 
-void VulkanEngine::CreateSyncObjects()
+void RomulusVulkanRenderer::CreateSyncObjects()
 {
     for (auto& frameData : frameData)
     {

@@ -31,7 +31,7 @@ class LoadUtilities
 {
 public:
 	static bool LoadImageFromDisk(const VulkanGraphics* aEngine, const char* aFilePath, AllocatedImage& aResult);
-	static bool LoadImagesFromDisk(const VulkanGraphics* aEngine, const std::vector<std::string>& aPaths,
+	static bool LoadImagesFromDisk(const VulkanGraphics* engine, const std::vector<std::string>& aPaths,
 	                               AllocatedImage& aResult, VkImageCreateFlags
 	                               aImageCreateFlags = 0);
 

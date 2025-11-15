@@ -3,9 +3,9 @@
 //
 
 #pragma once
-#include "RenderSystemBase.h"
+#include "GraphicsPipelineFactory.h"
 
-class IrradianceRenderSystem : RenderSystemBase {
+class IrradianceRenderSystem : GraphicsPipelineFactory {
 protected:
     void CreatePipelineLayout() override;
 

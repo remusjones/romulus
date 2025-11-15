@@ -21,7 +21,8 @@ struct UploadContext
 	VkCommandBuffer commandBuffer;
 };
 
-class VulkanEngine
+// todo: abstract this to use a renderer base clase
+class RomulusVulkanRenderer
 {
 public:
 	void Initialize(const VkDevice& inLogicalDevice,

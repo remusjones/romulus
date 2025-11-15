@@ -10,7 +10,7 @@
 #include "DequeBuffer.h"
 #include "IApplication.h"
 #include "InputSystem.h"
-#include "Vulkan/VulkanEngine.h"
+#include "Vulkan/RomulusVulkanRenderer.h"
 #include "Vulkan/VulkanSystemStructs.h"
 
 class Editor;
@@ -92,7 +92,7 @@ public:
 
 	std::unique_ptr<Scene> activeScene;
 	SDL_Window* window = nullptr; // TODO: Move to interface
-	VulkanEngine vulkanEngine;
+	RomulusVulkanRenderer* vulkanRenderer = nullptr;
 	InputSystem inputManager;
 
 private:

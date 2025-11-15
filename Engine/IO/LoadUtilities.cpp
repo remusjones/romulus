@@ -75,7 +75,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* aEngine, const char*
 	//allocate and create the image
 	vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-	aEngine->vulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
+	aEngine->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
 	{
 		VkImageSubresourceRange range;
 		range.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -129,7 +129,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* aEngine, const char*
 	return true;
 }
 
-bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* aEngine, const std::vector<std::string>& aPaths,
+bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::vector<std::string>& aPaths,
                                        AllocatedImage& aResult, VkImageCreateFlags aImageCreateFlags)
 {
 	const int imageCount      = aPaths.size();
@@ -141,7 +141,6 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* aEngine, const std:
 	VkDeviceSize totalSize = 0;
 
 	int texWidth, texHeight, texChannels;
-	stbi_uc* pixels;
 
 	int maxTexWidth  = 0;
 	int maxTexHeight = 0;
@@ -173,7 +172,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* aEngine, const std:
 	for (int i = 0; i < imageCount; i++)
 	{
 		// Load the image file
-		pixels    = stbi_load(aPaths[i].c_str(), &texWidth, &texHeight, &texChannels, forcedFormat);
+		stbi_uc* pixels = stbi_load(aPaths[i].c_str(), &texWidth, &texHeight, &texChannels, forcedFormat);
 		layerSize = texWidth * texHeight * forcedFormat;
 
 		if (pixels)
@@ -262,7 +261,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* aEngine, const std:
 	VmaAllocationCreateInfo dimg_allocinfo = {};
 	dimg_allocinfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-	const VkResult result = vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
+	const VkResult result = vmaCreateImage(engine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
 	                                       &newImage.mAllocation, nullptr);
 
 
@@ -281,7 +280,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* aEngine, const std:
 		vmaDestroyBuffer(gGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 		return false;
 	}
-	aEngine->vulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
+	engine->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
 	{
 		VkImageSubresourceRange range;
 		range.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -331,7 +330,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* aEngine, const std:
 		                     0, nullptr, 1, &imageBarrier_toReadable);
 	});
 	// Cleanup staging buffer
-	vmaDestroyBuffer(aEngine->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+	vmaDestroyBuffer(engine->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 	aResult = newImage;
 	return true;
 }
@@ -377,7 +376,7 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
 	//allocate and create the image
 	vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-	aEngine->vulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
+	aEngine->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
 	{
 		VkImageSubresourceRange range;
 		range.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;

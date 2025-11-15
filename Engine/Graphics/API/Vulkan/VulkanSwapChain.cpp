@@ -17,16 +17,16 @@ void VulkanSwapChain::RecreateSwapChain()
 {
 	int width  = 0;
 	int height = 0;
-	SDL_GetWindowSize(mApplication->window, &width, &height);
+	SDL_GetWindowSize(application->window, &width, &height);
 	while (width == 0 || height == 0)
 	{
-		SDL_GetWindowSize(mApplication->window, &width, &height);
+		SDL_GetWindowSize(application->window, &width, &height);
 		//SDL_Event event;
 		//SDL_WaitEvent(&event);
 		Logger::Log(spdlog::level::info, "Window Minimized");
 	}
 
-	vkDeviceWaitIdle(mLogicalDevice);
+	vkDeviceWaitIdle(logicalDevice);
 	Cleanup();
 	CreateSwapChain();
 	CreateImageViews();
@@ -35,14 +35,14 @@ void VulkanSwapChain::RecreateSwapChain()
 
 void VulkanSwapChain::CreateSwapChain()
 {
-	const SwapChainSupportDetails swapChainSupport = mApplication->
-		QuerySwapChainSupport(mPhysicalDevice);
+	const SwapChainSupportDetails swapChainSupport = application->
+		QuerySwapChainSupport(physicalDevice);
 
-	const VkSurfaceFormatKHR surfaceFormat = mApplication->ChooseSwapSurfaceFormat(
+	const VkSurfaceFormatKHR surfaceFormat = application->ChooseSwapSurfaceFormat(
 		swapChainSupport.mFormats);
-	const VkPresentModeKHR presentMode = mApplication->ChooseSwapPresentMode(
+	const VkPresentModeKHR presentMode = application->ChooseSwapPresentMode(
 		swapChainSupport.mPresentModes);
-	const VkExtent2D extent = mApplication->ChooseSwapExtent(
+	const VkExtent2D extent = application->ChooseSwapExtent(
 		swapChainSupport.mCapabilities);
 
 	uint32_t imageCount = swapChainSupport.mCapabilities.minImageCount + 1;
@@ -54,7 +54,7 @@ void VulkanSwapChain::CreateSwapChain()
 	}
 	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = mSurface;
+	createInfo.surface = surface;
 
 	createInfo.minImageCount    = imageCount;
 	createInfo.imageFormat      = surfaceFormat.format;
@@ -87,7 +87,7 @@ void VulkanSwapChain::CreateSwapChain()
 	createInfo.clipped        = VK_TRUE;
 	createInfo.oldSwapchain   = VK_NULL_HANDLE;
 
-	if (vkCreateSwapchainKHR(mLogicalDevice, &createInfo, nullptr, &mSwapChain)
+	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &mSwapChain)
 		!= VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create swap chain!");
@@ -95,7 +95,7 @@ void VulkanSwapChain::CreateSwapChain()
 	mSwapChainImageFormat = surfaceFormat.format;
 	swapChainExtents      = extent;
 	mSwapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(mLogicalDevice, mSwapChain, &imageCount,
+	vkGetSwapchainImagesKHR(logicalDevice, mSwapChain, &imageCount,
 	                        mSwapChainImages.data());
 }
 
@@ -119,7 +119,7 @@ void VulkanSwapChain::CreateFrameBuffers()
 		framebufferInfo.height          = swapChainExtents.height;
 		framebufferInfo.layers          = 1;
 
-		if (vkCreateFramebuffer(mLogicalDevice, &framebufferInfo, nullptr,
+		if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr,
 		                        &mSwapChainFrameBuffers[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create framebuffer!");
@@ -148,7 +148,7 @@ void VulkanSwapChain::CreateImageViews()
 		createInfo.subresourceRange.layerCount     = 1;
 
 
-		if (vkCreateImageView(mLogicalDevice, &createInfo, nullptr,
+		if (vkCreateImageView(logicalDevice, &createInfo, nullptr,
 		                      &mSwapChainImageViews[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create image views");
@@ -184,7 +184,7 @@ void VulkanSwapChain::CreateDepthBufferView()
 		VulkanInitialization::ImageViewCreateInfo(_depthFormat,
 		                                          mAllocatedDepthImage.mImage, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-	if (vkCreateImageView(mLogicalDevice, &createInfo, nullptr,
+	if (vkCreateImageView(logicalDevice, &createInfo, nullptr,
 	                      &mDepthImageView) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create depth image view");
@@ -196,19 +196,19 @@ void VulkanSwapChain::Cleanup()
 	Logger::Log(spdlog::level::info, "Destroying Frame Buffer");
 	for (const auto& swapChainFrameBuffer : mSwapChainFrameBuffers)
 	{
-		vkDestroyFramebuffer(mLogicalDevice, swapChainFrameBuffer, nullptr);
+		vkDestroyFramebuffer(logicalDevice, swapChainFrameBuffer, nullptr);
 	}
 
 	vmaDestroyImage(gGraphics->allocator, mAllocatedDepthImage.mImage,
 	                mAllocatedDepthImage.mAllocation);
-	vkDestroyImageView(mLogicalDevice, mDepthImageView, nullptr);
+	vkDestroyImageView(logicalDevice, mDepthImageView, nullptr);
 
 	for (const auto& swapChainImageView : mSwapChainImageViews)
 	{
-		vkDestroyImageView(mLogicalDevice, swapChainImageView, nullptr);
+		vkDestroyImageView(logicalDevice, swapChainImageView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(mLogicalDevice, mSwapChain, nullptr);
+	vkDestroySwapchainKHR(logicalDevice, mSwapChain, nullptr);
 }
 
 
@@ -288,24 +288,24 @@ void VulkanSwapChain::CreateRenderPass()
 	renderPassInfo.pSubpasses      = &subpass;
 
 
-	if (vkCreateRenderPass(mLogicalDevice, &renderPassInfo, nullptr,
+	if (vkCreateRenderPass(logicalDevice, &renderPassInfo, nullptr,
 	                       &renderPass) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create render pass!");
 	}
 }
 
-void VulkanSwapChain::Initialize(VkDevice& aLogicalDevice,
-                                 VkPhysicalDevice& aPhysicalDevice,
-                                 VkSurfaceKHR& aSurface,
-                                 VkRenderPass& aRenderPass,
-                                 VulkanGraphicsImpl* aWindow)
+void VulkanSwapChain::Initialize(const VkDevice& inLogicalDevice,
+                                 const VkPhysicalDevice& inPhysicalDevice,
+                                 const VkSurfaceKHR& inSurface,
+                                 const VkRenderPass& inRenderPass,
+                                 VulkanGraphicsImpl& inWindow)
 {
-	mLogicalDevice  = aLogicalDevice;
-	mPhysicalDevice = aPhysicalDevice;
-	mSurface        = aSurface;
-	renderPass      = aRenderPass;
-	mApplication    = aWindow;
+	logicalDevice  = inLogicalDevice;
+	physicalDevice = inPhysicalDevice;
+	surface        = inSurface;
+	renderPass     = inRenderPass;
+	application    = &inWindow;
 
 	Logger::Log(spdlog::level::debug, "Constructing Swap Chain");
 	CreateSwapChain();
