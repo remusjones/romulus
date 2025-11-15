@@ -357,7 +357,6 @@ void Scene::Cleanup()
 	for (const auto system : renderPipelines)
 	{
 		system->graphicsPipeline->Destroy();
-		delete system->graphicsPipeline.get();
 	}
 	physicsSystem->Destroy();
 	delete physicsSystem;
