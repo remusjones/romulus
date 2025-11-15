@@ -4,8 +4,10 @@ BasedOnStyle: Google
 AccessModifierOffset: -4
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignOperands: false
-AlignTrailingComments: false
+AlignOperands: true
+AlignTrailingComments: true
+AllowShortIfStatementsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: Yes
 BraceWrapping: 
   AfterCaseLabel: true
   AfterClass: true
@@ -15,11 +17,12 @@ BraceWrapping:
   AfterNamespace: true
   AfterStruct: true
   AfterUnion: true
-  AfterExternBlock: false
+  AfterExternBlock: true
   BeforeCatch: true
   BeforeElse: true
-  BeforeLambdaBody: true
+  BeforeLambdaBody: false
   BeforeWhile: true
+  IndentBraces: false
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
@@ -28,7 +31,7 @@ BreakConstructorInitializers: AfterColon
 BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 120
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-IncludeBlocks: Preserve
+ContinuationIndentWidth: 8
 IncludeCategories: 
   - Regex: '^<.*'
     Priority: 1
@@ -37,20 +40,20 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
-IndentCaseBlocks: true
-IndentCaseLabels: false
+IndentCaseLabels: true
 IndentWidth: 4
 InsertNewlineAtEOF: true
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
+PointerAlignment: Left
+SpaceAfterCStyleCast: true
+SpaceAfterTemplateKeyword: false
 SpaceInEmptyParentheses: false
-SpacesBeforeTrailingComments: 1
 SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 TabWidth: 4
-UseTab: Always
 ...
