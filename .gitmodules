@@ -31,3 +31,6 @@
 [submodule "vendor/bullet3"]
     path = vendor/bullet3
     url = https://github.com/bulletphysics/bullet3.git
+[submodule "vendor/eastl"]
+	path = vendor/eastl
+	url = https://github.com/electronicarts/EASTL.git

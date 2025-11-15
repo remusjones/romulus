@@ -66,6 +66,11 @@ target_include_directories(imguizmo PUBLIC ${IMGUIZMO_PATH})
 target_link_libraries(imguizmo PRIVATE imgui)
 # ------------------------------------
 
+#https://github.com/electronicarts/EASTL
+message("Adding EASTL")
+add_subdirectory(EASTL EASTL)
+# ------------------------------------
+
 # https://github.com/nothings/stb.git
 message("Adding stb")
 # The include directory is now handled by the main CMakeLists.txt
