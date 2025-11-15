@@ -13,15 +13,15 @@
 
 ImGuiLayer::ImGuiLayer() = default;
 
-const char* ImGuiLayer::GetUniqueLabel(const char* aLabel)
+const char* ImGuiLayer::GetUniqueLabel(const char* label)
 {
-	if (mConstructedLabels.contains(aLabel))
+	if (constructedLabels.contains(label))
 	{
-		return mConstructedLabels[aLabel].c_str();
+		return constructedLabels[label].c_str();
 	}
 
-	mConstructedLabels[aLabel] = std::string(aLabel + std::string("##") + MakeGuid());
-	return mConstructedLabels[aLabel].c_str();
+	constructedLabels[label] = std::string(label + std::string("##") + MakeGuid());
+	return constructedLabels[label].c_str();
 }
 
 // Psuedo GUID implementation

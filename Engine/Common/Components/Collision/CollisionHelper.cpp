@@ -9,64 +9,72 @@
 #include "BulletCollision/CollisionShapes/btTriangleMesh.h"
 
 
-btTransform CollisionHelper::TransformToBulletTransform(const Transform &aOther) {
-    return btTransform(GlmToBullet(aOther.GetLocalRotation()), GlmToBullet(aOther.GetLocalPosition()));
-}
-
-
-btVector3 CollisionHelper::GlmToBullet(const glm::vec3 &aOther) {
-    return btVector3(aOther.x, aOther.y, aOther.z);
-}
-
-btQuaternion CollisionHelper::GlmToBullet(const glm::quat &aOther) {
-    return btQuaternion(aOther.x, aOther.y, aOther.z, aOther.w);
-}
-
-glm::vec3 CollisionHelper::BulletToGlm(const btVector3 &aOther) {
-    return glm::vec3(aOther.getX(), aOther.getY(), aOther.getZ());
-}
-
-glm::quat CollisionHelper::BulletToGlm(const btQuaternion &aOther) {
-    return glm::quat(aOther.w(),aOther.x(), aOther.y(), aOther.z());
-}
-
-btBvhTriangleMeshShape * CollisionHelper::MakeCollisionMesh(const std::vector<Vertex>& aVertices,
-    const std::vector<int32_t>& aIndices) {
-    btTriangleMesh* triangle_mesh = new btTriangleMesh(); // Bullet Physics triangle mesh
-
-    for(int i = 0; i<aIndices.size(); i+=3)
-    {
-        btVector3 vertex0(aVertices[aIndices[i]].position.x, aVertices[aIndices[i]].position.x, aVertices[aIndices[i]].position.z);
-        btVector3 vertex1(aVertices[aIndices[i+1]].position.x, aVertices[aIndices[i+1]].position.y, aVertices[aIndices[i+1]].position.z);
-        btVector3 vertex2(aVertices[aIndices[i+2]].position.x, aVertices[aIndices[i+2]].position.y, aVertices[aIndices[i+2]].position.z);
-        triangle_mesh->addTriangle(vertex0, vertex1, vertex2);
-    }
-
-    // Use the btBvhTriangleMeshShape for static triangle mesh
-    return new btBvhTriangleMeshShape(triangle_mesh, true);
-}
-
-btBoxShape* CollisionHelper::MakeAABBCollision(const std::vector<Vertex>& aVertices)
+btTransform CollisionHelper::TransformToBulletTransform(const Transform& otherTransform)
 {
-    // Find min and max vertices along each axis
-    btVector3 minVertex(aVertices[0].position.x, aVertices[0].position.y, aVertices[0].position.z);
-    btVector3 maxVertex(aVertices[0].position.x, aVertices[0].position.y, aVertices[0].position.z);
+	return btTransform(GlmToBullet(otherTransform.GetLocalRotation()), GlmToBullet(otherTransform.GetLocalPosition()));
+}
 
-    for (const Vertex& vertex : aVertices)
-    {
-        minVertex.setX(std::min(minVertex.x(), vertex.position.x));
-        minVertex.setY(std::min(minVertex.y(), vertex.position.y));
-        minVertex.setZ(std::min(minVertex.z(), vertex.position.z));
 
-        maxVertex.setX(std::max(maxVertex.x(), vertex.position.x));
-        maxVertex.setY(std::max(maxVertex.y(), vertex.position.y));
-        maxVertex.setZ(std::max(maxVertex.z(), vertex.position.z));
-    }
+btVector3 CollisionHelper::GlmToBullet(const glm::vec3& otherVector)
+{
+	return btVector3(otherVector.x, otherVector.y, otherVector.z);
+}
 
-    // Calculate extents and half extents for the box shape
-    const btVector3 extents = maxVertex - minVertex;
-    const btVector3 halfExtents = extents * 0.5f;
+btQuaternion CollisionHelper::GlmToBullet(const glm::quat& otherQuaternion)
+{
+	return btQuaternion(otherQuaternion.x, otherQuaternion.y, otherQuaternion.z, otherQuaternion.w);
+}
 
-    // Create and return AABB (Axis-Aligned Bounding Box)
-    return new btBoxShape(halfExtents);
+glm::vec3 CollisionHelper::BulletToGlm(const btVector3& otherVector)
+{
+	return glm::vec3(otherVector.getX(), otherVector.getY(), otherVector.getZ());
+}
+
+glm::quat CollisionHelper::BulletToGlm(const btQuaternion& otherQuaternion)
+{
+	return glm::quat(otherQuaternion.w(), otherQuaternion.x(), otherQuaternion.y(), otherQuaternion.z());
+}
+
+btBvhTriangleMeshShape* CollisionHelper::MakeCollisionMesh(const std::vector<Vertex>& inVertices,
+                                                           const std::vector<int32_t>& inIndices)
+{
+	btTriangleMesh* triangleMesh = new btTriangleMesh(); // Bullet Physics triangle mesh
+
+	for (int i = 0; i < inIndices.size(); i += 3)
+	{
+		btVector3 vertex0(inVertices[inIndices[i]].position.x, inVertices[inIndices[i]].position.x,
+		                  inVertices[inIndices[i]].position.z);
+		btVector3 vertex1(inVertices[inIndices[i + 1]].position.x, inVertices[inIndices[i + 1]].position.y,
+		                  inVertices[inIndices[i + 1]].position.z);
+		btVector3 vertex2(inVertices[inIndices[i + 2]].position.x, inVertices[inIndices[i + 2]].position.y,
+		                  inVertices[inIndices[i + 2]].position.z);
+		triangleMesh->addTriangle(vertex0, vertex1, vertex2);
+	}
+
+	return new btBvhTriangleMeshShape(triangleMesh, true);
+}
+
+btBoxShape* CollisionHelper::MakeAABBCollision(const std::vector<Vertex>& inVertices)
+{
+	// Find min and max vertices along each axis
+	btVector3 minVertex(inVertices[0].position.x, inVertices[0].position.y, inVertices[0].position.z);
+	btVector3 maxVertex(inVertices[0].position.x, inVertices[0].position.y, inVertices[0].position.z);
+
+	for (const Vertex& vertex : inVertices)
+	{
+		minVertex.setX(std::min(minVertex.x(), vertex.position.x));
+		minVertex.setY(std::min(minVertex.y(), vertex.position.y));
+		minVertex.setZ(std::min(minVertex.z(), vertex.position.z));
+
+		maxVertex.setX(std::max(maxVertex.x(), vertex.position.x));
+		maxVertex.setY(std::max(maxVertex.y(), vertex.position.y));
+		maxVertex.setZ(std::max(maxVertex.z(), vertex.position.z));
+	}
+
+	// Calculate extents and half extents for the box shape
+	const btVector3 extents     = maxVertex - minVertex;
+	const btVector3 halfExtents = extents * 0.5f;
+
+	// Create and return AABB (Axis-Aligned Bounding Box)
+	return new btBoxShape(halfExtents);
 }

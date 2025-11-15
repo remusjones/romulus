@@ -18,8 +18,8 @@ public:
 
 	virtual void Tick(float aDeltaTime);
 	virtual void Cleanup();
-	virtual void AddComponent(Component* aComponent);
-	virtual void RemoveComponent(Component* aComponent);
+	virtual void AddComponent(Component* component);
+	virtual void RemoveComponent(Component* component);
 
 
 	template <typename T>

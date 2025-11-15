@@ -22,7 +22,7 @@ public:
 
     [[nodiscard]] btAlignedObjectArray <btRigidBody*> GetRigidBodies() const;
     [[nodiscard]] btAlignedObjectArray <btCollisionShape*> GetCollisionShapes() const;
-    [[nodiscard]] btBroadphaseInterface* GetBroadphase() const;
+    [[nodiscard]] btBroadphaseInterface* GetBroadPhase() const;
     [[nodiscard]] btCollisionDispatcher* GetDispatcher() const;
     [[nodiscard]] btConstraintSolver* GetConstraintSolver() const;
     [[nodiscard]] btDefaultCollisionConfiguration* GetCollisionConfiguration() const;
@@ -30,14 +30,14 @@ public:
 
 
 private:
-    btAlignedObjectArray<btCollisionShape*> m_CollisionShapes;
-    btAlignedObjectArray<btRigidBody*> m_AllocatedRigidBodies;
+    btAlignedObjectArray<btCollisionShape*> collisionShapes;
+    btAlignedObjectArray<btRigidBody*> allocatedRigidbodies;
 
-    btBroadphaseInterface* m_broadphaseInterface;
-    btCollisionDispatcher* m_collisionDispatcher;
-    btConstraintSolver* m_constraintSolver;
-    btDefaultCollisionConfiguration* m_collisionConfiguration;
-    btDiscreteDynamicsWorld* m_dynamicsWorld;
+    btBroadphaseInterface* broadphaseInterface;
+    btCollisionDispatcher* collisionDispatcher;
+    btConstraintSolver* constraintSolver;
+    btDefaultCollisionConfiguration* collisionConfiguration;
+    btDiscreteDynamicsWorld* dynamicsWorld;
 
     float_t mGravity = -9.81f;
 };

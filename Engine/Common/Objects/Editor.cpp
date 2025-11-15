@@ -12,13 +12,13 @@
 
 void Editor::Create()
 {
-	mAssetDirectoryMonitor = std::make_unique<DirectoryMonitor>();
-	mAssetDirectoryMonitor->CreateDirectoryMonitor(FileManagement::GetAssetPath());
+	directoryMonitor = std::make_unique<DirectoryMonitor>();
+	directoryMonitor->CreateDirectoryMonitor(FileManagement::GetAssetPath());
 
 	// Works around the path having a '/' at the end TODO: fix this
-	mCurrentPath   = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
-	mContextBounds = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
-	GetFilesInDirectory(mCurrentPath, mFilesInDirectory, mDirectoriesInDirectory);
+	directoryPath   = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
+	contextBounds = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
+	GetFilesInDirectory(directoryPath, filesInDirectory, nestedDirectories);
 }
 
 
@@ -29,25 +29,25 @@ void Editor::OnImGuiRender()
 	DrawContent();
 }
 
-void Editor::FileBrowser(const std::filesystem::path& aPath)
+void Editor::FileBrowser(const std::filesystem::path& path)
 {
-	ImGui::Text("Current path: %s", aPath.string().c_str());
-	if (aPath.has_parent_path() && aPath != mContextBounds)
+	ImGui::Text("Current path: %s", path.string().c_str());
+	if (path.has_parent_path() && path != contextBounds)
 	{
 		if (ImGui::Button("Up"))
 		{
-			mCurrentPath = aPath.parent_path();
-			GetFilesInDirectory(mCurrentPath, mFilesInDirectory, mDirectoriesInDirectory);
+			directoryPath = path.parent_path();
+			GetFilesInDirectory(directoryPath, filesInDirectory, nestedDirectories);
 		}
 	}
 
-	for (auto& entry : mDirectoriesInDirectory)
+	for (auto& entry : nestedDirectories)
 	{
 		ImGui::PushID(entry.c_str());
 		if (ImGui::Button(entry.c_str()))
 		{
-			mCurrentPath = std::filesystem::path(aPath) / entry;
-			GetFilesInDirectory(mCurrentPath, mFilesInDirectory, mDirectoriesInDirectory);
+			directoryPath = std::filesystem::path(path) / entry;
+			GetFilesInDirectory(directoryPath, filesInDirectory, nestedDirectories);
 		}
 		ImGui::PopID();
 	}
@@ -56,20 +56,20 @@ void Editor::FileBrowser(const std::filesystem::path& aPath)
 void Editor::DrawContent()
 {
 	ImGui::Begin("DirectoryBrowser");
-	FileBrowser(mCurrentPath);
+	FileBrowser(directoryPath);
 	ImGui::End();
 
 	ImGui::Begin("File Display");
 
 	if (ImGui::Button(GetUniqueLabel("Refresh Files")))
 	{
-		mAssetDirectoryMonitor->UpdateDirectoryMonitor();
+		directoryMonitor->UpdateDirectoryMonitor();
 	}
 
 	ImGui::BeginTable("files", 2, ImGuiTableFlags_BordersOuterH |
 	                  ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_BordersInnerV);
 
-	for (const auto& entry : mFilesInDirectory)
+	for (const auto& entry : filesInDirectory)
 	{
 		// TODO: Extract directly from importer files instead of raw paths
 
@@ -79,33 +79,39 @@ void Editor::DrawContent()
 		ImGui::TableNextColumn();
 	}
 	ImGui::EndTable();
-	mAssetDirectoryMonitor->OnImGuiRender();
+	directoryMonitor->OnImGuiRender();
 	ImGui::End();
 }
 
-void Editor::GetFilesInDirectory(const std::filesystem::path& aPath,
-                                 std::vector<std::filesystem::directory_entry>& aFilesInDirectory)
+void Editor::GetFilesInDirectory(const std::filesystem::path& path,
+                                 std::vector<std::filesystem::directory_entry>& resultFilesInDirectory)
 {
-	aFilesInDirectory.clear();
-	for (auto& entry : std::filesystem::directory_iterator(aPath))
+	resultFilesInDirectory.clear();
+	for (auto& entry : std::filesystem::directory_iterator(path))
 	{
 		if (!is_directory(entry.status()))
-			aFilesInDirectory.push_back(entry);
+		{
+			resultFilesInDirectory.push_back(entry);
+		}
 	}
 }
 
-void Editor::GetFilesInDirectory(const std::filesystem::path& aPath,
-                                 std::vector<std::filesystem::directory_entry>& filesInDirectory,
-                                 std::vector<std::string>& aDirectoriesInDirectory)
+void Editor::GetFilesInDirectory(const std::filesystem::path& path,
+                                 std::vector<std::filesystem::directory_entry>& resultFiles,
+                                 std::vector<std::string>& resultDirectories)
 {
-	filesInDirectory.clear();
-	aDirectoriesInDirectory.clear();
+	resultFiles.clear();
+	resultDirectories.clear();
 
-	for (auto& entry : std::filesystem::directory_iterator(aPath))
+	for (auto& entry : std::filesystem::directory_iterator(path))
 	{
 		if (!is_directory(entry.status()))
-			filesInDirectory.push_back(entry);
+		{
+			resultFiles.push_back(entry);
+		}
 		else
-			aDirectoriesInDirectory.push_back(entry.path().filename().string());
+		{
+			resultDirectories.push_back(entry.path().filename().string());
+		}
 	}
 }

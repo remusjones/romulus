@@ -7,9 +7,9 @@
 #include "Objects/ImGuiLayer.h"
 
 #ifdef _MSC_VER
-    #define FUNCTION_SIGNATURE __FUNCSIG__
+#define FUNCTION_SIGNATURE __FUNCSIG__
 #else
-    #define FUNCTION_SIGNATURE __PRETTY_FUNCTION__
+#define FUNCTION_SIGNATURE __PRETTY_FUNCTION__
 #endif
 
 #define PROFILE_SCOPE(name) ScopedProfileTimer timer##__LINE__ = (Profiler::GetInstance().mRunning ? ScopedProfileTimer(name, Profiler::GetInstance(), FUNCTION_SIGNATURE, __LINE__) : ScopedProfileTimer())
@@ -23,43 +23,45 @@ struct ManagedProfileTimer;
 struct TimerResult;
 struct ScopedProfileTimer;
 
-class Profiler final : public ImGuiLayer{
+class Profiler final : public ImGuiLayer
+{
 public:
-    // TODO: Maybe make a profiler factory for different sessions/groups?
-    static Profiler& GetInstance() {
-        static Profiler instance;
-        return instance;
-    }
+	// TODO: Maybe make a profiler factory for different sessions/groups?
+	static Profiler& GetInstance()
+	{
+		static Profiler instance;
+		return instance;
+	}
 
-    Profiler(Profiler const&) = delete;
-    void operator=(Profiler const&) = delete;
+	Profiler(Profiler const&) = delete;
+	void operator=(Profiler const&) = delete;
 
-    void EndSample(const TimerResult &aResult);
+	void EndSample(const TimerResult& result);
 
-    void BeginProfile(const char *aName, const char *aFunctionSignature, const int aLineNumber);
-    void EndProfile();
+	void BeginProfile(const char* profilerName, const char* functionSignature, int lineNumber);
+	void EndProfile();
 
 
-    Profiler();
-    ~Profiler() override;
-private:
-    void EnsureProfilerLimits(const std::string &aName);
-    void StartTraceSession();
-    void ExportTraceFrame(const TimerResult& aResult);
-    void EndTraceSession();
-
-public:
-    void OnImGuiRender() override;
+	Profiler();
+	~Profiler() override;
 
 private:
+	void EnsureProfilerLimits(const std::string& aName);
+	void StartTraceSession();
+	void ExportTraceFrame(const TimerResult& aResult);
+	void EndTraceSession();
 
-    bool mSerializeTrace = false;
-    bool mRunning = true;
-    std::stack<ManagedProfileTimer> mTimerStack;
-    std::unordered_map<std::string, std::deque<TimerResult>> mTimerHistory;
-    const int mMaxDisplayedHistorySize = 100;
-    const char* mSessionTraceFilename = "trace.json";
-    std::mutex mTraceWriteMutex;
-    std::ofstream mSessionOutputStream;
-    long long mTraceFrameCounter = 0;
+public:
+	void OnImGuiRender() override;
+
+private:
+	bool serializeTrace = false;
+	bool running = true;
+	std::stack<ManagedProfileTimer> timerStack;
+	std::unordered_map<std::string, std::deque<TimerResult>> timerHistory;
+	const int maxDisplayedHistoryTime = 100;
+	const char* sessionTraceFilename = "trace.json";
+	std::mutex traceWriteMutex;
+	std::ofstream sessionOutputStream;
+	long long traceFrameCounter = 0;
 };

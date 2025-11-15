@@ -8,24 +8,24 @@
 
 class Entity;
 
-class Component {
+class Component
+{
 public:
-    virtual ~Component() = default;
+	virtual ~Component() = default;
 
-    virtual void SetEntity(Entity* aEntity);
-    virtual void ClearEntity();
+	virtual void SetEntity(Entity* entity);
+	virtual void ClearEntity();
 
-    virtual void SetName(const std::string &aName);
-    virtual std::string GetName();
+	virtual void SetName(const std::string& inName);
+	virtual std::string& GetName();
 
-    virtual void Tick(float aDeltaTime);
-    virtual void Destroy();
-    virtual void Initialize();
-
+	virtual void Tick(float deltaTime);
+	virtual void Destroy();
+	virtual void Initialize();
 
 protected:
-    Entity* m_attachedEntity;
+	Entity* attachedEntity = nullptr;
 
-    // TODO: Replace with Hash
-    std::string mName;
+	// todo: Replace with Hash
+	std::string name;
 };

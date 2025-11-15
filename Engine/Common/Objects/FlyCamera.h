@@ -22,8 +22,8 @@ public:
 	void Right(const SDL_KeyboardEvent& keyboardEvent);
 	void Up(const SDL_KeyboardEvent& keyboardEvent);
 	void Down(const SDL_KeyboardEvent& keyboardEvent);
-	void MouseMovement(const SDL_MouseMotionEvent& aMouseMotion);
-	void MouseInput(const SDL_MouseButtonEvent& InMouseInput);
+	void MouseMovement(const SDL_MouseMotionEvent& mouseMotion);
+	void MouseInput(const SDL_MouseButtonEvent& inMouseInput);
 
 	bool IsCameraConsumingInput() const;
 

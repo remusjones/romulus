@@ -6,28 +6,35 @@
 #include "Component.h"
 #include "Objects/Entity.h"
 
-void Component::SetEntity(Entity *aEntity) {
-    m_attachedEntity = aEntity;
+void Component::SetEntity(Entity* entity)
+{
+	attachedEntity = entity;
 }
 
-void Component::ClearEntity() {
-    m_attachedEntity = nullptr;
+void Component::ClearEntity()
+{
+	attachedEntity = nullptr;
 }
 
-void Component::SetName(const std::string& aName) {
-    mName = aName;
+void Component::SetName(const std::string& inName)
+{
+	name = inName;
 }
 
-std::string Component::GetName() {
-    return mName;
+std::string& Component::GetName()
+{
+	return name;
 }
 
-void Component::Tick(float aDeltaTime) {
+void Component::Tick(float deltaTime)
+{
 }
 
-void Component::Destroy() {
-    m_attachedEntity->RemoveComponent(this);
+void Component::Destroy()
+{
+	attachedEntity->RemoveComponent(this);
 }
 
-void Component::Initialize() {
+void Component::Initialize()
+{
 }

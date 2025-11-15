@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <algorithm>
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/detail/type_quat.hpp>
@@ -12,97 +11,75 @@
 #include "Objects/ImGuiLayer.h"
 
 
-class Transform : public ImGuiLayer {
+class Transform final : public ImGuiLayer
+{
 public:
-    Transform();
+	Transform();
 
-    //TODO: Make vectors constant
-    glm::vec3 Forward() const { return mRotation * glm::vec3(0, 0, 1); }
-    glm::vec3 Up() const { return mRotation * glm::vec3(0, 1, 0); }
-    glm::vec3 Right() const { return mRotation * glm::vec3(1, 0, 0); }
+	//TODO: Make vectors constant
+	glm::vec3 Forward() const { return rotation * glm::vec3(0, 0, 1); }
+	glm::vec3 Up() const { return rotation * glm::vec3(0, 1, 0); }
+	glm::vec3 Right() const { return rotation * glm::vec3(1, 0, 0); }
 
-    glm::vec3 GetLocalPosition() const;
+	// todo: all these should be cached for multiple requests per changed vector
+	// - can we hash the matrix and do cache to avoid recalculating all these per get?
+	glm::vec3 GetLocalPosition() const;
+	glm::quat GetLocalRotation() const;
+	glm::vec3 GetLocalEuler() const;
+	glm::vec3 GetLocalScale() const;
+	glm::vec3 GetWorldPosition();
+	glm::quat GetWorldRotation();
+	glm::vec3 GetWorldScale();
 
-    glm::quat GetLocalRotation() const;
+	void Translate(const glm::vec3& translation);
+	void TranslateLocal(const glm::vec3& translation);
 
-    glm::vec3 GetLocalEuler() const;
+	void SetLocalPosition(const glm::vec3& inPosition);
+	void SetWorldPosition(const glm::vec3& inPositon);
 
-    glm::vec3 GetLocalScale() const;
+	void SetLocalRotation(const glm::vec3& inRotation);
+	void SetLocalRotation(const glm::quat& inRotation);
+	void SetWorldRotation(const glm::quat& inRotation);
 
-    glm::vec3 GetWorldPosition();
+	void RotateAxisLocal(float inAngle, glm::vec3 inRotation);
+	void RotateAxisLocal(const glm::vec2& inEulerAxisRotation);
+	void RotateAxisLocal(const glm::vec3& inEulerRotation);
+	void LocalRotate(const glm::quat& inRotation);
 
-    glm::quat GetWorldRotation();
+	void SetLocalScale(const glm::vec3& inScale);
+	void SetWorldScale(const glm::vec3& inScale);
 
-    glm::vec3 GetWorldScale();
+	void SetMatrix(const glm::mat4& inMatrix);
 
-    void Translate(glm::vec3 aTranslation);
+	void SetDirty();
+	bool GetDirty() const;
 
-    void TranslateLocal(glm::vec3 aTranslation);
+	void SetParent(Transform* inParent);
+	Transform* GetParent() const;
+	std::vector<Transform*> GetChildren() const;
+	size_t GetChildCount() const;
 
-    void SetLocalPosition(glm::vec3 aNewPosition);
+	glm::mat4 GetWorldMatrix();
+	glm::mat4 GetLocalMatrix();
 
-    void SetLocalRotation(glm::vec3 aEulerRotation);
+	glm::mat4 GetRotationMatrix() const { return glm::mat4_cast(rotation); }
+	glm::mat4 GetTranslationMatrix() const { return glm::translate(glm::identity<glm::mat4>(), position); }
+	glm::mat4 GetScaleMatrix() const { return glm::scale(glm::identity<glm::mat4>(), scale); }
 
-    void SetLocalRotation(glm::quat aNewRotation);
-
-    void SetWorldPosition(glm::vec3 aNewPosition);
-
-    void SetWorldRotation(glm::quat aNewRotation);
-
-    void RotateAxisLocal(float aAngle, glm::vec3 aRotation);
-
-    void RotateAxisLocal(const glm::vec2 &aEulerAxisRotation);
-
-    void RotateAxisLocal(glm::vec3& aEulerRotation);
-
-    void RotateAxisWorld(float aAngle, glm::vec3 aRotation);
-
-    void RotateAxisWorld(const glm::vec2 &aEulerAxisRotation);
-
-    void RotateAxisWorld(glm::vec3 aEulerRotation);
-
-
-    void LocalRotate(glm::quat aRotation);
-
-    void SetLocalScale(glm::vec3 aNewScale);
-
-    void SetWorldScale(glm::vec3 aNewScale);
-
-    void SetMatrix(glm::mat4 aMatrix);
-
-    void SetDirty();
-
-    bool GetDirty() const;
-
-    void SetParent(Transform *aParent);
-
-    Transform *GetParent() const;
-    std::vector<Transform*> GetChildren() const;
-    size_t GetChildCount() const;
-
-    glm::mat4 GetWorldMatrix();
-    glm::mat4 GetLocalMatrix();
-
-    glm::mat4 GetRotationMatrix() const { return glm::mat4_cast(mRotation); }
-    glm::mat4 GetTranslationMatrix() const { return glm::translate(glm::identity<glm::mat4>(), mPosition); }
-    glm::mat4 GetScaleMatrix() const { return glm::scale(glm::identity<glm::mat4>(), mScale); }
-
-    void OnImGuiRender() override;
+	void OnImGuiRender() override;
 
 private:
-    glm::vec3 mPosition;
-    glm::quat mRotation;
-    glm::vec3 mScale;
+	glm::vec3 position;
+	glm::quat rotation;
+	glm::vec3 scale;
 
-    glm::mat4 mLocalMatrix;
-    bool mMatrixDirty;
+	glm::mat4 localMatrix;
+	bool matrixIsDirtyFlag;
 
-    Transform *mParent;
-    std::vector<Transform *> mChildren;
+	Transform* parent;
+	std::vector<Transform*> children;
 
-    void RemoveChild(Transform *aChild);
-
-    void AddChild(Transform *aChild);
-
-    void UpdateLocalMatrix();
+	void RemoveChild(Transform* child);
+	void AddChild(Transform* child);
+	void UpdateLocalMatrix();
 };

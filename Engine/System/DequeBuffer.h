@@ -1,19 +1,24 @@
 #pragma once
 #include <queue>
 
-class DequeBuffer {
+template<typename T>
+class DequeBuffer
+{
 public:
-    DequeBuffer(const size_t size)
-        : mSize(size), mCurrentIndex(0) {
-    }
+	DequeBuffer(const size_t size)
+		: size(size)
+	{
+	}
 
-    void AddElement(float value) {
-        mBuffer.emplace_back(value);
-        if (mBuffer.size() > mSize)
-            mBuffer.pop_front();
-    }
+	void AddElement(T value)
+	{
+		buffer.emplace_back(value);
+		if (buffer.size() > size)
+		{
+			buffer.pop_front();
+		}
+	}
 
-    std::deque<float> mBuffer;
-    size_t mSize;
-    size_t mCurrentIndex;
+	std::deque<T> buffer;
+	size_t size;
 };

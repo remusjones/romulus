@@ -15,12 +15,9 @@ glm::mat4 Camera::GetPerspectiveMatrix() const
 {
 	const glm::mat4 perspective =
 		glm::perspective(glm::radians(fov),
-		                 static_cast<float>(gGraphics->swapChain->
-		                                               swapChainExtents.width) / static_cast<float>(gGraphics->swapChain
-			                 ->
-			                 swapChainExtents.height),
-		                 zNear,
-		                 zFar);
+		                 static_cast<float>(
+		                 	gGraphics->swapChain->swapChainExtents.width) /
+		                 	static_cast<float>(gGraphics->swapChain->swapChainExtents.height), zNear, zFar);
 
 	return perspective;
 }

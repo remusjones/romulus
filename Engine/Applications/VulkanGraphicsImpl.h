@@ -35,7 +35,7 @@ public:
 	void Run() override;
 	float DeltaTimeUnscaled() const { return deltaTime; }
 	float GetFps() const { return fps; }
-	DequeBuffer& GetFpsHistory() { return fpsCircularBuffer; }
+	DequeBuffer<float>& GetFpsHistory() { return fpsCircularBuffer; }
 
 private:
 	void InitializeVulkan();
@@ -87,8 +87,8 @@ public:
 	VkInstance vulcanInstance = VK_NULL_HANDLE;
 	VkDevice logicalDevice{};
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	VmaAllocator allocator = VK_NULL_HANDLE;
+	VkSurfaceKHR surface            = VK_NULL_HANDLE;
+	VmaAllocator allocator          = VK_NULL_HANDLE;
 
 	std::unique_ptr<Scene> activeScene;
 	SDL_Window* window = nullptr; // TODO: Move to interface
@@ -109,7 +109,7 @@ private:
 	float fps;
 
 	VkDescriptorPool imguiDescriptionPool;
-	DequeBuffer fpsCircularBuffer;
+	DequeBuffer<float> fpsCircularBuffer;
 	std::vector<VkExtensionProperties> Extensions;
 	VkQueue graphicsQueue;
 	VkQueue PresentQueue;

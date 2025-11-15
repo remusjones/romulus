@@ -4,119 +4,141 @@
 
 #include "PhysicsSystem.h"
 
-#include "BulletCollision/BroadphaseCollision/btDbvtBroadphase.h"
-#include "BulletCollision/CollisionDispatch/btCollisionDispatcher.h"
-#include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
-#include "BulletCollision/CollisionShapes/btCollisionShape.h"
-#include "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h"
-#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
-#include "LinearMath/btVector3.h"
+#include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
+#include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
+#include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
+#include <BulletCollision/CollisionShapes/btCollisionShape.h>
+#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+#include <LinearMath/btVector3.h>
 
-void PhysicsSystem::Create() {
-    m_collisionConfiguration = new btDefaultCollisionConfiguration();
-    m_collisionDispatcher = new btCollisionDispatcher(m_collisionConfiguration);
-    m_broadphaseInterface = new btDbvtBroadphase();
-    auto *sol = new btSequentialImpulseConstraintSolver();
-    m_constraintSolver = sol;
+void PhysicsSystem::Create()
+{
+	collisionConfiguration = new btDefaultCollisionConfiguration();
+	collisionDispatcher    = new btCollisionDispatcher(collisionConfiguration);
+	broadphaseInterface    = new btDbvtBroadphase();
+	auto* solver                = new btSequentialImpulseConstraintSolver();
+	constraintSolver       = solver;
 
-    m_dynamicsWorld = new btDiscreteDynamicsWorld(m_collisionDispatcher, m_broadphaseInterface, m_constraintSolver, m_collisionConfiguration);
-    m_dynamicsWorld->setGravity(btVector3(0, mGravity, 0));
+	dynamicsWorld = new btDiscreteDynamicsWorld(collisionDispatcher, broadphaseInterface, constraintSolver,
+	                                              collisionConfiguration);
+	dynamicsWorld->setGravity(btVector3(0, mGravity, 0));
 }
 
 void PhysicsSystem::AwakeRigidBodies()
 {
-    for (int i = 0; i < m_AllocatedRigidBodies.size(); i++) {
-        m_AllocatedRigidBodies[i]->activate(true);
-    }
+	for (int i = 0; i < allocatedRigidbodies.size(); i++)
+	{
+		allocatedRigidbodies[i]->activate(true);
+	}
 }
 
-void PhysicsSystem::Tick(const float aDeltaTime) {
-    if (m_dynamicsWorld) {
-        m_dynamicsWorld->stepSimulation(aDeltaTime, 10, 1.f / 240.f);
-    }
+void PhysicsSystem::Tick(const float aDeltaTime)
+{
+	if (dynamicsWorld)
+	{
+		dynamicsWorld->stepSimulation(aDeltaTime, 10, 1.f / 240.f);
+	}
 }
 
-void PhysicsSystem::Destroy() {
+void PhysicsSystem::Destroy()
+{
+	for (int i = 0; i < allocatedRigidbodies.size(); i++)
+	{
+		if (dynamicsWorld)
+		{
+			dynamicsWorld->removeRigidBody(allocatedRigidbodies[i]);
+		}
+		delete allocatedRigidbodies[i];
+	}
 
-    for (int i = 0; i < m_AllocatedRigidBodies.size(); i++) {
-        if (m_dynamicsWorld)
-            m_dynamicsWorld->removeRigidBody(m_AllocatedRigidBodies[i]);
-        delete m_AllocatedRigidBodies[i];
-    }
+	if (dynamicsWorld)
+	{
+		int i;
 
-    if (m_dynamicsWorld) {
-        int i;
+		for (i = dynamicsWorld->getNumConstraints() - 1; i >= 0; i--)
+		{
+			dynamicsWorld->removeConstraint(dynamicsWorld->getConstraint(i));
+		}
 
-        for (i = m_dynamicsWorld->getNumConstraints() - 1; i >= 0; i--) {
-            m_dynamicsWorld->removeConstraint(m_dynamicsWorld->getConstraint(i));
-        }
+		for (i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
+		{
+			btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];
+			if (btRigidBody* body = btRigidBody::upcast(obj); body && body->getMotionState())
+			{
+				delete body->getMotionState();
+			}
+			dynamicsWorld->removeCollisionObject(obj);
+			delete obj;
+		}
+	}
+	for (int j = 0; j < collisionShapes.size(); j++)
+	{
+		delete collisionShapes[j];
+	}
 
-        for (i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--) {
-            btCollisionObject *obj = m_dynamicsWorld->getCollisionObjectArray()[i];
-            if (btRigidBody *body = btRigidBody::upcast(obj); body && body->getMotionState()) {
-                delete body->getMotionState();
-            }
-            m_dynamicsWorld->removeCollisionObject(obj);
-            delete obj;
-        }
-    }
-    for (int j = 0; j < m_CollisionShapes.size(); j++) {
-        delete m_CollisionShapes[j];
-    }
 
+	collisionShapes.clear();
 
-    m_CollisionShapes.clear();
+	delete dynamicsWorld;
+	dynamicsWorld = nullptr;
 
-    delete m_dynamicsWorld;
-    m_dynamicsWorld = nullptr;
+	delete constraintSolver;
+	constraintSolver = nullptr;
 
-    delete m_constraintSolver;
-    m_constraintSolver = nullptr;
+	delete broadphaseInterface;
+	broadphaseInterface = nullptr;
 
-    delete m_broadphaseInterface;
-    m_broadphaseInterface = nullptr;
+	delete collisionDispatcher;
+	collisionDispatcher = nullptr;
 
-    delete m_collisionDispatcher;
-    m_collisionDispatcher = nullptr;
-
-    delete m_collisionConfiguration;
-    m_collisionConfiguration = nullptr;
+	delete collisionConfiguration;
+	collisionConfiguration = nullptr;
 }
 
-btAlignedObjectArray<btRigidBody *> PhysicsSystem::GetRigidBodies() const {
-    return m_AllocatedRigidBodies;
+btAlignedObjectArray<btRigidBody*> PhysicsSystem::GetRigidBodies() const
+{
+	return allocatedRigidbodies;
 }
 
-btAlignedObjectArray<btCollisionShape *>PhysicsSystem::GetCollisionShapes() const {
-    return m_CollisionShapes;
+btAlignedObjectArray<btCollisionShape*> PhysicsSystem::GetCollisionShapes() const
+{
+	return collisionShapes;
 }
 
-btBroadphaseInterface *PhysicsSystem::GetBroadphase() const {
-    return m_broadphaseInterface;
+btBroadphaseInterface* PhysicsSystem::GetBroadPhase() const
+{
+	return broadphaseInterface;
 }
 
-btCollisionDispatcher *PhysicsSystem::GetDispatcher() const {
-    return m_collisionDispatcher;
+btCollisionDispatcher* PhysicsSystem::GetDispatcher() const
+{
+	return collisionDispatcher;
 }
 
-btConstraintSolver *PhysicsSystem::GetConstraintSolver() const {
-    return m_constraintSolver;
+btConstraintSolver* PhysicsSystem::GetConstraintSolver() const
+{
+	return constraintSolver;
 }
 
-btDefaultCollisionConfiguration *PhysicsSystem::GetCollisionConfiguration() const {
-    return m_collisionConfiguration;
+btDefaultCollisionConfiguration* PhysicsSystem::GetCollisionConfiguration() const
+{
+	return collisionConfiguration;
 }
 
-btDiscreteDynamicsWorld *PhysicsSystem::GetDynamicsWorld() const {
-    return m_dynamicsWorld;
+btDiscreteDynamicsWorld* PhysicsSystem::GetDynamicsWorld() const
+{
+	return dynamicsWorld;
 }
 
-void PhysicsSystem::AddRigidBody(btRigidBody* aRigidBody) {
-    m_dynamicsWorld->addRigidBody(aRigidBody);
-    m_AllocatedRigidBodies.push_back(aRigidBody);
-    m_CollisionShapes.push_back(aRigidBody->getCollisionShape());
+void PhysicsSystem::AddRigidBody(btRigidBody* aRigidBody)
+{
+	dynamicsWorld->addRigidBody(aRigidBody);
+	allocatedRigidbodies.push_back(aRigidBody);
+	collisionShapes.push_back(aRigidBody->getCollisionShape());
 }
 
-void PhysicsSystem::AddCollisionShape(btCollisionShape* aCollisionShape) {
-    m_CollisionShapes.push_back(aCollisionShape);
+void PhysicsSystem::AddCollisionShape(btCollisionShape* aCollisionShape)
+{
+	collisionShapes.push_back(aCollisionShape);
 }

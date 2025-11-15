@@ -18,7 +18,7 @@ public:
 	{
 		static_assert(std::is_base_of_v<Material, T>, "T must derive from Material");
 		std::unique_ptr<T> material = std::make_unique<T>(materialName);
-		T* materialPtr              = material.get();
+		T* materialPtr = material.get();
 		materials.push_back(std::move(material)); // move into array
 		return materialPtr;
 	}
@@ -44,7 +44,7 @@ public:
 	{
 		std::vector<VkDescriptorSetLayout> descriptors(materials.size());
 
-		for (int i         = 0; i < materials.size(); i++)
+		for (int i = 0; i < materials.size(); i++)
 			descriptors[i] = materials[i]->GetDescriptorLayout();
 
 		return descriptors;

@@ -13,56 +13,62 @@
 #include "Objects/Entity.h"
 #include "Physics/PhysicsSystem.h"
 
-void ColliderComponent::Create(PhysicsSystem* aPhysicsSystem, ColliderCreateInfo& aCreateInfo) {
-    m_physicsSystem = aPhysicsSystem;
-    btVector3 localInertia;
+void ColliderComponent::Create(PhysicsSystem* inPhysicsSystem, const ColliderCreateInfo& inColliderInfo)
+{
+	physicsSystem = inPhysicsSystem;
+	btVector3 localInertia;
 
-    if (aCreateInfo.mass > 0)
-        aCreateInfo.collisionShape->calculateLocalInertia(aCreateInfo.mass, localInertia);
+	if (inColliderInfo.mass > 0)
+	{
+		inColliderInfo.collisionShape->calculateLocalInertia(inColliderInfo.mass, localInertia);
+	}
 
-    auto* motionState = new btDefaultMotionState();
-    const btRigidBody::btRigidBodyConstructionInfo cInfo(aCreateInfo.mass, motionState, aCreateInfo.collisionShape,
-                                                         localInertia);
-    m_rigidBody = new btRigidBody(cInfo);
-    m_rigidBody->setUserIndex(-1);
-    m_rigidBody->setSleepingThresholds(aCreateInfo.linearSleepThreshold, aCreateInfo.angularSleepThreshold);
-    m_rigidBody->setFriction(aCreateInfo.friction);
-    m_rigidBody->setRollingFriction(aCreateInfo.rollingFriction);
-    m_rigidBody->setSpinningFriction(aCreateInfo.spinningFriction);
+	auto* motionState = new btDefaultMotionState();
+	const btRigidBody::btRigidBodyConstructionInfo cInfo(inColliderInfo.mass, motionState, inColliderInfo.collisionShape,
+	                                                     localInertia);
+	rigidBody = new btRigidBody(cInfo);
+	rigidBody->setUserIndex(-1);
+	rigidBody->setSleepingThresholds(inColliderInfo.linearSleepThreshold, inColliderInfo.angularSleepThreshold);
+	rigidBody->setFriction(inColliderInfo.friction);
+	rigidBody->setRollingFriction(inColliderInfo.rollingFriction);
+	rigidBody->setSpinningFriction(inColliderInfo.spinningFriction);
 
-    aPhysicsSystem->AddRigidBody(m_rigidBody);
+	inPhysicsSystem->AddRigidBody(rigidBody);
 }
 
-void ColliderComponent::Tick(const float aDeltaTime) {
-    Component::Tick(aDeltaTime);
+void ColliderComponent::Tick(const float aDeltaTime)
+{
+	Component::Tick(aDeltaTime);
 
-    if (m_rigidBody) {
+	if (rigidBody)
+	{
+		// Test to see whether matrix was modified externally since last frame
+		// TODO: investigate on how to only wake up nearby colliders
+		if (matrixLastFrame != attachedEntity->transform.GetWorldMatrix())
+		{
+			rigidBody->proceedToTransform(CollisionHelper::TransformToBulletTransform(attachedEntity->transform));
+			rigidBody->clearForces();
+			rigidBody->clearGravity();
 
-        // Test to see whether matrix was modified externally since last frame
-        // TODO: investigate on how to only wake up nearby colliders
-        if (m_matrixLastFrame != m_attachedEntity->transform.GetWorldMatrix()) {
-            m_rigidBody->proceedToTransform(CollisionHelper::TransformToBulletTransform(m_attachedEntity->transform));
-            m_rigidBody->clearForces();
-            m_rigidBody->clearGravity();
+			physicsSystem->AwakeRigidBodies();
+		}
 
-            m_physicsSystem->AwakeRigidBodies();
-        }
+		glm::mat4 rigidBodyMatrix;
+		rigidBody->getWorldTransform().getOpenGLMatrix(value_ptr(rigidBodyMatrix));
 
-        glm::mat4 rigidBodyMatrix;
-        m_rigidBody->getWorldTransform().getOpenGLMatrix(value_ptr(rigidBodyMatrix));
+		attachedEntity->transform.SetWorldPosition(CollisionHelper::BulletToGlm(
+			rigidBody->getWorldTransform().getOrigin()));
 
-        m_attachedEntity->transform.SetWorldPosition(CollisionHelper::BulletToGlm(
-                m_rigidBody->getWorldTransform().getOrigin()));
+		attachedEntity->transform.SetWorldRotation(CollisionHelper::BulletToGlm(
+			rigidBody->getWorldTransform().getRotation()));
 
-        m_attachedEntity->transform.SetWorldRotation(CollisionHelper::BulletToGlm(
-                m_rigidBody->getWorldTransform().getRotation()));
-
-        m_matrixLastFrame = m_attachedEntity->transform.GetWorldMatrix();
-    }
+		matrixLastFrame = attachedEntity->transform.GetWorldMatrix();
+	}
 }
 
-void ColliderComponent::Initialize() {
-    Component::Initialize();
-    m_rigidBody->setWorldTransform(CollisionHelper::TransformToBulletTransform(m_attachedEntity->transform));
-    m_matrixLastFrame = m_attachedEntity->transform.GetWorldMatrix();
+void ColliderComponent::Initialize()
+{
+	Component::Initialize();
+	rigidBody->setWorldTransform(CollisionHelper::TransformToBulletTransform(attachedEntity->transform));
+	matrixLastFrame = attachedEntity->transform.GetWorldMatrix();
 }

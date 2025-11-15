@@ -10,21 +10,22 @@
 #include "GraphicsPipeline.h"
 
 
-class RenderSystemBase {
+class RenderSystemBase
+{
 public:
-    virtual void Create(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts);
+	virtual void Create(const std::vector<VkDescriptorSetLayout>& descriptorLayouts);
 
 protected:
-    virtual void CreatePipelineLayout() = 0;
-    virtual void CreatePipeline() = 0;
-    void CreatePipelineObject(const char* pipelineName, bool aDestructive = false);
-
+	virtual void CreatePipelineLayout() = 0;
+	virtual void CreatePipeline() = 0;
+	void CreatePipelineObject(const char* pipelineName);
 
 public:
-    std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
-    std::vector<VkDescriptorSetLayout> GetBoundDescriptors() {return mBoundDescriptorLayouts;}
+	std::unique_ptr<GraphicsPipeline> graphicsPipeline;
+	std::vector<VkDescriptorSetLayout> GetBoundDescriptors() { return boundDescriptorLayouts; }
+
 protected:
-    VkPipelineLayout mPipelineLayout = nullptr;
-    std::vector<VkDescriptorSetLayout> mBoundDescriptorLayouts;
-    PipelineConfigInfo mPipelineConfig{};
+	VkPipelineLayout pipelineLayout = nullptr;
+	std::vector<VkDescriptorSetLayout> boundDescriptorLayouts;
+	PipelineConfigInfo pipelineConfig{};
 };

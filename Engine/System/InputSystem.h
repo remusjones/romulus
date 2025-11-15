@@ -14,7 +14,7 @@ struct KeyCodeInputBinding
     };
 
     const char* bindingName;
-    std::function<void(SDL_KeyboardEvent aKeyboardEvent)> callback;
+    std::function<void(SDL_KeyboardEvent keyboardEvent)> callback;
 };
 
 struct MouseMotionBinding

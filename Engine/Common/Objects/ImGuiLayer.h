@@ -14,7 +14,7 @@ public:
 
 	ImGuiLayer();
 	virtual void OnImGuiRender() = 0;
-	const char* GetUniqueLabel(const char* aLabel); // Todo: Refactor method of generating unique labels (Urgently)
+	const char* GetUniqueLabel(const char* label); // Todo: Refactor method of generating unique labels (Urgently)
 
 
 private:
@@ -26,5 +26,5 @@ private:
 	 * Unique String
 	 */
 	static std::string MakeGuid();
-	std::unordered_map<const char*, std::string> mConstructedLabels;
+	std::unordered_map<const char*, std::string> constructedLabels;
 };
