@@ -10,8 +10,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <Logger.h>
 #include "FileManagement.h"
+#include "spdlog/spdlog.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 struct IndexComparator
@@ -37,14 +37,15 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* aEngine, const char*
 
 	if (!FileManagement::FileExists(aFilePath))
 	{
-		Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + aFilePath).c_str());
+        SPDLOG_ERROR("File Path does not exist: {}", aFilePath);
+		return false;
 	}
 
 	stbi_uc* pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
 	if (!pixels)
 	{
-		Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aFilePath).c_str());
+        SPDLOG_ERROR("could not load file {}", aFilePath);
 		return false;
 	}
 
@@ -149,8 +150,9 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 	for (const auto& path : aPaths)
 	{
 		if (!FileManagement::FileExists(path))
-			Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + path).c_str());
-
+		{
+			SPDLOG_ERROR("File Path does not exist: {}", path.c_str());
+		}
 		stbi_info(path.c_str(), &texWidth, &texHeight, &texChannels);
 		maxTexWidth  = std::max(maxTexWidth, texWidth);
 		maxTexHeight = std::max(maxTexHeight, texHeight);
@@ -180,7 +182,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 			// Check if image needs to be upscaled to largest image
 			if (texWidth < maxTexWidth || texHeight < maxTexHeight)
 			{
-				Logger::Log(spdlog::level::debug, (std::string("Upscaling Image: ") + aPaths[i]).c_str());
+				SPDLOG_DEBUG("Upscaling Image {}", aPaths[i].c_str());
 				const float aspectRatio = static_cast<float>(texWidth) / static_cast<float>(texHeight);
 				int newWidth            = texWidth;
 				int newHeight           = texHeight;
@@ -212,8 +214,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 				if (!stbir_resize_uint8_srgb(pixels, texWidth, texHeight, 0, newPixels, newWidth, newHeight, 0,
 				                             STBIR_RGBA))
 				{
-					// Error during resize, you can use logger here
-					Logger::Log(spdlog::level::err, (std::string("Failed to Resize Image: ") + aPaths[i]).c_str());
+					SPDLOG_ERROR("Failed to resize image: {}", aPaths[i].c_str());
 				}
 
 				// Free the original image and copy the resized one
@@ -229,7 +230,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 		}
 		else
 		{
-			Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aPaths[i]).c_str());
+			SPDLOG_ERROR("Could not load file {}", aPaths[i].c_str());
 		}
 	}
 
@@ -270,13 +271,13 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 
 	if (result != VK_SUCCESS)
 	{
-		Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
+		SPDLOG_ERROR("VmaCreatImage failed");
 		vmaDestroyBuffer(gGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 		return false;
 	}
 	if (!newImage.mImage || !newImage.mAllocation)
 	{
-		Logger::Log(spdlog::level::err, "Image or allocation from vmaCreateImage is null!");
+		SPDLOG_ERROR("Image or allocation from vmaCreateImage is null");
 		vmaDestroyBuffer(gGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 		return false;
 	}
@@ -447,7 +448,8 @@ bool LoadUtilities::LoadMeshFromDisk(const char* filePath, std::vector<Vertex>& 
 
 	if (!FileManagement::FileExists(filePath))
 	{
-		Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + filePath).c_str());
+		SPDLOG_ERROR("Filepath does not exist: {}", filePath);
+		return false;
 	}
 
 	//l oad the OBJ file
@@ -455,13 +457,13 @@ bool LoadUtilities::LoadMeshFromDisk(const char* filePath, std::vector<Vertex>& 
 
 	if (!warn.empty())
 	{
-		Logger::Log(spdlog::level::warn, warn.c_str());
+		SPDLOG_WARN(warn.c_str());
 	}
 
 	if (!err.empty())
 	{
-		Logger::Log(spdlog::level::err, err.c_str());
-		return false;
+		SPDLOG_ERROR(err.c_str());
+ 		return false;
 	}
 
 	std::map<tinyobj::index_t, int, IndexComparator> uniqueVertices = {};

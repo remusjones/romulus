@@ -1,10 +1,10 @@
 #include "WireframeRenderSystem.h"
-
-#include <Logger.h>
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Buffers/PushConstants.h"
+#include "spdlog/spdlog.h"
 
-void WireframeRenderSystem::CreatePipelineLayout() {
+void WireframeRenderSystem::CreatePipelineLayout()
+{
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
@@ -17,12 +17,14 @@ void WireframeRenderSystem::CreatePipelineLayout() {
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if (vkCreatePipelineLayout(gGraphics->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
-        VK_SUCCESS) {
-        Logger::Log(spdlog::level::critical, "Failed to create <WireframeRenderSystem> render pipeline layout");
-        }
+        VK_SUCCESS)
+    {
+        SPDLOG_ERROR("Failed to create Render System Layout 'WireframeRenderSystem'");
+    }
 }
 
-void WireframeRenderSystem::CreatePipeline() {
+void WireframeRenderSystem::CreatePipeline()
+{
     assert(pipelineLayout != nullptr);
 
     GraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);

@@ -7,7 +7,6 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <Logger.h>
 #include "imgui.h"
 #include "ImGuizmo.h"
 
@@ -31,6 +30,8 @@
 #include <Vulkan/Common/MeshObject.h>
 #include <Vulkan/Systems/GraphicsPipeline.h>
 #include <Vulkan/Systems/GraphicsPipelineFactory.h>
+
+#include "spdlog/spdlog.h"
 
 
 static ImGuizmo::MODE currentGizmoMode(ImGuizmo::WORLD);
@@ -347,7 +348,7 @@ void Scene::Tick(const float aDeltaTime)
 
 void Scene::Cleanup()
 {
-	Logger::Log(spdlog::level::info, (std::string("Cleaning up scene ") + m_sceneName).c_str());
+	SPDLOG_INFO("Cleaning up scene {}", m_sceneName);
 	for (const auto& obj : sceneObjects)
 	{
 		obj->Cleanup();
@@ -467,7 +468,7 @@ Texture* Scene::CreateTexture(const char* aName, std::vector<std::string> aPaths
 		return texture;
 	}
 
-	Logger::Log(spdlog::level::err, "Texture Already Exists");
+	SPDLOG_ERROR("Texture already exists {}", aName);
 	return nullptr;
 }
 

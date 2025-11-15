@@ -2,7 +2,6 @@
 #include "GraphicsPipeline.h"
 
 #include <stdexcept>
-#include <Logger.h>
 #include <Vulkan/Systems/PipelineConfigInfo.h>
 #include <Base/Common/Data/Vertex.h>
 #include <VulkanGraphicsImpl.h>
@@ -14,10 +13,11 @@
 #include <Vulkan/Common/MeshObject.h>
 #include <Vulkan/Helpers/VulkanInitialization.h>
 
+#include "spdlog/spdlog.h"
+
 void GraphicsPipeline::Create()
 {
-    Logger::Log(spdlog::level::info,
-                (std::string("Creating Graphics Pipeline ") + pipelineName).c_str());
+    SPDLOG_INFO("Creating Graphics Pipeline {}", pipelineName);
     if (pipelineConfig.pipelineLayout == VK_NULL_HANDLE)
     {
         VkPushConstantRange pushConstant;
@@ -127,7 +127,7 @@ void GraphicsPipeline::Destroy()
         return;
     }
 
-    Logger::Log(spdlog::level::info, (std::string("Graphics Destroying Pipeline ") + pipelineName).c_str());
+    SPDLOG_INFO("Destroying Graphics Pipeline {}", pipelineName);
 
     const VkDevice device = (gGraphics != nullptr) ? gGraphics->logicalDevice : VK_NULL_HANDLE;
 

@@ -3,8 +3,6 @@
 //
 
 #include "GraphicsPipelineFactory.h"
-
-#include <Logger.h>
 #include "VulkanGraphicsImpl.h"
 
 void GraphicsPipelineFactory::Create(const std::vector<VkDescriptorSetLayout>& descriptorLayouts)

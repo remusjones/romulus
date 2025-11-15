@@ -16,11 +16,12 @@
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <InputSystem.h>
-#include <Logger.h>
 #include <Profiler.h>
 #include <Objects/Editor.h>
 #include <Scenes/SandboxScene.h>
 #include <Vulkan/Common/MeshObject.h>
+
+#include "spdlog/spdlog.h"
 
 VulkanGraphics* gGraphics = nullptr;
 
@@ -55,6 +56,8 @@ void VulkanGraphicsImpl::InitializeVulkan()
 	                      *this);
 	CreateGraphicsPipeline();
 	InitializeImgui();
+
+	CreateScenes();
 	romulusEditor = std::make_unique<Editor>();
 	romulusEditor->Create();
 }
@@ -181,8 +184,8 @@ void VulkanGraphicsImpl::Update()
 		// Calculate Frames-Per-Second
 		frameCount++;
 		auto currentTime = std::chrono::high_resolution_clock::now();
-		deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>
-			(currentTime - startTime).count();
+		deltaTime = std::chrono::duration_cast<std::chrono::duration<float> >
+				(currentTime - startTime).count();
 
 		if (const auto elapsedTime = std::chrono::duration_cast<
 				std::chrono::seconds>(currentTime - fpsStartTime).count();
@@ -209,7 +212,7 @@ void VulkanGraphicsImpl::Cleanup()
 	DestroySurface();
 	DestroyInstance();
 
-	Logger::Log(spdlog::level::info, "Destroying VulkanGraphicsImpl");
+	SPDLOG_INFO("Destroying VulkanGraphicsImpl");
 	ShutdownWindow();
 }
 
@@ -228,7 +231,7 @@ VulkanGraphicsImpl::VulkanGraphicsImpl(const char* inWindowTitle,
 
 void VulkanGraphicsImpl::InitializeWindow()
 {
-	Logger::Log(spdlog::level::debug, "Creating Window");
+	SPDLOG_INFO("Initializing Window");
 	// We initialize SDL and create a window with it.
 	SDL_Init(SDL_INIT_VIDEO);
 
@@ -252,7 +255,7 @@ void VulkanGraphicsImpl::ShutdownWindow() const
 void VulkanGraphicsImpl::CreateInstance()
 {
 	vulkanRenderer = new RomulusVulkanRenderer();
-	Logger::Log(spdlog::level::debug, "Creating Vulkan Instance");
+	SPDLOG_INFO("Creating Vulkan Instance");
 
 	if (enableValidationLayers && !CheckValidationLayerSupport())
 	{
@@ -279,8 +282,8 @@ void VulkanGraphicsImpl::CreateInstance()
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 
 		PopulateDebugMessengerCreateInfo(debugCreateInfo);
-		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&
-			debugCreateInfo;
+		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &
+				debugCreateInfo;
 	}
 	else
 	{
@@ -297,7 +300,7 @@ void VulkanGraphicsImpl::CreateInstance()
 	createInfo.pApplicationInfo = &appInfo;
 
 	if (vkCreateInstance(&createInfo, nullptr, &vulcanInstance) !=
-		VK_SUCCESS)
+	    VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create instance!");
 	}
@@ -337,14 +340,13 @@ void VulkanGraphicsImpl::DestroyScenes() const
 void VulkanGraphicsImpl::CreateGraphicsPipeline()
 {
 	vulkanRenderer->Initialize(logicalDevice,
-	                        swapChain.get(),
-	                        physicalDevice,
-	                        graphicsQueue,
-	                        PresentQueue);
+	                           swapChain.get(),
+	                           physicalDevice,
+	                           graphicsQueue,
+	                           PresentQueue);
 
 	vulkanRenderer->CreateSyncObjects();
 	swapChain->CreateFrameBuffers();
-	CreateScenes();
 }
 
 void VulkanGraphicsImpl::DestroyGraphicsPipeline()
@@ -405,26 +407,29 @@ void VulkanGraphicsImpl::PopulateDebugMessengerCreateInfo(
 	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.messageSeverity =
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	                         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+	                         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	createInfo.pfnUserCallback = DebugCallback;
 }
 
 void VulkanGraphicsImpl::CreateDebugMessenger()
 {
-	if (!enableValidationLayers) return;
+	if (!enableValidationLayers)
+	{
+		return;
+	}
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
 	PopulateDebugMessengerCreateInfo(createInfo);
 
-	if (CreateDebugUtilsMessengerEXT(vulcanInstance, &createInfo, nullptr,
+	if (auto result = CreateDebugUtilsMessengerEXT(vulcanInstance, &createInfo, nullptr,
 	                                 &debugMessenger) != VK_SUCCESS)
 	{
-		Logger::Log(spdlog::level::err, "Failed to setup debug messenger");
+		SPDLOG_ERROR("Failed to setup Debug Messenger {}", result);
 	}
 }
 
@@ -442,10 +447,10 @@ VkResult VulkanGraphicsImpl::CreateDebugUtilsMessengerEXT(VkInstance instance,
                                                           VkDebugUtilsMessengerEXT* debugMessenger)
 {
 	PFN_vkCreateDebugUtilsMessengerEXT func =
-		reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-			vkGetInstanceProcAddr(instance,
-			                      "vkCreateDebugUtilsMessengerEXT")
-		);
+			reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+				vkGetInstanceProcAddr(instance,
+				                      "vkCreateDebugUtilsMessengerEXT")
+			);
 
 	if (func != nullptr)
 	{
@@ -477,9 +482,8 @@ VkBool32 VulkanGraphicsImpl::DebugCallback(
 	{
 		//LOG(ERROR) << aMessageType << " | Validation layer: " <<
 		//    aCallbackData->pMessage;
-		Logger::Log(spdlog::level::err,
-		            (std::string("Validation Layer ") +
-			            std::string(callbackData->pMessage)).c_str());
+
+		SPDLOG_ERROR("Validation Layer Error {}", callbackData->pMessage);
 	}
 	return VK_FALSE;
 }
@@ -516,7 +520,7 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 		vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
 
-		Logger::Log(spdlog::level::debug, (std::string("Selecting GPU: ") + deviceProperties.deviceName).c_str());
+		SPDLOG_DEBUG("Selecting Device {}", deviceProperties.deviceName);
 	}
 }
 
@@ -533,7 +537,7 @@ bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) cons
 		const SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
 			aPhysicalDevice);
 		swapChainAdequate = !swapChainSupport.mFormats.empty() && !
-			swapChainSupport.mPresentModes.empty();
+		                    swapChainSupport.mPresentModes.empty();
 	}
 
 	return indices.IsComplete() && extensionsSupported && swapChainAdequate;
@@ -545,8 +549,8 @@ VkSurfaceFormatKHR VulkanGraphicsImpl::ChooseSwapSurfaceFormat(
 	for (const auto& availableFormat : availableFormats)
 	{
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat
-			.colorSpace ==
-			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+		    .colorSpace ==
+		    VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 		{
 			return availableFormat;
 		}
@@ -687,7 +691,7 @@ SwapChainSupportDetails VulkanGraphicsImpl::QuerySwapChainSupport(
 
 void VulkanGraphicsImpl::CreateLogicalDevice()
 {
-	Logger::Log(spdlog::level::debug, "Creating Logical Device");
+	SPDLOG_DEBUG("Creating Logical Device");
 	familyIndices = FindQueueFamilies(physicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -739,7 +743,7 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
 	}
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice)
-		!= VK_SUCCESS)
+	    != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}

@@ -5,9 +5,9 @@
 #include "Cubemap.h"
 
 #include "LoadUtilities.h"
-#include <Logger.h>
 #include <FileManagement.h>
-#include "Vulkan/Helpers/VulkanInitialization.h"
+
+#include "spdlog/spdlog.h"
 
 void Cubemap::Create(MaterialBase* inBaseMaterial)
 {
@@ -53,7 +53,7 @@ void Cubemap::Create(MaterialBase* inBaseMaterial)
 	                                                     &sampler);
 	if (samplerCreateResult != VK_SUCCESS)
 	{
-		Logger::Log(spdlog::level::critical, "failed to create Sampler!");
+		SPDLOG_ERROR("Failed to create Cubemap Sampler");
 	}
 
 	VkImageViewCreateInfo view{};
@@ -71,7 +71,7 @@ void Cubemap::Create(MaterialBase* inBaseMaterial)
 	const VkResult imageCreateResult = vkCreateImageView(gGraphics->logicalDevice, &view, nullptr, &imageView);
 	if (imageCreateResult != VK_SUCCESS)
 	{
-		Logger::Log(spdlog::level::critical, "failed to create image view!");
+		SPDLOG_ERROR("Failed to create image view");
 	}
 
 

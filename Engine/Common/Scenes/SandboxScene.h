@@ -5,7 +5,6 @@
 #pragma once
 
 #include <memory>
-#include <Base/Common/Buffers/Texture.h>
 #include <Scenes/Scene.h>
 #include <Vulkan/Common/MaterialFactory.h>
 #include <Vulkan/Systems/LineRenderSystem.h>

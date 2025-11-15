@@ -1,8 +1,8 @@
 #include "Profiler.h"
 
 #include "imgui.h"
-#include "Logger.h"
 #include "ScopedProfileTimer.h"
+#include "spdlog/spdlog.h"
 
 #define TRACE 0 // Move to state or config
 
@@ -22,7 +22,7 @@ Profiler::~Profiler()
 	while (!timerStack.empty())
 	{
 		const auto item = timerStack.top();
-		Logger::LogError(std::string("Profiler: Timer stack not empty at destruction ") + item.profilerName);
+		SPDLOG_ERROR("Profiler: Timer Stack no empty at destruction {}", item.profilerName);
 		timerStack.pop();
 	}
 }

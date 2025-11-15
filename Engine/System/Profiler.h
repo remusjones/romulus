@@ -3,7 +3,6 @@
 #include <mutex>
 #include <stack>
 
-#include "Logger.h"
 #include "Objects/ImGuiLayer.h"
 
 #ifdef _MSC_VER

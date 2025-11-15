@@ -48,6 +48,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         BulletDynamics
         BulletCollision
         LinearMath
+        EASTL
 )
 
 # Add static libc++ options only for GNU toolchains (e.g., MinGW)

@@ -3,9 +3,9 @@
 //
 
 #include "MeshObject.h"
-#include <Logger.h>
 #include "Base/Common/Material.h"
 #include "Scenes/Scene.h"
+#include "spdlog/spdlog.h"
 
 void MeshObject::Construct()
 {
@@ -28,7 +28,8 @@ void MeshObject::CreateObject(
 	const char* aName)
 {
 	mName = aName;
-	Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
+	SPDLOG_INFO("Creating Object {}", mName);
+
 	meshRenderer.material   = &aMaterial;
 	meshRenderer.mTransform = &transform;
 }

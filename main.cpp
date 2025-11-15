@@ -1,14 +1,12 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-
-#include "Engine/System/Logger.h"
 #include "VulkanGraphicsImpl.h"
+#include "spdlog/spdlog.h"
 
 int main()
 {
-    Logger::Log(spdlog::level::info, "Initializing Application");
+    SPDLOG_INFO("Initializing Application");
     IApplication* app = new VulkanGraphicsImpl("Engine", 1200, 800);
     try
     {
@@ -16,7 +14,7 @@ int main()
     }
     catch (const std::exception& error)
     {
-        Logger::Log(spdlog::level::critical, error.what());
+        SPDLOG_CRITICAL(error.what());
         return EXIT_FAILURE;
     }
 

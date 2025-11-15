@@ -10,8 +10,8 @@
 #include <vulkan/vulkan_core.h>
 #include "MaterialBase.h"
 #include "Buffers/AllocatedBuffer.h"
+#include <Base/Common/Buffers/Texture.h>
 
-class Texture;
 class Buffer;
 
 struct MaterialProperties

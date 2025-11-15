@@ -10,18 +10,18 @@
 #include <iostream>
 
 #include "imgui.h"
-#include <Logger.h>
 #include "Base/Common/Material.h"
 #include "Base/Common/Data/GPUCameraData.h"
 #include "Base/Common/Data/GPUSceneData.h"
 #include "Helpers/VulkanInitialization.h"
 #include "Scenes/Scene.h"
+#include "spdlog/spdlog.h"
 
 void RomulusVulkanRenderer::Initialize(const VkDevice& inLogicalDevice,
-                              VulkanSwapChain* inSwapChain,
-                              const VkPhysicalDevice& inPhysicalDevice,
-                              const VkQueue& inGraphicsQueue,
-                              const VkQueue& inPresentQueue
+                                       VulkanSwapChain* inSwapChain,
+                                       const VkPhysicalDevice& inPhysicalDevice,
+                                       const VkQueue& inGraphicsQueue,
+                                       const VkQueue& inPresentQueue
 )
 {
     // Register the shader module
@@ -117,8 +117,7 @@ void RomulusVulkanRenderer::CreateUploadContext()
 
 void RomulusVulkanRenderer::CreateCommandPool()
 {
-    Logger::Log(spdlog::level::debug, "Creating Command Pool");
-
+    SPDLOG_DEBUG("Creating Command Pool");
 
     for (int i = 0; i < frameData.size(); i++)
     {
@@ -389,7 +388,7 @@ void RomulusVulkanRenderer::CreateSyncObjects()
         imageAvailableSemaphoresToDestroy.push_back(frameData.mRenderSemaphore);
         mRenderFinishedSemaphoresToDestroy.push_back(frameData.mPresentSemaphore);
     }
-    Logger::Log(spdlog::level::debug, "Creating Semaphores and Fences");
+    SPDLOG_DEBUG("Creating Semaphores and Fences");
     imagesInFlight.resize(swapChain->mSwapChainImages.size(), VK_NULL_HANDLE);
     renderFinishedSemaphores.resize(swapChain->mSwapChainImages.size());
 

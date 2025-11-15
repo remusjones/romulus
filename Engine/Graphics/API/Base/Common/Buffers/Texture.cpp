@@ -1,7 +1,6 @@
 #include "Texture.h"
 #include <stdexcept>
 #include "LoadUtilities.h"
-#include <Logger.h>
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 

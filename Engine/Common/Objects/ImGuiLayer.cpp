@@ -8,8 +8,6 @@
 #include <random>
 #include <sstream>
 
-#include <Logger.h>
-
 
 ImGuiLayer::ImGuiLayer() = default;
 

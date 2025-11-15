@@ -3,9 +3,8 @@
 //
 
 #include "AllocatedBuffer.h"
-
-#include <Logger.h>
 #include "VulkanGraphicsImpl.h"
+#include "spdlog/spdlog.h"
 
 AllocatedBuffer::AllocatedBuffer(const void* inData, const VkDeviceSize inBufferSize,
                                  const VkBufferUsageFlags inUsageFlags)
@@ -63,7 +62,7 @@ void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags 
 	                                            &mBuffer,
 	                                            &allocation, nullptr); result != VK_SUCCESS)
 	{
-		Logger::Log(spdlog::level::critical, "Failed to create AllocatedBuffer");
+		SPDLOG_CRITICAL("failed to create AllocatedBuffer");
 	}
 }
 

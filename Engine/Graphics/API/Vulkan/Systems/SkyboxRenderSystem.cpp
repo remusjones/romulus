@@ -3,13 +3,13 @@
 //
 
 #include "SkyboxRenderSystem.h"
-
-#include "../../../../System/Logger.h"
 #include "PipelineConfigInfo.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Buffers/PushConstants.h"
+#include "spdlog/spdlog.h"
 
-void SkyboxRenderSystem::CreatePipelineLayout() {
+void SkyboxRenderSystem::CreatePipelineLayout()
+{
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
@@ -22,14 +22,15 @@ void SkyboxRenderSystem::CreatePipelineLayout() {
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if (vkCreatePipelineLayout(gGraphics->logicalDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
-        VK_SUCCESS) {
-        Logger::Log(spdlog::level::critical, "Failed to create SkyboxRenderSystem layout");
+        VK_SUCCESS)
+    {
+        SPDLOG_ERROR("Failed to create Render System Layout 'SkyboxRenderSystem'");
     }
 }
 
-void SkyboxRenderSystem::CreatePipeline() {
+void SkyboxRenderSystem::CreatePipeline()
+{
     assert(pipelineLayout != nullptr);
-
 
     GraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
     pipelineConfig.renderPass = gGraphics->swapChain->renderPass;
