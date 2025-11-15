@@ -455,7 +455,7 @@ const btRigidBody* Scene::PickRigidBody(const int x, const int y) const
 	return nullptr;
 }
 
-Texture* Scene::CreateTexture(const char* aName, std::vector<std::string> aPathsSet)
+Texture* Scene::CreateTexture(const char* aName, eastl::vector<eastl::string> aPathsSet)
 {
 	if (!sceneTextures.contains(aName))
 	{

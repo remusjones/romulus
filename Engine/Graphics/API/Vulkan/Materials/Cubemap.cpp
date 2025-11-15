@@ -15,7 +15,7 @@ void Cubemap::Create(MaterialBase* inBaseMaterial)
 	constexpr int mipLevel    = 1;
 	constexpr VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
 
-	std::vector<std::string> cubemapImagePaths;
+	eastl::vector<eastl::string> cubemapImagePaths;
 
 	cubemapImagePaths.push_back(FileManagement::MakeAssetPath("Textures/Skybox/MegaSunRight.png"));
 	cubemapImagePaths.push_back(FileManagement::MakeAssetPath("Textures/Skybox/MegaSunLeft.png"));
@@ -89,7 +89,7 @@ void Cubemap::Create(MaterialBase* inBaseMaterial)
 		SetBuffers(gGraphics->vulkanRenderer->GetFrame(i).sceneBuffer, 0, 0);
 	}
 
-	std::vector<VkDescriptorImageInfo> descriptorInfos;
+	eastl::vector<VkDescriptorImageInfo> descriptorInfos;
 	descriptorInfos.push_back(descriptorImageInfo);
 
 	BindTexture(descriptorInfos, 1);

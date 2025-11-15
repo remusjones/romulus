@@ -8,6 +8,8 @@
 
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPUSceneData.h"
+#include "EASTL/string.h"
+#include "EASTL/vector.h"
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
@@ -61,7 +63,7 @@ public:
 
 	const btRigidBody* PickRigidBody(int x, int y) const;
 
-	Texture* CreateTexture(const char* aName, std::vector<std::string> aPathsSet);
+	Texture* CreateTexture(const char* aName, eastl::vector<eastl::string> aPathsSet);
 
 protected:
 	virtual Entity* MakeEntity(); // todo: move to factory

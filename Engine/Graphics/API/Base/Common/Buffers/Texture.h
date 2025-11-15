@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include "AllocatedImage.h"
+#include "EASTL/string.h"
+#include "EASTL/vector.h"
 
 struct Color_RGBA;
 
@@ -15,7 +17,7 @@ public:
 	virtual ~Texture() = default;
 	Texture()          = default;
 
-	void LoadImagesFromDisk(const std::vector<std::string>& imagePaths);
+	void LoadImagesFromDisk(const eastl::vector<eastl::string>& imagePaths);
 
 	virtual void Create(VkFilter sampleFilter                   = VK_FILTER_LINEAR,
 	                    VkSamplerAddressMode samplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
@@ -25,7 +27,7 @@ public:
 
 	AllocatedImage allocatedImage;
 	uint32_t imageCount = 1;
-	std::vector<VkImageView> imageViews;
+	eastl::vector<VkImageView> imageViews;
 	VkSampler sampler;
-	std::vector<VkDescriptorImageInfo> imageBufferInfos;
+	eastl::vector<VkDescriptorImageInfo> imageBufferInfos;
 };

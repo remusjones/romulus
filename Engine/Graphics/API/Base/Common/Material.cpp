@@ -40,7 +40,7 @@ void Material::CreateProperties(const uint32_t inBinding, const MaterialProperti
 		SetBuffers(propertiesBuffer, inBinding, 0);
 }
 
-void Material::BindTexture(const std::vector<VkDescriptorImageInfo>& textureInfo, const uint8_t aBinding) const
+void Material::BindTexture(const eastl::vector<VkDescriptorImageInfo>& textureInfo, const uint8_t aBinding) const
 {
 	VkWriteDescriptorSet writeDescriptorSet{};
 	writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

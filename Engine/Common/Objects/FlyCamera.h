@@ -14,7 +14,7 @@ class FlyCamera : public Camera
 public:
 	void Construct() override;
 	void OnImGuiRender() override;
-	void Tick(float aDeltaTime) override;
+	void Tick(float deltaTime) override;
 
 	void Forward(const SDL_KeyboardEvent& keyboardEvent);
 	void Backward(const SDL_KeyboardEvent& keyboardEvent);

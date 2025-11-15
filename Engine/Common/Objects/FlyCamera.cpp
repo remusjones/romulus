@@ -13,33 +13,27 @@
 void FlyCamera::Construct()
 {
 	gInputSystem->RegisterKeyCodeInput(SDLK_W,
-	                                   [this](const SDL_KeyboardEvent& kb)
-	                                   {
+	                                   [this](const SDL_KeyboardEvent& kb) {
 		                                   Forward(kb);
 	                                   }, "Camera Forward");
 	gInputSystem->RegisterKeyCodeInput(SDLK_S,
-	                                   [&](const SDL_KeyboardEvent& kb)
-	                                   {
+	                                   [&](const SDL_KeyboardEvent& kb) {
 		                                   Backward(kb);
 	                                   }, "Camera Backward");
 	gInputSystem->RegisterKeyCodeInput(SDLK_D,
-	                                   [&](const SDL_KeyboardEvent& kb)
-	                                   {
+	                                   [&](const SDL_KeyboardEvent& kb) {
 		                                   Right(kb);
 	                                   }, "Camera Right");
 	gInputSystem->RegisterKeyCodeInput(SDLK_A,
-	                                   [&](const SDL_KeyboardEvent& kb)
-	                                   {
+	                                   [&](const SDL_KeyboardEvent& kb) {
 		                                   Left(kb);
 	                                   }, "Camera Left");
 	gInputSystem->RegisterKeyCodeInput(SDLK_SPACE,
-	                                   [&](const SDL_KeyboardEvent& kb)
-	                                   {
+	                                   [&](const SDL_KeyboardEvent& kb) {
 		                                   Up(kb);
 	                                   }, "Camera Up");
 	gInputSystem->RegisterKeyCodeInput(SDLK_LCTRL,
-	                                   [&](const SDL_KeyboardEvent& kb)
-	                                   {
+	                                   [&](const SDL_KeyboardEvent& kb) {
 		                                   Down(kb);
 	                                   }, "Camera Down");
 
@@ -65,7 +59,7 @@ void FlyCamera::OnImGuiRender()
 
 void FlyCamera::Forward(const SDL_KeyboardEvent& keyboardEvent)
 {
-	Input[0] = keyboardEvent.key == SDL_EVENT_KEY_DOWN;
+	Input[0] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
 }
 
 void FlyCamera::Backward(const SDL_KeyboardEvent& keyboardEvent)
@@ -102,7 +96,7 @@ void FlyCamera::MouseMovement(const SDL_MouseMotionEvent& mouseMotion)
 	const float yDelta = mouseMotion.yrel;
 
 	constexpr float sensitivity = 0.1f;
-	const glm::vec2 delta       = -glm::vec2(yDelta, xDelta) * sensitivity;
+	const glm::vec2 delta = -glm::vec2(yDelta, xDelta) * sensitivity;
 	transform.RotateAxisLocal(delta);
 }
 
@@ -110,7 +104,7 @@ void FlyCamera::MouseInput(const SDL_MouseButtonEvent& inMouseInput)
 {
 	if (inMouseInput.button == SDL_BUTTON_RIGHT)
 	{
-		RightMouseDown = inMouseInput.type == SDL_EVENT_KEY_DOWN;
+		RightMouseDown = inMouseInput.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
 	}
 }
 
@@ -119,12 +113,12 @@ bool FlyCamera::IsCameraConsumingInput() const
 	return RightMouseDown;
 }
 
-glm::vec3 lerp(glm::vec3 x, glm::vec3 y, float t)
+glm::vec3 lerp(glm::vec3& x, glm::vec3& y, float t)
 {
 	return x * (1.f - t) + y * t;
 }
 
-void FlyCamera::Tick(float aDeltaTime)
+void FlyCamera::Tick(float deltaTime)
 {
 	// TODO: investigate global mouse state for off window input
 	//float x, y;
@@ -138,15 +132,15 @@ void FlyCamera::Tick(float aDeltaTime)
 		MoveVector.x += Input[3] ? Speed : 0;
 		MoveVector.y += Input[4] ? Speed : 0;
 		MoveVector.y += Input[5] ? -Speed : 0;
-		transform.TranslateLocal(MoveVector * aDeltaTime);
-	}
-	else
+		transform.TranslateLocal(MoveVector * deltaTime);
+	} else
 	{
 		constexpr float dampeningSpeed = 25.f;
-		MoveVector                     = lerp(MoveVector, glm::vec3(), aDeltaTime * dampeningSpeed);
-		transform.TranslateLocal(MoveVector * aDeltaTime);
+		glm::vec3 zero = glm::zero<glm::vec3>();
+		MoveVector = lerp(MoveVector, zero, deltaTime * dampeningSpeed);
+		transform.TranslateLocal(MoveVector * deltaTime);
 	}
 
 
-	Entity::Tick(aDeltaTime);
+	Entity::Tick(deltaTime);
 }

@@ -33,21 +33,21 @@ void SandboxScene::Construct()
 	GraphicsPipeline::DefaultPipelineConfigInfo(defaultPipelineConfig);
 
 	// todo: do I need to actually allocate these
-	pbrRenderPipeline       = std::make_unique<PBRRenderSystem>();
-	unlitRenderPipeline     = std::make_unique<UnlitRenderSystem>();
-	cubemapRenderPipeline   = std::make_unique<SkyboxRenderSystem>();
+	pbrRenderPipeline = std::make_unique<PBRRenderSystem>();
+	unlitRenderPipeline = std::make_unique<UnlitRenderSystem>();
+	cubemapRenderPipeline = std::make_unique<SkyboxRenderSystem>();
 	wireframeRenderPipeline = std::make_unique<WireframeRenderSystem>();
-	lineRendererPipeline    = std::make_unique<LineRenderSystem>();
+	lineRendererPipeline = std::make_unique<LineRenderSystem>();
 
 	// Define Material Usages
 	// todo: do I need to actually allocate these
 	Material& monkeyTexturedMaterial = materialUnlitFactory.Create<DefaultMaterial>("Monkey Unlit");
-	Material& unlitMaterial          = materialUnlitFactory.Create<DefaultMaterial>("Unlit");
-	Material& teapotMaterial         = materialPBRFactory.Create<DefaultMaterial>("Teapot PBR");
-	Material& lightMaterial          = materialUnlitFactory.Create<DefaultMaterial>("Light Unlit");
-	Material& sphereMaterial         = materialPBRFactory.Create<DefaultMaterial>("Sphere PBR");
-	Material& cubeMaterial           = materialPBRFactory.Create<DefaultMaterial>("Cube PBR");
-	cubemap                          = &genericMaterialFactory.Create<Cubemap>("Skybox Cubemap");
+	Material& unlitMaterial = materialUnlitFactory.Create<DefaultMaterial>("Unlit");
+	Material& teapotMaterial = materialPBRFactory.Create<DefaultMaterial>("Teapot PBR");
+	Material& lightMaterial = materialUnlitFactory.Create<DefaultMaterial>("Light Unlit");
+	Material& sphereMaterial = materialPBRFactory.Create<DefaultMaterial>("Sphere PBR");
+	Material& cubeMaterial = materialPBRFactory.Create<DefaultMaterial>("Cube PBR");
+	cubemap = &genericMaterialFactory.Create<Cubemap>("Skybox Cubemap");
 
 	// Make Materials
 	materialUnlitFactory.Make();
@@ -102,12 +102,12 @@ void SandboxScene::Construct()
 			for (int k = 0; k < uniformSphereCount; k++)
 			{
 				constexpr float sphereRadius = 0.5f;
-				MeshObject* sphere           = CreateObject("Physics Sphere",
-				                                            "/Assets/Models/sphere.obj", sphereMaterial,
-				                                            *pbrRenderPipeline->graphicsPipeline,
-				                                            glm::vec3(i, j, k),
-				                                            glm::vec3(0),
-				                                            glm::vec3(sphereRadius));
+				MeshObject* sphere = CreateObject("Physics Sphere",
+				                                  "/Assets/Models/sphere.obj", sphereMaterial,
+				                                  *pbrRenderPipeline->graphicsPipeline,
+				                                  glm::vec3(i, j, k),
+				                                  glm::vec3(0),
+				                                  glm::vec3(sphereRadius));
 
 				AttachSphereCollider(*sphere, sphereRadius, 0.25f, 0.5);
 			}
@@ -122,7 +122,7 @@ void SandboxScene::Construct()
 
 	AttachBoxCollider(*floor, floorScale, 0);
 
-	const std::vector stoneSet{
+	const eastl::vector stoneSet{
 		FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall.png",
 		FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall_NRM.png"
 	};
@@ -132,14 +132,14 @@ void SandboxScene::Construct()
 	//
 	// Skybox TODO: Skybox Constructor Required
 	//
-	cubeMapMesh                = new Primitive("Skybox");
-	auto* mSkyboxRenderer      = new SkyboxRenderer();
-	cubeMapMesh->renderer      = mSkyboxRenderer;
-	mSkyboxRenderer->material  = cubemap;
+	cubeMapMesh = new Primitive("Skybox");
+	auto* mSkyboxRenderer = new SkyboxRenderer();
+	cubeMapMesh->renderer = mSkyboxRenderer;
+	mSkyboxRenderer->material = cubemap;
 	mSkyboxRenderer->transform = &cubeMapMesh->transform;
 	mSkyboxRenderer->BindRenderer(*cubemapRenderPipeline->graphicsPipeline);
 	mSkyboxRenderer->LoadMesh((FileManagement::GetWorkingDirectory() +
-		std::string("/Assets/Models/cube.obj")).c_str());
+	                           eastl::string("/Assets/Models/cube.obj")).c_str());
 
 	//
 	// Scene Camera
@@ -148,10 +148,10 @@ void SandboxScene::Construct()
 	activeCamera->Construct();
 	activeCamera->transform.SetLocalPosition({0, 0, -5.0f});
 
-	lineRendererEntity           = new Primitive("LineRenderer");
+	lineRendererEntity = new Primitive("LineRenderer");
 	lineRendererEntity->renderer = lineRenderer;
 
-	lineRenderer             = new LineRenderer();
+	lineRenderer = new LineRenderer();
 	lineRenderer->mTransform = &lineRendererEntity->transform;
 	lineRenderer->SetLinePositions(
 		{
@@ -191,11 +191,11 @@ void SandboxScene::Tick(float deltaTime)
 {
 	deltaAccumulated += deltaTime / 5;
 	light->meshRenderer.material->materialProperties.color =
-		glm::vec4(sceneData.color.x, sceneData.color.y, sceneData.color.z, 1);
+			glm::vec4(sceneData.color.x, sceneData.color.y, sceneData.color.z, 1);
 
-	sceneData.position             = light->transform.GetLocalPosition();
-	sceneData.viewMatrix           = activeCamera->GetViewMatrix();
-	sceneData.viewPos              = glm::vec4(activeCamera->transform.GetLocalPosition(), 1.0f);
+	sceneData.position = light->transform.GetLocalPosition();
+	sceneData.viewMatrix = activeCamera->GetViewMatrix();
+	sceneData.viewPos = glm::vec4(activeCamera->transform.GetLocalPosition(), 1.0f);
 	sceneData.viewProjectionMatrix = activeCamera->GetPerspectiveMatrix();
 
 	monkey->transform.RotateAxisLocal(deltaTime / 5, glm::vec3(0.0f, 1, 0));

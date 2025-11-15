@@ -52,8 +52,8 @@ void DefaultMaterial::MakeDefaults() const
 	if (gDefaultTexture == nullptr)
 	{
 		gDefaultTexture = std::make_unique<Texture>();
-		std::vector<Color_RGBA> defaultColors;
-		std::vector<std::string> paths;
+		eastl::vector<Color_RGBA> defaultColors;
+		eastl::vector<eastl::string> paths;
 
 		paths.push_back(FileManagement::GetWorkingDirectory() + DefaultAssetPaths[ALBEDO]);
 		paths.push_back(FileManagement::GetWorkingDirectory() + DefaultAssetPaths[NORMAL]);

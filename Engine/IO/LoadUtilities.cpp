@@ -11,6 +11,8 @@
 #include <stb_image.h>
 
 #include "FileManagement.h"
+#include "EASTL/string.h"
+#include "EASTL/vector.h"
 #include "spdlog/spdlog.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
@@ -31,21 +33,21 @@ struct IndexComparator
 	}
 };
 
-bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* aEngine, const char* aFilePath, AllocatedImage& aResult)
+bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* inGraphics, const char* inFilePath, AllocatedImage& outResult)
 {
 	int texWidth, texHeight, texChannels;
 
-	if (!FileManagement::FileExists(aFilePath))
+	if (!FileManagement::FileExists(inFilePath))
 	{
-        SPDLOG_ERROR("File Path does not exist: {}", aFilePath);
+        SPDLOG_ERROR("File Path does not exist: {}", inFilePath);
 		return false;
 	}
 
-	stbi_uc* pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc* pixels = stbi_load(inFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
 	if (!pixels)
 	{
-        SPDLOG_ERROR("could not load file {}", aFilePath);
+        SPDLOG_ERROR("could not load file {}", inFilePath);
 		return false;
 	}
 
@@ -74,9 +76,9 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* aEngine, const char*
 	dimg_allocinfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
 	//allocate and create the image
-	vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
+	vmaCreateImage(inGraphics->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-	aEngine->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
+	inGraphics->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
 	{
 		VkImageSubresourceRange range;
 		range.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -125,15 +127,15 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* aEngine, const char*
 		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
 		                     0, nullptr, 1, &imageBarrier_toReadable);
 	});
-	vmaDestroyBuffer(aEngine->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
-	aResult = newImage;
+	vmaDestroyBuffer(inGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+	outResult = newImage;
 	return true;
 }
 
-bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::vector<std::string>& aPaths,
+bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const eastl::vector<eastl::string>& inPaths,
                                        AllocatedImage& aResult, VkImageCreateFlags aImageCreateFlags)
 {
-	const int imageCount      = aPaths.size();
+	const int imageCount      = inPaths.size();
 	constexpr VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
 	// TODO: Fix ForcedFormat as its a workaround for mismatching types
 	constexpr int forcedFormat = STBI_rgb_alpha; // Forces all loaded images to be a rgba for simplicityy
@@ -147,7 +149,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 	int maxTexHeight = 0;
 
 	// Find maximum dimensions.
-	for (const auto& path : aPaths)
+	for (const auto& path : inPaths)
 	{
 		if (!FileManagement::FileExists(path))
 		{
@@ -162,8 +164,8 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 	AllocatedBuffer stagingBuffer;
 	stagingBuffer.Create(totalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
-	std::string bufferName;
-	bufferName.append(aPaths[0]);
+	eastl::string bufferName;
+	bufferName.append(inPaths[0]);
 	vmaSetAllocationName(gGraphics->allocator, stagingBuffer.GetAllocation(), (bufferName + " staging buffer").c_str());
 
 	// Map the memory
@@ -174,7 +176,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 	for (int i = 0; i < imageCount; i++)
 	{
 		// Load the image file
-		stbi_uc* pixels = stbi_load(aPaths[i].c_str(), &texWidth, &texHeight, &texChannels, forcedFormat);
+		stbi_uc* pixels = stbi_load(inPaths[i].c_str(), &texWidth, &texHeight, &texChannels, forcedFormat);
 		layerSize = texWidth * texHeight * forcedFormat;
 
 		if (pixels)
@@ -214,7 +216,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 				if (!stbir_resize_uint8_srgb(pixels, texWidth, texHeight, 0, newPixels, newWidth, newHeight, 0,
 				                             STBIR_RGBA))
 				{
-					SPDLOG_ERROR("Failed to resize image: {}", aPaths[i].c_str());
+					SPDLOG_ERROR("Failed to resize image: {}", inPaths[i].c_str());
 				}
 
 				// Free the original image and copy the resized one
@@ -230,7 +232,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const std::
 		}
 		else
 		{
-			SPDLOG_ERROR("Could not load file {}", aPaths[i].c_str());
+			SPDLOG_ERROR("Could not load file {}", inPaths[i].c_str());
 		}
 	}
 

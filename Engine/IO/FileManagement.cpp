@@ -9,22 +9,25 @@
 #include <io.h>
 #include <libloaderapi.h>
 
+#include "EASTL/string.h"
+#include "EASTL/vector.h"
 
-std::vector<char> FileManagement::GetShaderFileData(const std::string& filename)
+
+eastl::vector<char> FileManagement::GetShaderFileData(const eastl::string& filename)
 {
-	std::string finalDirectory = GetWorkingDirectory();
+	eastl::string finalDirectory = GetWorkingDirectory();
 	finalDirectory.append(sFileInformationSettings.pShaderDirectory);
 	finalDirectory.append(filename);
 
-	std::ifstream file(finalDirectory, std::ios::ate | std::ios::binary);
+	std::ifstream file(finalDirectory.data(), std::ios::ate | std::ios::binary);
 
 	if (!file.is_open())
 	{
-		throw std::runtime_error("failed to open file " + filename);
+		throw std::runtime_error("failed to open file");
 	}
 
 	const size_t fileSize = (size_t)file.tellg();
-	std::vector<char> buffer(fileSize);
+	eastl::vector<char> buffer(fileSize);
 	file.seekg(0);
 	file.read(buffer.data(), fileSize);
 	file.close();
@@ -32,29 +35,29 @@ std::vector<char> FileManagement::GetShaderFileData(const std::string& filename)
 	return buffer;
 }
 
-std::string FileManagement::GetWorkingDirectory()
+eastl::string FileManagement::GetWorkingDirectory()
 {
 	char buffer[MAX_PATH];
 	GetModuleFileNameA(nullptr, buffer, MAX_PATH);
-	const std::string::size_type pos = std::string(buffer).find_last_of("\\/");
-	return std::string(buffer).substr(0, pos);
+	const eastl::string::size_type pos = eastl::string(buffer).find_last_of("\\/");
+	return eastl::string(buffer).substr(0, pos);
 }
 
-std::string FileManagement::MakeAssetPath(const std::string& relativePath)
+eastl::string FileManagement::MakeAssetPath(const eastl::string& relativePath)
 {
-	std::string basePath = GetAssetPath();
+	eastl::string basePath = GetAssetPath();
 	basePath.append(relativePath);
 	return basePath;
 }
 
-std::string FileManagement::GetAssetPath()
+eastl::string FileManagement::GetAssetPath()
 {
-	std::string path = GetWorkingDirectory();
+	eastl::string path = GetWorkingDirectory();
 	path.append(sFileInformationSettings.pAssetPath);
 	return path;
 }
 
-bool FileManagement::FileExists(const std::string& absolutePath)
+bool FileManagement::FileExists(const eastl::string& absolutePath)
 {
 	return access(absolutePath.c_str(), 0) == 0;
 }
@@ -70,12 +73,12 @@ const FileManagementSettings& FileManagement::GetInfoSettings()
 	return sFileInformationSettings;
 }
 
-std::vector<char> FileManagement::GetShaderFileDataPath(const char* directory)
+eastl::vector<char> FileManagement::GetShaderFileDataPath(const char* directory)
 {
-	std::string finalDirectory = GetWorkingDirectory();
+	eastl::string finalDirectory = GetWorkingDirectory();
 	finalDirectory.append(directory);
 
-	std::ifstream file(finalDirectory, std::ios::ate | std::ios::binary);
+	std::ifstream file(finalDirectory.data(), std::ios::ate | std::ios::binary);
 
 	if (!file.is_open())
 	{
@@ -83,7 +86,7 @@ std::vector<char> FileManagement::GetShaderFileDataPath(const char* directory)
 	}
 
 	const size_t fileSize = file.tellg();
-	std::vector<char> buffer(fileSize);
+	eastl::vector<char> buffer(fileSize);
 	file.seekg(0);
 	file.read(buffer.data(), fileSize);
 	file.close();

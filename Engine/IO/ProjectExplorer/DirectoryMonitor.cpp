@@ -3,75 +3,75 @@
 #include <filesystem>
 #include <FileManagement.h>
 
-void DirectoryMonitor::CreateDirectoryMonitor(const std::string& aPath)
+#include "EASTL/hash_map.h"
+
+void DirectoryMonitor::CreateDirectoryMonitor(const eastl::string& aPath)
 {
-	mMonitoredDirectory = aPath;
+	monitoredDirectory = aPath;
 	UpdateDirectoryMonitor();
-	std::lock_guard lock(mImportingThreadMtx);
-	if (mImportingThread.joinable())
+	std::lock_guard lock(importingThreadMutex);
+	if (importingThread.joinable())
 	{
-		mImportingThread.join();
+		importingThread.join();
 	}
 }
 
 void DirectoryMonitor::UpdateDirectoryMonitor()
 {
-	mImportingThread = std::thread([this]
-	{
-		mIsFinishedImporting = false;
-		std::unordered_map<std::string, FileInfo> newDirectoryContent;
-		CreateDirectorySnapshot(mMonitoredDirectory, newDirectoryContent);
+	importingThread = std::thread([this] {
+		eastl::hash_map<eastl::string, FileInfo> newDirectoryContent;
+		CreateDirectorySnapshot(monitoredDirectory, newDirectoryContent);
 		ValidateDirectorySnapshot(newDirectoryContent);
-		mIsFinishedImporting = true;
 	});
 }
 
-const std::unordered_map<std::string, FileInfo>& DirectoryMonitor::GetDirectoryContent() const
+eastl::hash_map<eastl::string, FileInfo> DirectoryMonitor::GetDirectoryContent() const
 {
-	return mDirectoryContent;
+	return directoryContent;
 }
 
-std::string DirectoryMonitor::GetMonitoredDirectory()
+eastl::string& DirectoryMonitor::GetMonitoredDirectory()
 {
-	return mMonitoredDirectory;
+	return monitoredDirectory;
 }
 
-void DirectoryMonitor::CreateDirectorySnapshot(const std::string& aPath,
-                                               std::unordered_map<std::string, FileInfo>& aDirectoryContent)
+void DirectoryMonitor::CreateDirectorySnapshot(const eastl::string& aPath,
+                                               eastl::hash_map<eastl::string, FileInfo>& directoryContent)
 {
-	for (const std::filesystem::path path = aPath; const auto& entry :
+	for (const std::filesystem::path path = aPath.c_str(); const auto& entry :
 	     std::filesystem::recursive_directory_iterator(path))
 	{
-		if (!aDirectoryContent.contains(entry.path().string()))
+		auto entryPath = eastl::string((char*)entry.path().c_str());
+		if (!directoryContent.contains(entryPath))
 		{
-			aDirectoryContent[entry.path().string()] = FileInfo{
-				entry.path().filename().string(),
+			auto fileInfo = FileInfo{
+				(char*)entry.path().filename().c_str(),
 				last_write_time(entry)
 			};
+			directoryContent.insert_or_assign(entryPath, fileInfo);
 		}
 	}
 }
 
-void DirectoryMonitor::ValidateDirectorySnapshot(const std::unordered_map<std::string, FileInfo>& aDirectoryContent)
+void DirectoryMonitor::ValidateDirectorySnapshot(const eastl::hash_map<eastl::string, FileInfo>& aDirectoryContent)
 {
 	// Compare content with existing content, and update if necessary
 	for (const auto& entry : aDirectoryContent)
 	{
-		if (mDirectoryContent.contains(entry.first))
+		if (directoryContent.contains(entry.first))
 		{
 			// File exists
-			if (mDirectoryContent[entry.first].lastWriteTime != entry.second.lastWriteTime)
+			if (directoryContent.at(entry.first).lastWriteTime != entry.second.lastWriteTime)
 			{
 				ImportFile(entry.first, FileStatus::MODIFIED);
 			}
-		}
-		else
+		} else
 		{
 			// File is new
 			ImportFile(entry.first, FileStatus::CREATED);
 		}
 	}
-	for (const auto& entry : mDirectoryContent)
+	for (const auto& entry : directoryContent)
 	{
 		if (!aDirectoryContent.contains(entry.first))
 		{
@@ -79,12 +79,12 @@ void DirectoryMonitor::ValidateDirectorySnapshot(const std::unordered_map<std::s
 			ImportFile(entry.first, FileStatus::ERASED);
 		}
 	}
-	mDirectoryContent = aDirectoryContent;
+	directoryContent = aDirectoryContent;
 }
 
-void DirectoryMonitor::ImportFile(const std::string& aPath, const FileStatus aStatus)
+void DirectoryMonitor::ImportFile(const eastl::string& path, const FileStatus& status)
 {
-	switch (aStatus)
+	switch (status)
 	{
 		case FileStatus::CREATED:
 			// Logger::Log("File CREATED: " + aPath);
@@ -101,12 +101,9 @@ void DirectoryMonitor::ImportFile(const std::string& aPath, const FileStatus aSt
 
 void DirectoryMonitor::OnImGuiRender()
 {
-	if (mImportingThread.joinable())
+	if (importingThread.joinable())
 	{
-		std::lock_guard lock(mImportingThreadMtx);
-		if (mIsFinishedImporting)
-		{
-			mImportingThread.join();
-		}
+		std::lock_guard lock(importingThreadMutex);
+		importingThread.join();
 	}
 }

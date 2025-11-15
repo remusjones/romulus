@@ -96,7 +96,7 @@ void GraphicsPipeline::CreateShaderModule(const char* path,
 {
     const constexpr char* entryName = "main";
 
-    const std::vector<char> file = FileManagement::GetShaderFileDataPath(path);
+    const eastl::vector<char> file = FileManagement::GetShaderFileDataPath(path);
 
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

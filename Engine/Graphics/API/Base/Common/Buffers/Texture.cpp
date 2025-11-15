@@ -5,7 +5,7 @@
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 
-void Texture::LoadImagesFromDisk(const std::vector<std::string>& imagePaths)
+void Texture::LoadImagesFromDisk(const eastl::vector<eastl::string>& imagePaths)
 {
 	LoadUtilities::LoadImagesFromDisk(gGraphics, imagePaths, allocatedImage);
 	imageCount = imagePaths.size();

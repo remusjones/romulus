@@ -4,13 +4,16 @@
 
 #pragma once
 
-
 #include <unordered_map>
 #include <glm/vec4.hpp>
 #include <vulkan/vulkan_core.h>
-#include "MaterialBase.h"
-#include "Buffers/AllocatedBuffer.h"
+#include <Base/Common/MaterialBase.h>
+#include <Base/Common/Buffers/AllocatedBuffer.h>
 #include <Base/Common/Buffers/Texture.h>
+
+#include "EASTL/hash_map.h"
+#include "EASTL/map.h"
+#include "EASTL/vector.h"
 
 class Buffer;
 
@@ -19,7 +22,7 @@ struct MaterialProperties
 	glm::vec4 color = glm::vec4(1, 1, 1, 1);
 	// TODO: Input Images for these properties?
 	float specularStrength = 0.4;
-	float shininess        = 1;
+	float shininess = 1;
 	float debugRenderState;
 	float _pad;
 };
@@ -32,13 +35,16 @@ public:
 	}
 
 	virtual void Create(MaterialBase* baseMaterial);
+
 	virtual void CreateProperties(uint32_t inBinding, const MaterialProperties& inMaterialProperties);
-	virtual void BindTexture(const std::vector<VkDescriptorImageInfo>& textureInfo, uint8_t aBinding) const;
+
+	virtual void BindTexture(const eastl::vector<VkDescriptorImageInfo>& textureInfo, uint8_t aBinding) const;
 
 	void BindTexture(const VkDescriptorImageInfo& imageInfo, uint8_t inBinding) const;
 
 	virtual void AddBinding(uint32_t inBinding, uint32_t inCount,
 	                        VkDescriptorType inType, VkShaderStageFlagBits inShaderStage);
+
 	virtual void SetBuffers(const AllocatedBuffer& inBuffer, uint8_t inBinding, uint8_t inIndex) const;
 
 	VkDescriptorSet GetDescriptorSet() const { return descriptorSet; }
@@ -55,5 +61,5 @@ protected:
 	VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 	VkDescriptorSet descriptorSet;
 
-	std::unordered_map<uint8_t, VkWriteDescriptorSet> boundTextureMap;
+	eastl::hash_map<uint8_t, VkWriteDescriptorSet> boundTextureMap;
 };

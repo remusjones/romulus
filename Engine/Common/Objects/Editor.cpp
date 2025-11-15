@@ -16,8 +16,8 @@ void Editor::Create()
 	directoryMonitor->CreateDirectoryMonitor(FileManagement::GetAssetPath());
 
 	// Works around the path having a '/' at the end TODO: fix this
-	directoryPath   = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
-	contextBounds = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
+	directoryPath   = std::filesystem::path(FileManagement::GetAssetPath().c_str()).parent_path();
+	contextBounds = std::filesystem::path(FileManagement::GetAssetPath().c_str()).parent_path();
 	GetFilesInDirectory(directoryPath, filesInDirectory, nestedDirectories);
 }
 

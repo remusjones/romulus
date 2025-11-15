@@ -13,7 +13,5 @@
 #include <functional>
 #include <algorithm>
 
-// custom includes
-#include <Logger.h>
 
 #endif //PCH_H

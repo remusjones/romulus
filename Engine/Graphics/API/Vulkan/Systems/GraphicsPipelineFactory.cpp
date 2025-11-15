@@ -14,6 +14,5 @@ void GraphicsPipelineFactory::Create(const std::vector<VkDescriptorSetLayout>& d
 
 void GraphicsPipelineFactory::CreatePipelineObject(const char* pipelineName)
 {
-	assert(graphicsPipeline == nullptr);
 	graphicsPipeline = std::make_unique<GraphicsPipeline>(pipelineName, pipelineConfig);
 }
