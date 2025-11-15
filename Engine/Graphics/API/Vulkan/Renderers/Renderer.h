@@ -8,13 +8,14 @@
 
 class Material;
 
-class Renderer {
+class Renderer
+{
 public:
     Renderer() = default;
 
     virtual ~Renderer() = default;
-    virtual void Render(VkCommandBuffer commandBuffer, const Scene &scene);
-    virtual void BindRenderer(GraphicsPipeline &boundGraphicsPipeline);
+    virtual void Render(VkCommandBuffer commandBuffer, const Scene& scene);
+    virtual void BindRenderer(GraphicsPipeline& boundGraphicsPipeline);
     virtual void DestroyRenderer();
 
     GraphicsPipeline* graphicsPipeline;

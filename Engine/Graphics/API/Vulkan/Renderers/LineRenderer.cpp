@@ -10,24 +10,29 @@
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 
-void LineRenderer::SetLinePositions(const std::vector<glm::vec3> &aPositions, const LineRenderMode aMode) {
+void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, const LineRenderMode aMode)
+{
     const glm::vec3 color = Color::White().RGB();
 
     mLineRenderMode = aMode;
 
-    if (mLinePositions.size() == aPositions.size()) {
-        for (int i = 0; i < aPositions.size(); i++) {
+    if (mLinePositions.size() == aPositions.size())
+    {
+        for (int i = 0; i < aPositions.size(); i++)
+        {
             mLinePositions[i] = {aPositions[i], {}, color};
         }
         return;
     }
 
     mLinePositions = std::vector<Vertex>(aPositions.size());
-    for (int i = 0; i < aPositions.size(); i++) {
+    for (int i = 0; i < aPositions.size(); i++)
+    {
         mLinePositions[i] = {aPositions[i], {}, color};
     }
 
-    if (mAllocatedPositions) {
+    if (mAllocatedPositions)
+    {
         mAllocatedPositions->Destroy();
         delete mAllocatedPositions;
     }
@@ -38,22 +43,27 @@ void LineRenderer::SetLinePositions(const std::vector<glm::vec3> &aPositions, co
                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
-void LineRenderer::SetLinePositions(const std::vector<glm::vec3> &aPositions, const std::vector<Color> &aColors,
-                                    const LineRenderMode aMode) {
+void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, const std::vector<Color>& aColors,
+                                    const LineRenderMode aMode)
+{
     mLineRenderMode = aMode;
-    if (mLinePositions.size() == aPositions.size()) {
-        for (int i = 0; i < aPositions.size(); i++) {
+    if (mLinePositions.size() == aPositions.size())
+    {
+        for (int i = 0; i < aPositions.size(); i++)
+        {
             mLinePositions[i] = {aPositions[i], {}, aColors[i].RGB()};
         }
         return;
     }
 
     mLinePositions = std::vector<Vertex>(aPositions.size());
-    for (int i = 0; i < aPositions.size(); i++) {
+    for (int i = 0; i < aPositions.size(); i++)
+    {
         mLinePositions[i] = {aPositions[i], {}, aColors[i].RGB()};
     }
 
-    if (mAllocatedPositions) {
+    if (mAllocatedPositions)
+    {
         mAllocatedPositions->Destroy();
         delete mAllocatedPositions;
     }
@@ -64,7 +74,8 @@ void LineRenderer::SetLinePositions(const std::vector<glm::vec3> &aPositions, co
                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
-void LineRenderer::DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor) {
+void LineRenderer::DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor)
+{
     mTemporaryLines.reserve(2);
 
     Vertex start = {aStart, {}, aColor.RGB()};
@@ -74,7 +85,8 @@ void LineRenderer::DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor) {
     mTemporaryLines.emplace_back(end);
 
     // Permanantly reallocate size of buffer
-    if (mTemporaryLines.size() > currentAllocationCount) {
+    if (mTemporaryLines.size() > currentAllocationCount)
+    {
         currentAllocationCount = mTemporaryLines.size();
 
         if (mTemporaryAllocatedPositions == nullptr)
@@ -91,27 +103,32 @@ void LineRenderer::DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor) {
 }
 
 
-void LineRenderer::DestroyRenderer() {
+void LineRenderer::DestroyRenderer()
+{
     Renderer::DestroyRenderer();
-    if (mAllocatedPositions) {
+    if (mAllocatedPositions)
+    {
         mAllocatedPositions->Destroy();
         delete mAllocatedPositions;
     }
-    if (mTemporaryAllocatedPositions) {
+    if (mTemporaryAllocatedPositions)
+    {
         if (mTemporaryAllocatedPositions)
             mTemporaryAllocatedPositions->Destroy();
         delete mTemporaryAllocatedPositions;
     }
 }
 
-void LineRenderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
+void LineRenderer::BindRenderer(GraphicsPipeline& aBoundGraphicsPipeline)
+{
     graphicsPipeline = &aBoundGraphicsPipeline;
     graphicsPipeline->AddRenderer(this);
 }
 
-void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
-    if (mAllocatedPositions) {
-
+void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
+{
+    if (mAllocatedPositions)
+    {
         AllocatedBuffer::MapMemory(
             gGraphics->allocator,
             mLinePositions.data(),
@@ -127,12 +144,14 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                            sizeof(PushConstants), &pushConstants);
 
-        switch (mLineRenderMode) {
+        switch (mLineRenderMode)
+        {
             case LINES_CONTINUOUS:
                 vkCmdDraw(aCommandBuffer, mLinePositions.size(), 1, 0, 0);
                 break;
             case LINES_SEGMENTED:
-                for (int i = 0; i < mLinePositions.size() - 1; i += 2) {
+                for (int i = 0; i < mLinePositions.size() - 1; i += 2)
+                {
                     vkCmdDraw(aCommandBuffer, 2, 1, i, 0);
                 }
                 break;
@@ -141,8 +160,8 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     }
 
 
-    if (!mTemporaryLines.empty()) {
-
+    if (!mTemporaryLines.empty())
+    {
         AllocatedBuffer::MapMemory(
             gGraphics->allocator,
             mTemporaryLines.data(),
@@ -158,7 +177,8 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
                            sizeof(PushConstants), &pushConstants);
 
 
-        for (int i = 0; i < mTemporaryLines.size() - 1; i += 2) {
+        for (int i = 0; i < mTemporaryLines.size() - 1; i += 2)
+        {
             vkCmdDraw(aCommandBuffer, 2, 1, i, 0);
         }
 

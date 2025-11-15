@@ -14,10 +14,12 @@
 #include <Vulkan/Common/MeshObject.h>
 #include <Vulkan/Helpers/VulkanInitialization.h>
 
-void GraphicsPipeline::Create() {
+void GraphicsPipeline::Create()
+{
     Logger::Log(spdlog::level::info,
                 (std::string("Creating Graphics Pipeline ") + pipelineName).c_str());
-    if (pipelineConfig.pipelineLayout == VK_NULL_HANDLE) {
+    if (pipelineConfig.pipelineLayout == VK_NULL_HANDLE)
+    {
         VkPushConstantRange pushConstant;
         pushConstant.offset = 0;
         pushConstant.size = sizeof(PushConstants);
@@ -30,7 +32,8 @@ void GraphicsPipeline::Create() {
 
         // Bind these elsewhere?
         std::vector<VkDescriptorSetLayout> layouts;
-        for (auto & mRenderer : renderers) {
+        for (auto& mRenderer : renderers)
+        {
             layouts.push_back(mRenderer->material->GetDescriptorLayout());
         }
         //hook the global set layout
@@ -39,7 +42,8 @@ void GraphicsPipeline::Create() {
 
 
         if (vkCreatePipelineLayout(gGraphics->logicalDevice, &pipelineLayoutInfo,
-                                   nullptr, &pipelineConfig.pipelineLayout) != VK_SUCCESS) {
+                                   nullptr, &pipelineConfig.pipelineLayout) != VK_SUCCESS)
+        {
             throw std::runtime_error("failed to create pipeline layout");
         }
 
@@ -81,25 +85,28 @@ void GraphicsPipeline::Create() {
 
     if (vkCreateGraphicsPipelines(gGraphics->logicalDevice, VK_NULL_HANDLE, 1,
                                   &pipelineInfo, nullptr,
-                                  &romulusPipelineConfig) != VK_SUCCESS) {
+                                  &romulusPipelineConfig) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to create graphics pipeline");
     }
 }
 
-void GraphicsPipeline::CreateShaderModule(const char *path,
-                                          const VkShaderStageFlagBits stage) {
-    const constexpr char *entryName = "main";
+void GraphicsPipeline::CreateShaderModule(const char* path,
+                                          const VkShaderStageFlagBits stage)
+{
+    const constexpr char* entryName = "main";
 
     const std::vector<char> file = FileManagement::GetShaderFileDataPath(path);
 
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = file.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(file.data());
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(file.data());
 
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(gGraphics->logicalDevice, &createInfo, nullptr,
-                             &shaderModule) != VK_SUCCESS) {
+                             &shaderModule) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to create shader module");
     }
 
@@ -112,22 +119,53 @@ void GraphicsPipeline::CreateShaderModule(const char *path,
     shaders.push_back(shaderStageInfo);
 }
 
-void GraphicsPipeline::Destroy() {
-    Logger::Log(spdlog::level::info, (std::string("Graphics Destroying Pipeline ") + pipelineName).c_str());
-    for (const auto &i: shaders) {
-        vkDestroyShaderModule(gGraphics->logicalDevice, i.module, nullptr);
+void GraphicsPipeline::Destroy()
+{
+    // Fast path if nothing to destroy
+    if (shaders.empty() && romulusPipelineConfig == VK_NULL_HANDLE && pipelineConfig.pipelineLayout == VK_NULL_HANDLE)
+    {
+        return;
     }
 
-    vkDestroyPipelineLayout(gGraphics->logicalDevice, pipelineConfig.pipelineLayout,
-                            nullptr);
-    vkDestroyPipeline(gGraphics->logicalDevice, romulusPipelineConfig, nullptr);
-    romulusPipelineConfig = VK_NULL_HANDLE;
-    pipelineConfig.pipelineLayout = VK_NULL_HANDLE;
-    shaders.resize(0);
+    Logger::Log(spdlog::level::info, (std::string("Graphics Destroying Pipeline ") + pipelineName).c_str());
+
+    const VkDevice device = (gGraphics != nullptr) ? gGraphics->logicalDevice : VK_NULL_HANDLE;
+
+    // If device is invalid (e.g., already destroyed), skip Vulkan calls and just clear local state
+    if (device == VK_NULL_HANDLE)
+    {
+        shaders.clear();
+        romulusPipelineConfig = VK_NULL_HANDLE;
+        pipelineConfig.pipelineLayout = VK_NULL_HANDLE;
+        return;
+    }
+
+    for (auto& stageInfo : shaders)
+    {
+        if (stageInfo.module != VK_NULL_HANDLE)
+        {
+            vkDestroyShaderModule(device, stageInfo.module, nullptr);
+            stageInfo.module = VK_NULL_HANDLE;
+        }
+    }
+
+    if (pipelineConfig.pipelineLayout != VK_NULL_HANDLE)
+    {
+        vkDestroyPipelineLayout(device, pipelineConfig.pipelineLayout, nullptr);
+        pipelineConfig.pipelineLayout = VK_NULL_HANDLE;
+    }
+    if (romulusPipelineConfig != VK_NULL_HANDLE)
+    {
+        vkDestroyPipeline(device, romulusPipelineConfig, nullptr);
+        romulusPipelineConfig = VK_NULL_HANDLE;
+    }
+
+    shaders.clear();
 }
 
 
-void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
+void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
+{
     configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
@@ -209,16 +247,16 @@ void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo &configInfo)
     configInfo.mAttributeDescriptions = Vertex::GetAttributeDescriptions();
 }
 
-void GraphicsPipeline::AddRenderer(Renderer *renderer) {
+void GraphicsPipeline::AddRenderer(Renderer* renderer)
+{
     renderers.push_back(renderer);
 }
 
-void GraphicsPipeline::Draw(VkCommandBuffer commandBuffer, const Scene &scene) const {
-
+void GraphicsPipeline::Draw(VkCommandBuffer commandBuffer, const Scene& scene) const
+{
     if (romulusPipelineConfig == nullptr)
     {
-        throw std::runtime_error("RomulusGraphicsPipeline is null");
-        return;
+        throw std::runtime_error("RomulusGraphicsPipeline is null");\
     }
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       romulusPipelineConfig);
@@ -226,10 +264,11 @@ void GraphicsPipeline::Draw(VkCommandBuffer commandBuffer, const Scene &scene) c
     const FrameData& currentFrame = gGraphics->vulkanRenderer->GetCurrentFrame();
 
     AllocatedBuffer::MapMemory(
-    gGraphics->allocator, &scene.sceneData,  currentFrame.sceneBuffer.GetAllocation(),
-    sizeof(GPUSceneData));
+        gGraphics->allocator, &scene.sceneData, currentFrame.sceneBuffer.GetAllocation(),
+        sizeof(GPUSceneData));
 
-    for (Renderer* const& renderer : renderers) {
+    for (Renderer* const& renderer : renderers)
+    {
         std::vector<VkDescriptorSet> descriptorSets;
         descriptorSets.push_back(renderer->material->GetDescriptorSet());
 

@@ -6,22 +6,26 @@
 
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
-void MeshRenderer::LoadMesh(const char *aPath) {
+void MeshRenderer::LoadMesh(const char* aPath)
+{
     mMesh = new Mesh();
     mMesh->LoadFromObject(aPath);
 }
 
-void MeshRenderer::DestroyRenderer() {
+void MeshRenderer::DestroyRenderer()
+{
     delete mMesh;
     Renderer::DestroyRenderer();
 }
 
-void MeshRenderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
+void MeshRenderer::BindRenderer(GraphicsPipeline& aBoundGraphicsPipeline)
+{
     graphicsPipeline = &aBoundGraphicsPipeline;
     graphicsPipeline->AddRenderer(this);
 }
 
-void MeshRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
+void MeshRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
+{
     mMesh->Bind(aCommandBuffer);
     pushConstants.model = mTransform->GetWorldMatrix();
     vkCmdPushConstants(aCommandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,
