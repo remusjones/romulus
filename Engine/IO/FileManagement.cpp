@@ -82,7 +82,7 @@ eastl::vector<char> FileManagement::GetShaderFileDataPath(const char* directory)
 
 	if (!file.is_open())
 	{
-		throw std::runtime_error("failed to open file" + std::string(directory));
+		throw std::runtime_error("failed to open file");
 	}
 
 	const size_t fileSize = file.tellg();

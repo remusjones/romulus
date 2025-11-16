@@ -18,7 +18,7 @@ const char* ImGuiLayer::GetUniqueLabel(const char* label)
 		return constructedLabels[label].c_str();
 	}
 
-	constructedLabels[label] = std::string(label + std::string("##") + MakeGuid());
+	constructedLabels[label] = eastl::string(label + eastl::string("##") + MakeGuid());
 	return constructedLabels[label].c_str();
 }
 
@@ -28,7 +28,7 @@ static std::mt19937 gen(rd());
 static std::uniform_int_distribution<> dis(0, 15);
 static std::uniform_int_distribution<> dis2(8, 11);
 
-std::string ImGuiLayer::MakeGuid()
+eastl::string ImGuiLayer::MakeGuid()
 {
 	std::stringstream ss;
 	int i;
@@ -58,5 +58,5 @@ std::string ImGuiLayer::MakeGuid()
 	{
 		ss << dis(gen);
 	};
-	return ss.str();
+	return ss.str().c_str();
 }

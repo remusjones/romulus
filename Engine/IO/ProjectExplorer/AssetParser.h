@@ -3,17 +3,18 @@
 //
 
 #pragma once
-#include <string>
-#include <unordered_map>
+
+#include "AssetItem.h"
+#include "EASTL/hash_map.h"
+#include "EASTL/string.h"
 
 
-class AssetItem;
-
-class AssetParser {
+class AssetParser
+{
 public:
-    void Parse(std::string aPath);
-    void RegisterAssetType(std::string aExtension, AssetItem aAssetItem);
+    void Parse(const eastl::string& aPath);
+    void RegisterAssetType(const eastl::string& aExtension, const AssetItem& aAssetItem);
 
 private:
-    std::unordered_map<std::string, AssetItem> mAssociatedAssetTypes;
+    eastl::hash_map<eastl::string, AssetItem&> mAssociatedAssetTypes;
 };

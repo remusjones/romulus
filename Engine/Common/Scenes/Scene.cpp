@@ -158,7 +158,7 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw)
 	{
 		for (auto childTransform : entityToDraw.transform.GetChildren())
 		{
-			Entity& childEntity = *sceneTransformRelationships[childTransform];
+			Entity& childEntity = *sceneTransformRelationships.at(childTransform);
 			DrawObjectsRecursive(childEntity);
 		}
 		ImGui::TreePop();
@@ -414,25 +414,25 @@ void Scene::AddEntity(std::unique_ptr<Entity> aEntity)
 void Scene::AttachSphereCollider(Entity& aEntity, const float radius, const float mass,
                                  const float friction) const
 {
-	auto* sphereCollider = new ColliderComponent();
+	auto sphereCollider = eastl::make_unique<ColliderComponent>();
 	ColliderCreateInfo sphereColliderInfo{};
 	sphereColliderInfo.collisionShape = new btSphereShape(radius);
 	sphereColliderInfo.mass           = mass;
 	sphereColliderInfo.friction       = friction;
 	sphereCollider->Create(physicsSystem, sphereColliderInfo);
-	aEntity.AddComponent(sphereCollider);
+	aEntity.AddComponent(eastl::move(sphereCollider));
 }
 
 void Scene::AttachBoxCollider(Entity& inEntity, const glm::vec3 halfExtents, const float mass,
                               const float friction) const
 {
-	auto* boxCollider = new ColliderComponent();
+	auto boxCollider = eastl::make_unique<ColliderComponent>();
 	ColliderCreateInfo boxColliderInfo{};
 	boxColliderInfo.collisionShape = new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z));
 	boxColliderInfo.mass           = mass;
 	boxColliderInfo.friction       = friction;
 	boxCollider->Create(physicsSystem, boxColliderInfo);
-	inEntity.AddComponent(boxCollider);
+	inEntity.AddComponent(eastl::move(boxCollider));
 }
 
 const btRigidBody* Scene::PickRigidBody(const int x, const int y) const
@@ -455,13 +455,13 @@ const btRigidBody* Scene::PickRigidBody(const int x, const int y) const
 	return nullptr;
 }
 
-Texture* Scene::CreateTexture(const char* aName, eastl::vector<eastl::string> aPathsSet)
+Texture* Scene::CreateTexture(const char* aName, const eastl::vector<eastl::string>& aPathsSet)
 {
 	if (!sceneTextures.contains(aName))
 	{
-		sceneTextures[aName] = std::make_unique<Texture>();
+		sceneTextures.insert_or_assign(aName, std::make_unique<Texture>());
 
-		auto* texture = sceneTextures[aName].get();
+		auto* texture = sceneTextures.at(aName).get();
 		texture->LoadImagesFromDisk(aPathsSet);
 		texture->Create();
 

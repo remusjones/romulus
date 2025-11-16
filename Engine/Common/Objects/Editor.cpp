@@ -46,7 +46,7 @@ void Editor::FileBrowser(const std::filesystem::path& path)
 		ImGui::PushID(entry.c_str());
 		if (ImGui::Button(entry.c_str()))
 		{
-			directoryPath = std::filesystem::path(path) / entry;
+			directoryPath = std::filesystem::path(path) / entry.c_str();
 			GetFilesInDirectory(directoryPath, filesInDirectory, nestedDirectories);
 		}
 		ImGui::PopID();
@@ -73,7 +73,7 @@ void Editor::DrawContent()
 	{
 		// TODO: Extract directly from importer files instead of raw paths
 
-		ImGui::Button((std::string("##") + entry.path().filename().string()).c_str(),
+		ImGui::Button((char*)entry.path().filename().c_str(),
 		              ImVec2(100, 100));
 		ImGui::Text("%s", entry.path().filename().string().c_str());
 		ImGui::TableNextColumn();
@@ -98,7 +98,7 @@ void Editor::GetFilesInDirectory(const std::filesystem::path& path,
 
 void Editor::GetFilesInDirectory(const std::filesystem::path& path,
                                  std::vector<std::filesystem::directory_entry>& resultFiles,
-                                 std::vector<std::string>& resultDirectories)
+                                 std::vector<eastl::string>& resultDirectories)
 {
 	resultFiles.clear();
 	resultDirectories.clear();
@@ -111,7 +111,7 @@ void Editor::GetFilesInDirectory(const std::filesystem::path& path,
 		}
 		else
 		{
-			resultDirectories.push_back(entry.path().filename().string());
+			resultDirectories.push_back((char*)entry.path().filename().c_str());
 		}
 	}
 }

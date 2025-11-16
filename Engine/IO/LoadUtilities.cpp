@@ -437,6 +437,8 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
 bool LoadUtilities::LoadMeshFromDisk(const char* filePath, std::vector<Vertex>& resultVertices,
                                      std::vector<int32_t>& resultIndices)
 {
+	// todo: can't use eastl here due to tinyobj not supporting it
+
 	//attrib will contain the vertex arrays of the file
 	tinyobj::attrib_t attrib;
 	//shapes contains the info for each separate object in the file
@@ -454,7 +456,7 @@ bool LoadUtilities::LoadMeshFromDisk(const char* filePath, std::vector<Vertex>& 
 		return false;
 	}
 
-	//l oad the OBJ file
+	//load the OBJ file
 	LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath, nullptr);
 
 	if (!warn.empty())

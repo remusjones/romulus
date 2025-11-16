@@ -3,23 +3,24 @@
 //
 
 #pragma once
-#include <string>
+#include "EASTL/string.h"
 
-class AssetItem{
+class AssetItem
+{
 public:
     virtual ~AssetItem() = default;
 
-    virtual void Create(std::string aPath) = 0;
+    virtual void Create(eastl::string aPath) = 0;
 
-    virtual std::string Description() const { return mDescription; }
-    virtual std::string GetID() const { return mID; }
-    virtual std::string GetPath() const { return mPath; }
+    virtual const eastl::string& Description() const { return mDescription; }
+    virtual const eastl::string& GetID() const { return mID; }
+    virtual const eastl::string& GetPath() const { return mPath; }
 
 protected:
-    virtual void CreateFromAssetFile(std::string aPath) = 0;
-    virtual void CreateFromMetaFile(std::string aPath) = 0;
+    virtual void CreateFromAssetFile(eastl::string aPath) = 0;
+    virtual void CreateFromMetaFile(eastl::string aPath) = 0;
 
-    std::string mID;
-    std::string mPath;
-    std::string mDescription;
+    eastl::string mID;
+    eastl::string mPath;
+    eastl::string mDescription;
 };

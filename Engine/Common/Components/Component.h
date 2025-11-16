@@ -5,6 +5,8 @@
 #pragma once
 #include <string>
 
+#include "EASTL/string.h"
+
 
 class Entity;
 
@@ -16,8 +18,8 @@ public:
 	virtual void SetEntity(Entity* entity);
 	virtual void ClearEntity();
 
-	virtual void SetName(const std::string& inName);
-	virtual std::string& GetName();
+	virtual void SetName(const eastl::string& inName);
+	virtual eastl::string& GetName();
 
 	virtual void Tick(float deltaTime);
 	virtual void Destroy();
@@ -27,5 +29,5 @@ protected:
 	Entity* attachedEntity = nullptr;
 
 	// todo: Replace with Hash
-	std::string name;
+	eastl::string name;
 };

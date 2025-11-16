@@ -63,7 +63,7 @@ public:
 
 	const btRigidBody* PickRigidBody(int x, int y) const;
 
-	Texture* CreateTexture(const char* aName, eastl::vector<eastl::string> aPathsSet);
+	Texture* CreateTexture(const char* aName, const eastl::vector<eastl::string>& aPathsSet);
 
 protected:
 	virtual Entity* MakeEntity(); // todo: move to factory
@@ -82,9 +82,9 @@ public:
 
 protected:
 	// todo: feels like these probably shouldn't be here
-	std::vector<std::unique_ptr<Entity>> sceneObjects;
-	std::unordered_map<Transform*, Entity*> sceneTransformRelationships;
-	std::unordered_map<std::string, std::unique_ptr<Texture>> sceneTextures;
+	eastl::vector<std::unique_ptr<Entity>> sceneObjects;
+	eastl::hash_map<Transform*, Entity*> sceneTransformRelationships;
+	eastl::hash_map<eastl::string, std::unique_ptr<Texture>> sceneTextures;
 
 private:
 	// TODO: Make unique ptr

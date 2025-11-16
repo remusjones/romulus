@@ -29,7 +29,14 @@ Profiler::~Profiler()
 
 void Profiler::EndSample(const TimerResult& result)
 {
-	timerHistory[result.timerName].emplace_back(result);
+	if (timerHistory.contains(result.timerName))
+	{
+		timerHistory.at(result.timerName).emplace_back(result);
+	}else
+	{
+		eastl::deque<TimerResult> newDeque ({result});
+		timerHistory.emplace(result.timerName, newDeque);
+	}
 
 #if TRACE
 	ExportTraceFrame(result);
@@ -60,9 +67,9 @@ void Profiler::EndProfile()
 	timerStack.pop();
 }
 
-void Profiler::EnsureProfilerLimits(const std::string& aName)
+void Profiler::EnsureProfilerLimits(const eastl::string_view& aName)
 {
-	auto& history = timerHistory[aName];
+	auto& history = timerHistory.at(aName);
 	while (history.size() > maxDisplayedHistoryTime)
 	{
 		history.pop_front();
@@ -92,25 +99,31 @@ void Profiler::ExportTraceFrame(const TimerResult& aResult)
 		sessionOutputStream << ",";
 	}
 
-	std::string name = aResult.timerName;
-	std::replace(name.begin(), name.end(), '"', '\'');
+	eastl::string nameBuilder = aResult.timerName.data();
+	//std::replace(nameBuilder.begin(), nameBuilder.end(), '"', '\'');
+//
+	//if (!nameBuilder.empty())
+	//{
+	//	nameBuilder.append("_");
+	//}
+//
+	//nameBuilder.append(aResult.timerMetadata.functionSignature);
+	//nameBuilder.append(":");
+	//nameBuilder.append(eastl::to_string(aResult.timerMetadata.lineNumber));
 
-	if (!name.empty())
-	{
-		name.append("_");
-	}
-	name.append(std::string(aResult.timerMetadata.functionSignature) + ":" + std::to_string(aResult.timerMetadata.lineNumber));
+	auto duration = aResult.timerEnd - aResult.timerStart;
 
-	sessionOutputStream << "{";
-	sessionOutputStream << "\"name\":\"" << name << "\",";
-	sessionOutputStream << "\"ph\":\"X\",";
-	sessionOutputStream << "\"ts\":" << aResult.timerStart << ",";
-	sessionOutputStream << "\"dur\":" << aResult.timerEnd - aResult.timerStart << ",";
-	sessionOutputStream << "\"pid\":0,";
-	sessionOutputStream << "\"tid\":" << aResult.threadId;
-	sessionOutputStream << "}";
+	std::format_to(
+		std::ostreambuf_iterator<char>(sessionOutputStream),
+		"{{\"name\":\"{}\",\"ph\":\"X\",\"ts\":{},\"dur\":{},\"pid\":0,\"tid\":{}}}",
+		std::string_view(nameBuilder.data(), nameBuilder.length()),
+		aResult.timerStart,
+		duration,
+		aResult.threadId
+	);
+
 	sessionOutputStream.flush();
-	traceWriteMutex.unlock();
+
 }
 
 void Profiler::EndTraceSession()
@@ -166,8 +179,8 @@ void Profiler::OnImGuiRender()
 			continue;
 		}
 
-		std::deque<TimerResult>& tempDeque = snd;
-		std::vector<float> durations;
+		eastl::deque<TimerResult>& tempDeque = snd;
+		eastl::vector<float> durations;
 
 		float sum = 0.0f;
 		const int count = tempDeque.size();
@@ -184,7 +197,7 @@ void Profiler::OnImGuiRender()
 		sprintf(overlay, "%.3f ms", average);
 		if (!durations.empty())
 		{
-			ImGui::PlotHistogram(fst.c_str(), &durations[0], count, 0, overlay, 0.0f, 2.0f);
+			ImGui::PlotHistogram(fst.data(), &durations[0], count, 0, overlay, 0.0f, 2.0f);
 		}
 	}
 	ImGui::End();

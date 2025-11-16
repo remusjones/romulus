@@ -35,7 +35,7 @@ bool Mesh::LoadFromObject(const char* fileName)
 
 		vertexBuffer = new AllocatedVertexBuffer(vertices, indices);
 
-		std::string bufferName;
+		eastl::string bufferName;
 		bufferName.append(fileName);
 		vmaSetAllocationName(gGraphics->allocator, vertexBuffer->verticesBuffer->GetAllocation(),
 		                     (bufferName + " mVerticesBuffer").c_str());

@@ -5,6 +5,7 @@
 #include "Entity.h"
 #include <vector>
 #include "Components/Component.h"
+#include "EASTL/vector.h"
 
 
 void Entity::Construct()
@@ -26,18 +27,18 @@ void Entity::Tick(const float aDeltaTime)
 void Entity::Cleanup()
 {
 	// todo: this is strange
-	const std::vector<std::pair<std::string, Component*>> copy(componentMap.begin(), componentMap.end());
-	for (const auto& component : copy)
+	for (const auto& component : componentMap)
 	{
 		component.second->Destroy();
-		delete component.second;
+
 	}
+	componentMap.clear();
 }
 
-void Entity::AddComponent(Component* component)
+void Entity::AddComponent(eastl::unique_ptr<Component> component)
 {
 	component->SetEntity(this);
-	componentMap[component->GetName()] = component;
+	componentMap.insert_or_assign(component->GetName(), eastl::move(component));
 }
 
 void Entity::RemoveComponent(Component* component)

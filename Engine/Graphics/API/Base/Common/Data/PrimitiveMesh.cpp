@@ -28,9 +28,9 @@ bool PrimitiveMesh::LoadFromObject(const char* filename)
 		                                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
 		vmaSetAllocationName(gGraphics->allocator, verticesBuffer->GetAllocation(),
-		                     (std::string(filename) + " mVerticesBuffer").c_str());
+		                     (eastl::string(filename) + " mVerticesBuffer").c_str());
 		vmaSetAllocationName(gGraphics->allocator, indicesBuffer->GetAllocation(),
-		                     (std::string(filename) + " mIndicesBuffer").c_str());
+		                     (eastl::string(filename) + " mIndicesBuffer").c_str());
 		return true;
 	}
 	return false;

@@ -16,12 +16,12 @@ void Component::ClearEntity()
 	attachedEntity = nullptr;
 }
 
-void Component::SetName(const std::string& inName)
+void Component::SetName(const eastl::string& inName)
 {
 	name = inName;
 }
 
-std::string& Component::GetName()
+eastl::string& Component::GetName()
 {
 	return name;
 }
@@ -32,7 +32,6 @@ void Component::Tick(float deltaTime)
 
 void Component::Destroy()
 {
-	attachedEntity->RemoveComponent(this);
 }
 
 void Component::Initialize()

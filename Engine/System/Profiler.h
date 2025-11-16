@@ -1,8 +1,11 @@
 #pragma once
 #include <fstream>
 #include <mutex>
-#include <stack>
 
+
+#include "ScopedProfileTimer.h"
+#include "EASTL/deque.h"
+#include "EASTL/stack.h"
 #include "Objects/ImGuiLayer.h"
 
 #ifdef _MSC_VER
@@ -19,7 +22,6 @@
 #define PROFILE_END() Profiler::GetInstance().EndProfile()
 
 struct ManagedProfileTimer;
-struct TimerResult;
 struct ScopedProfileTimer;
 
 class Profiler final : public ImGuiLayer
@@ -45,7 +47,7 @@ public:
 	~Profiler() override;
 
 private:
-	void EnsureProfilerLimits(const std::string& aName);
+	void EnsureProfilerLimits(const eastl::string_view& aName);
 	void StartTraceSession();
 	void ExportTraceFrame(const TimerResult& aResult);
 	void EndTraceSession();
@@ -56,8 +58,8 @@ public:
 private:
 	bool serializeTrace = false;
 	bool running = true;
-	std::stack<ManagedProfileTimer> timerStack;
-	std::unordered_map<std::string, std::deque<TimerResult>> timerHistory;
+	eastl::stack<ManagedProfileTimer> timerStack;
+	eastl::hash_map<eastl::string_view, eastl::deque<TimerResult>> timerHistory;
 	const int maxDisplayedHistoryTime = 100;
 	const char* sessionTraceFilename = "trace.json";
 	std::mutex traceWriteMutex;

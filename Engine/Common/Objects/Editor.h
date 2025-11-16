@@ -25,11 +25,11 @@ private:
 	                                std::vector<std::filesystem::directory_entry>& filesInDirectory);
 	static void GetFilesInDirectory(const std::filesystem::path& path,
 	                                std::vector<std::filesystem::directory_entry>& resultFiles,
-	                                std::vector<std::string>& resultDirectories);
+	                                std::vector<eastl::string>& resultDirectories);
 
 	std::unique_ptr<DirectoryMonitor> directoryMonitor;
 	std::vector<std::filesystem::directory_entry> filesInDirectory;
-	std::vector<std::string> nestedDirectories;
+	std::vector<eastl::string> nestedDirectories;
 	std::filesystem::path directoryPath;
 	std::filesystem::path contextBounds;
 };

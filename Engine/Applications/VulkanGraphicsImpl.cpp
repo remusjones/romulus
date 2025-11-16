@@ -126,7 +126,7 @@ void VulkanGraphicsImpl::Update()
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	// Create FPS Window Header
 
-	const std::string fpsHeader = windowTitle + std::string(" | FPS: ");
+	const eastl::string fpsHeader = windowTitle + eastl::string(" | FPS: ");
 
 	int frameCount = 0;
 	SDL_Event event;
@@ -605,7 +605,7 @@ bool VulkanGraphicsImpl::CheckDeviceExtensionSupport(
 	                                     &extensionCount,
 	                                     availableExtensions.data());
 
-	std::set<std::string> requiredExtensions(deviceExtensions.begin(),
+	std::set<eastl::string> requiredExtensions(deviceExtensions.begin(),
 	                                         deviceExtensions.end());
 
 	for (const auto& extension : availableExtensions)

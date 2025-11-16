@@ -4,21 +4,20 @@
 
 #pragma once
 #include "ImGuiLayer.h"
+#include "Components/Component.h"
+#include "EASTL/unique_ptr.h"
 #include "Math/Transform.h"
-class Component;
 
 // todo: Should this be called an entity?
 // Ideally we use an actual entity system and this will get confusing!
 class Entity : public ImGuiLayer
 {
 public:
-	~Entity() override = default;
-
 	virtual void Construct();
 
 	virtual void Tick(float aDeltaTime);
 	virtual void Cleanup();
-	virtual void AddComponent(Component* component);
+	virtual void AddComponent(eastl::unique_ptr<Component> component);
 	virtual void RemoveComponent(Component* component);
 
 
@@ -27,9 +26,9 @@ public:
 	{
 		for (auto& component : componentMap)
 		{
-			if (dynamic_cast<T*>(component.second))
+			if (dynamic_cast<T*>(component.second.get()))
 			{
-				result = *static_cast<T*>(component.second);
+				result = *static_cast<T*>(component.second.get());
 				return true;
 			}
 		}
@@ -61,7 +60,7 @@ public:
 	}
 
 	template <class T>
-	bool GetComponent(const std::string& name, T& result)
+	bool GetComponent(const eastl::string& name, T& result)
 	{
 		if (componentMap.contains(name))
 		{
@@ -77,5 +76,5 @@ public:
 	Transform transform;
 	const char* mName{"Default"};
 
-	std::unordered_map<std::string, Component*> componentMap;
+	eastl::hash_map<eastl::string, eastl::unique_ptr<Component>> componentMap;
 };

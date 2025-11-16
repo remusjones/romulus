@@ -2,105 +2,60 @@
 #include <chrono>
 #include <thread>
 
-#include "Profiler.h"
+#include "EASTL/string_view.h"
+
+class Profiler;
 
 struct TimerMetadata
 {
-	TimerMetadata(const char* inFunctionSignature, const int inLineNumber) : functionSignature(inFunctionSignature),
-	                                                                       lineNumber(inLineNumber)
-	{
-	}
+	TimerMetadata(const eastl::string_view& inFunctionSignature, int inLineNumber);
 
 	TimerMetadata();
 
-	const char* functionSignature;
+	eastl::string_view functionSignature;
 	const int lineNumber;
 };
 
 struct TimerResult
 {
-	const char* timerName{};
+	eastl::string_view timerName{};
 	long long timerStart{}, timerEnd{};
 	int threadId{};
 
 	TimerMetadata timerMetadata;
 
-	[[nodiscard]] std::chrono::duration<float> GetDurationMilliseconds() const
-	{
-		return std::chrono::milliseconds(timerEnd - timerStart);
-	}
+	[[nodiscard]] std::chrono::duration<float> GetDurationMilliseconds() const;
 
-	[[nodiscard]] std::chrono::microseconds GetDurationMicroseconds() const
-	{
-		return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::microseconds(timerEnd - timerStart));
-	}
+	[[nodiscard]] std::chrono::microseconds GetDurationMicroseconds() const;
 };
 
 // Todo: create base class for scoped and managed timer?
 struct ScopedProfileTimer
 {
-	const char* profileName;
+	eastl::string_view profileName;
 	Profiler* profiler;
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	TimerMetadata metadata;
 
-	explicit ScopedProfileTimer(const char* aName, Profiler& aBoundProfiler, const char* aFunctionSignature,
-	                            const int aLineNumber) : metadata(aFunctionSignature, aLineNumber)
-	{
-		start = std::chrono::high_resolution_clock::now();
-		profileName = aName;
-		profiler = &aBoundProfiler;
-	}
+	explicit ScopedProfileTimer(const eastl::string_view& aName, Profiler& aBoundProfiler, const eastl::string_view& aFunctionSignature,
+	                            int aLineNumber);
 
-	~ScopedProfileTimer()
-	{
-		end = std::chrono::high_resolution_clock::now();
-		profiler->EndSample(GetResult());
-	}
+	~ScopedProfileTimer();
 
-	[[nodiscard]] TimerResult GetResult() const
-	{
-		const int hash = static_cast<int>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
-		return {
-			profileName,
-			std::chrono::time_point_cast<std::chrono::microseconds>(start).time_since_epoch().count(),
-			std::chrono::time_point_cast<std::chrono::microseconds>(end).time_since_epoch().count(),
-			hash,
-			metadata
-		};
-	}
+	[[nodiscard]] TimerResult GetResult() const;
 };
 
 struct ManagedProfileTimer
 {
-	const char* profilerName;
+	eastl::string_view profilerName;
 	Profiler* profiler;
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	TimerMetadata metadata;
 
-	explicit ManagedProfileTimer(const char* inProfilerName, Profiler& inProfiler, const char* functionSignature,
-	                             const int lineNumber) : metadata(functionSignature, lineNumber)
-	{
-		start = std::chrono::high_resolution_clock::now();
-		profilerName = inProfilerName;
-		profiler = &inProfiler;
-	}
+	explicit ManagedProfileTimer(const eastl::string_view& inProfilerName, Profiler& inProfiler, const eastl::string_view& functionSignature,
+	                             int lineNumber);
 
-	void StopTimer()
-	{
-		end = std::chrono::high_resolution_clock::now();
-		profiler->EndSample(GetResult());
-	}
+	void StopTimer();
 
-	[[nodiscard]] TimerResult GetResult() const
-	{
-		const int hash = static_cast<int>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
-		return {
-			profilerName,
-			std::chrono::time_point_cast<std::chrono::microseconds>(start).time_since_epoch().count(),
-			std::chrono::time_point_cast<std::chrono::microseconds>(end).time_since_epoch().count(),
-			hash,
-			metadata
-		};
-	}
+	[[nodiscard]] TimerResult GetResult() const;
 };

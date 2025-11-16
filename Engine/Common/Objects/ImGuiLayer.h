@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#include <string>
-#include <unordered_map>
+#include "EASTL/hash_map.h"
+#include "EASTL/string.h"
 
 // todo: this should probably just be a mixin
 class ImGuiLayer
@@ -25,6 +25,6 @@ private:
 	 * \return
 	 * Unique String
 	 */
-	static std::string MakeGuid();
-	std::unordered_map<const char*, std::string> constructedLabels;
+	static eastl::string MakeGuid();
+	eastl::hash_map<const char*, eastl::string> constructedLabels;
 };
