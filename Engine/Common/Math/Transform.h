@@ -8,10 +8,10 @@
 #include <glm/detail/type_quat.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include "Objects/ImGuiLayer.h"
+#include "Objects/ImGuiDebugLayer.h"
 
 
-class Transform final : public ImGuiLayer
+class Transform final : public ImGuiDebugLayer
 {
 public:
 	Transform();

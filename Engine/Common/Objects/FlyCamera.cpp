@@ -39,21 +39,21 @@ void FlyCamera::Construct()
 
 	gInputSystem->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); }, "Camera Mouse");
 	gInputSystem->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); }, "Camera Click");
-	Entity::Construct();
+	SceneObject::Construct();
 }
 
 void FlyCamera::OnImGuiRender()
 {
 	ImGui::Indent();
-	Entity::OnImGuiRender();
+	SceneObject::OnImGuiRender();
 	ImGui::SeparatorText("Settings");
-	ImGui::DragFloat(GetUniqueLabel("FOV"), &fov, 0.1f);
-	ImGui::DragFloat(GetUniqueLabel("Z Near"), &zNear, 0.01f);
-	ImGui::DragFloat(GetUniqueLabel("Z Far"), &zFar, 0.1f);
+	ImGui::DragFloat("FOV", &fov, 0.1f);
+	ImGui::DragFloat("Z Near", &zNear, 0.01f);
+	ImGui::DragFloat("Z Far", &zFar, 0.1f);
 	ImGui::SeparatorText("DEBUG");
-	ImGui::DragFloat3(GetUniqueLabel("Forward"), &transform.Forward()[0], 0.1f);
-	ImGui::DragFloat3(GetUniqueLabel("Right"), &transform.Right()[0], 0.1f);
-	ImGui::DragFloat3(GetUniqueLabel("Up"), &transform.Up()[0], 0.1f);
+	ImGui::DragFloat3("Forward", &transform.Forward()[0], 0.1f);
+	ImGui::DragFloat3("Right", &transform.Right()[0], 0.1f);
+	ImGui::DragFloat3("Up", &transform.Up()[0], 0.1f);
 	ImGui::Unindent();
 }
 
@@ -142,5 +142,5 @@ void FlyCamera::Tick(float deltaTime)
 	}
 
 
-	Entity::Tick(deltaTime);
+	SceneObject::Tick(deltaTime);
 }

@@ -287,15 +287,15 @@ void Transform::OnImGuiRender()
 {
 	ImGui::SeparatorText("Transform");
 	glm::vec3 rot = GetLocalEuler();
-	if (ImGui::DragFloat3(GetUniqueLabel("Position"), &position[0], 0.1f))
+	if (ImGui::DragFloat3("Position", &position[0], 0.1f))
 	{
 		SetDirty();
 	}
-	if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f))
+	if (ImGui::DragFloat3("Rotation", &rot[0], 0.1f))
 	{
 		SetLocalRotation(rot);
 	}
-	if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f))
+	if (ImGui::DragFloat3("Scale", &scale[0], 0.1f))
 	{
 		SetDirty();
 	}

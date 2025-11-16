@@ -10,7 +10,7 @@
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "LinearMath/btDefaultMotionState.h"
-#include "Objects/Entity.h"
+#include "Objects/SceneObject.h"
 #include "Physics/PhysicsSystem.h"
 
 void ColliderComponent::Create(PhysicsSystem* inPhysicsSystem, const ColliderCreateInfo& inColliderInfo)

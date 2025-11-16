@@ -132,9 +132,9 @@ void SandboxScene::Construct()
 	//
 	// Skybox TODO: Skybox Constructor Required
 	//
-	cubeMapMesh = new Primitive("Skybox");
+	cubeMapMesh = MakeEntity<Primitive>("Skybox");
 	auto* mSkyboxRenderer = new SkyboxRenderer();
-	cubeMapMesh->renderer = mSkyboxRenderer;
+	cubeMapMesh->renderer = mSkyboxRenderer; // todo inconsistent use of renderer allocations compared to meshrenderer here
 	mSkyboxRenderer->material = cubemap;
 	mSkyboxRenderer->transform = &cubeMapMesh->transform;
 	mSkyboxRenderer->BindRenderer(*cubemapRenderPipeline->graphicsPipeline);
@@ -148,7 +148,7 @@ void SandboxScene::Construct()
 	activeCamera->Construct();
 	activeCamera->transform.SetLocalPosition({0, 0, -5.0f});
 
-	lineRendererEntity = new Primitive("LineRenderer");
+	lineRendererEntity = MakeEntity<Primitive>("LineRenderer");
 	lineRendererEntity->renderer = lineRenderer;
 
 	lineRenderer = new LineRenderer();
@@ -163,13 +163,6 @@ void SandboxScene::Construct()
 
 	lineRenderer->material = &unlitMaterial;
 	lineRenderer->BindRenderer(*lineRendererPipeline->graphicsPipeline);
-
-	//
-	// Setup Scene Dependencies
-	// Register to scene TODO: Review if we auto-register these
-	//
-	AddEntity(cubeMapMesh);
-	AddEntity(lineRendererEntity);
 
 	//
 	// Setup Draw Order
@@ -190,7 +183,7 @@ float deltaAccumulated;
 void SandboxScene::Tick(float deltaTime)
 {
 	deltaAccumulated += deltaTime / 5;
-	light->meshRenderer.material->materialProperties.color =
+	light->GetRenderer().material->materialProperties.color =
 			glm::vec4(sceneData.color.x, sceneData.color.y, sceneData.color.z, 1);
 
 	sceneData.position = light->transform.GetLocalPosition();

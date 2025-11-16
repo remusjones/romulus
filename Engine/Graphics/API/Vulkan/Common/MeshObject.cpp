@@ -9,33 +9,33 @@
 
 void MeshObject::Construct()
 {
-	Entity::Construct();
+	SceneObject::Construct();
 }
 
 void MeshObject::Tick(float deltaTime)
 {
-	Entity::Tick(deltaTime);
+	SceneObject::Tick(deltaTime);
 }
 
 void MeshObject::Cleanup()
 {
 	meshRenderer.DestroyRenderer();
-	Entity::Cleanup();
+	SceneObject::Cleanup();
 }
 
 void MeshObject::CreateObject(
-	Material& aMaterial,
-	const char* aName)
+	Material& inMaterial,
+	const eastl::string_view& inName)
 {
-	mName = aName;
-	SPDLOG_INFO("Creating Object {}", mName);
+	name = inName;
+	SPDLOG_INFO("Creating Object {}", name);
 
-	meshRenderer.material   = &aMaterial;
+	meshRenderer.material   = &inMaterial;
 	meshRenderer.mTransform = &transform;
 }
 
 void MeshObject::OnImGuiRender()
 {
-	Entity::OnImGuiRender();
+	SceneObject::OnImGuiRender();
 	meshRenderer.material->OnImGuiRender();
 }

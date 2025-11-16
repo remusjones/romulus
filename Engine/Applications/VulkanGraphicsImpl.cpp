@@ -60,6 +60,7 @@ void VulkanGraphicsImpl::InitializeVulkan()
 	CreateScenes();
 	romulusEditor = std::make_unique<Editor>();
 	romulusEditor->Create();
+	ImGuiDebugInstance::Get().RegisterDebugLayer(romulusEditor.get());
 }
 
 void VulkanGraphicsImpl::InitializeImgui()
@@ -160,8 +161,8 @@ void VulkanGraphicsImpl::Update()
 			                             ImGuiDockNodeFlags_PassthruCentralNode);
 
 
-			PROFILE_BEGIN("Editor Render");
-			romulusEditor->OnImGuiRender();
+			PROFILE_BEGIN("Debug Render");
+			ImGuiDebugInstance::Get().DrawImGui();
 			PROFILE_END();
 
 			PROFILE_BEGIN("Input Manager Update");

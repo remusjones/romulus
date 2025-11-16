@@ -6,7 +6,7 @@
 #include "ScopedProfileTimer.h"
 #include "EASTL/deque.h"
 #include "EASTL/stack.h"
-#include "Objects/ImGuiLayer.h"
+#include "Objects/ImGuiDebugLayer.h"
 
 #ifdef _MSC_VER
 #define FUNCTION_SIGNATURE __FUNCSIG__
@@ -24,7 +24,7 @@
 struct ManagedProfileTimer;
 struct ScopedProfileTimer;
 
-class Profiler final : public ImGuiLayer
+class Profiler final : public ImGuiDebugLayer
 {
 public:
 	// TODO: Maybe make a profiler factory for different sessions/groups?

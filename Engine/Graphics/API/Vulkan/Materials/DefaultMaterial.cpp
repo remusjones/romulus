@@ -34,12 +34,12 @@ void DefaultMaterial::OnImGuiRender()
 	Material::OnImGuiRender();
 
 	ImGui::SeparatorText("Material");
-	ImGui::ColorEdit4(GetUniqueLabel("Color"), &materialProperties.color[0]);
-	ImGui::DragFloat(GetUniqueLabel("Shininess"), &materialProperties.shininess, 0.1f);
-	ImGui::DragFloat(GetUniqueLabel("Specular"), &materialProperties.specularStrength, 0.1f);
+	ImGui::ColorEdit4("Color", &materialProperties.color[0]);
+	ImGui::DragFloat("Shininess", &materialProperties.shininess, 0.1f);
+	ImGui::DragFloat("Specular", &materialProperties.specularStrength, 0.1f);
 
 	int tmp = materialProperties.debugRenderState;
-	if (ImGui::Combo(GetUniqueLabel("Debug"), &tmp, debugColors.data(), debugColors.size()))
+	if (ImGui::Combo("Debug", &tmp, debugColors.data(), debugColors.size()))
 	{
 		materialProperties.debugRenderState = static_cast<float>(tmp);
 	}

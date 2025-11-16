@@ -6,12 +6,13 @@
 #include <filesystem>
 #include <memory>
 #include <vector>
-#include "ImGuiLayer.h"
+#include "ImGuiDebugLayer.h"
+#include "EASTL/vector.h"
 #include "ProjectExplorer/DirectoryMonitor.h"
 
 // todo: this will likely be deleted
 
-class Editor : ImGuiLayer
+class Editor : public ImGuiDebugLayer
 {
 public:
 	void Create();
@@ -32,4 +33,19 @@ private:
 	std::vector<eastl::string> nestedDirectories;
 	std::filesystem::path directoryPath;
 	std::filesystem::path contextBounds;
+};
+
+class ImGuiDebugInstance
+{
+public:
+	static ImGuiDebugInstance& Get();
+	ImGuiDebugInstance(const ImGuiDebugInstance&) = delete;
+	ImGuiDebugInstance& operator=(const ImGuiDebugInstance&) = delete;
+
+	void RegisterDebugLayer(ImGuiDebugLayer* inImGuiLayer);
+	void DrawImGui();
+
+private:
+	ImGuiDebugInstance() = default;
+	eastl::vector<ImGuiDebugLayer*> debugLayersToDraw;
 };

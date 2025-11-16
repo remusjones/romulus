@@ -3,19 +3,17 @@
 //
 
 #pragma once
-#include <string>
-
 #include "EASTL/string.h"
 
 
-class Entity;
+class SceneObject;
 
 class Component
 {
 public:
 	virtual ~Component() = default;
 
-	virtual void SetEntity(Entity* entity);
+	virtual void SetEntity(SceneObject* entity);
 	virtual void ClearEntity();
 
 	virtual void SetName(const eastl::string& inName);
@@ -26,7 +24,7 @@ public:
 	virtual void Initialize();
 
 protected:
-	Entity* attachedEntity = nullptr;
+	SceneObject* attachedEntity = nullptr;
 
 	// todo: Replace with Hash
 	eastl::string name;

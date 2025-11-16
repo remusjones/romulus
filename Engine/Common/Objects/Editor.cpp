@@ -61,7 +61,7 @@ void Editor::DrawContent()
 
 	ImGui::Begin("File Display");
 
-	if (ImGui::Button(GetUniqueLabel("Refresh Files")))
+	if (ImGui::Button("Refresh Files"))
 	{
 		directoryMonitor->UpdateDirectoryMonitor();
 	}
@@ -113,5 +113,24 @@ void Editor::GetFilesInDirectory(const std::filesystem::path& path,
 		{
 			resultDirectories.push_back((char*)entry.path().filename().c_str());
 		}
+	}
+}
+
+ImGuiDebugInstance& ImGuiDebugInstance::Get()
+{
+	static ImGuiDebugInstance instance;
+	return instance;
+}
+
+void ImGuiDebugInstance::RegisterDebugLayer(ImGuiDebugLayer* inImGuiLayer)
+{
+	debugLayersToDraw.push_back(inImGuiLayer);
+}
+
+void ImGuiDebugInstance::DrawImGui()
+{
+	for (auto* imGuiLayer : debugLayersToDraw)
+	{
+		imGuiLayer->OnImGuiRender();
 	}
 }

@@ -3,15 +3,15 @@
 //
 
 #pragma once
-#include "Objects/Entity.h"
+#include "Objects/SceneObject.h"
 #include "Vulkan/Renderers/Renderer.h"
 
 /* Represents a position and a undefined renderer component */
-class Primitive : public Entity
+class Primitive : public SceneObject
 {
 public:
 	Primitive() = default;
-	Primitive(const char* aEntityName) : renderer(nullptr) { mName = aEntityName; }
+	Primitive(const eastl::string_view& aEntityName) : renderer(nullptr) { name = aEntityName; }
 
 	void Cleanup() override;
 

@@ -6,7 +6,7 @@
 
 void Primitive::Cleanup()
 {
-	Entity::Cleanup();
+	SceneObject::Cleanup();
 	if (renderer)
 	{
 		renderer->DestroyRenderer();

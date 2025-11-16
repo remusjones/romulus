@@ -6,9 +6,9 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
-#include "Objects/ImGuiLayer.h"
+#include "Objects/ImGuiDebugLayer.h"
 
-class MaterialBase : public ImGuiLayer
+class MaterialBase : public ImGuiDebugLayer
 {
 public:
 	virtual void OnImGuiRender()

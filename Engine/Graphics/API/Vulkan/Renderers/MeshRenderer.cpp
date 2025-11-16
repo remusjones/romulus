@@ -8,6 +8,8 @@
 
 void MeshRenderer::LoadMesh(const char* aPath)
 {
+    // todo this should load from a global pool
+    // eg. find or load mesh from path?
     mMesh = new Mesh();
     mMesh->LoadFromObject(aPath);
 }

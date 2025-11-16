@@ -4,12 +4,12 @@
 
 #pragma once
 #include "Base/Common/Data/GPUCameraData.h"
-#include "Entity.h"
+#include "SceneObject.h"
 #include "Math/Transform.h"
 
 struct Ray;
 
-class Camera : public Entity
+class Camera : public SceneObject
 {
 public:
 	// TODO: Only update vpm when m_transform gets marked dirty

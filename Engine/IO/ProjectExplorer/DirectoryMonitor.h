@@ -8,7 +8,7 @@
 
 #include "EASTL/hash_map.h"
 #include "EASTL/string.h"
-#include "Objects/ImGuiLayer.h"
+#include "Objects/ImGuiDebugLayer.h"
 
 
 struct FileInfo
@@ -24,7 +24,7 @@ enum class FileStatus
 	ERASED
 };
 
-class DirectoryMonitor : ImGuiLayer
+class DirectoryMonitor : ImGuiDebugLayer
 {
 public:
 	void CreateDirectoryMonitor(const eastl::string& aPath);

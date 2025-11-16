@@ -3,14 +3,14 @@
 //
 
 #pragma once
-#include "ImGuiLayer.h"
+#include "ImGuiDebugLayer.h"
 #include "Components/Component.h"
 #include "EASTL/unique_ptr.h"
 #include "Math/Transform.h"
 
 // todo: Should this be called an entity?
 // Ideally we use an actual entity system and this will get confusing!
-class Entity : public ImGuiLayer
+class SceneObject : public ImGuiDebugLayer
 {
 public:
 	virtual void Construct();
@@ -24,7 +24,7 @@ public:
 	template <typename T>
 	bool GetComponent(T& result)
 	{
-		for (auto& component : componentMap)
+		for (auto& component : components)
 		{
 			if (dynamic_cast<T*>(component.second.get()))
 			{
@@ -38,7 +38,7 @@ public:
 	template <typename T>
 	bool GetComponents(std::vector<T>& result)
 	{
-		for (auto& component : componentMap)
+		for (auto& component : components)
 		{
 			if (dynamic_cast<T*>(component.second))
 			{
@@ -49,22 +49,11 @@ public:
 	}
 
 	template <class T>
-	bool GetComponent(const char* name, T& result)
+	bool GetComponent(const eastl::string_view& inName, T& result)
 	{
-		if (componentMap.contains(name))
+		if (components.contains(inName))
 		{
-			result = *static_cast<T*>(componentMap[name]); // add static_cast here
-			return true;
-		}
-		return false;
-	}
-
-	template <class T>
-	bool GetComponent(const eastl::string& name, T& result)
-	{
-		if (componentMap.contains(name))
-		{
-			result = *static_cast<T*>(componentMap[name]); // add static_cast here
+			result = *static_cast<T*>(components[inName]);
 			return true;
 		}
 		return false;
@@ -74,7 +63,6 @@ public:
 	void OnImGuiRender() override;
 
 	Transform transform;
-	const char* mName{"Default"};
-
-	eastl::hash_map<eastl::string, eastl::unique_ptr<Component>> componentMap;
+	eastl::string_view name;
+	eastl::hash_map<eastl::string_view, eastl::unique_ptr<Component>> components;
 };

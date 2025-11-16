@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Objects/Entity.h"
+#include "Objects/SceneObject.h"
 #include "Vulkan/Renderers/MeshRenderer.h"
 #include "Vulkan/Renderers/Renderer.h"
 
@@ -20,13 +20,19 @@ class AllocatedVertexBuffer;
 
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
-class MeshObject : public Entity{
+
+// todo the rendering here should just be a component ..
+class MeshObject : public SceneObject
+{
 public:
     void Construct() override;
     void Tick(float deltaTime) override;
     void Cleanup() override;
     void OnImGuiRender() override;
-    void CreateObject(Material &aMaterial, const char *aName = "Default");
+    void CreateObject(Material& aMaterial, const eastl::string_view& objectName);
 
+    MeshRenderer& GetRenderer() {return meshRenderer; }
+
+private:
     MeshRenderer meshRenderer;
 };

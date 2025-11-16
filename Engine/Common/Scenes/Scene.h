@@ -11,7 +11,7 @@
 #include "EASTL/string.h"
 #include "EASTL/vector.h"
 #include "Objects/FlyCamera.h"
-#include "Objects/ImGuiLayer.h"
+#include "Objects/ImGuiDebugLayer.h"
 
 class GraphicsPipelineFactory;
 class Texture;
@@ -23,7 +23,7 @@ class GraphicsPipeline;
 class Camera;
 class MeshObject;
 
-class Scene : public ImGuiLayer
+class Scene : public ImGuiDebugLayer
 {
 public:
 	virtual ~Scene();
@@ -40,8 +40,8 @@ public:
 	void AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory);
 
 
-	MeshObject* CreateObject(const char* aName,
-	                         const char* aMeshPath,
+	MeshObject* CreateObject(const eastl::string_view& inName,
+	                         const eastl::string_view& inPath,
 	                         Material& inMaterial,
 	                         GraphicsPipeline& inPipeline,
 	                         const glm::vec3& aPos = glm::vec3(0),
@@ -50,11 +50,18 @@ public:
 	);
 
 	// todo: inconsistent pointer semantics here with & or *
-	void AddEntity(std::unique_ptr<Entity> aEntity);
-	void AddEntity(Entity* aEntity);
 
-	void AttachSphereCollider(Entity& aEntity, const float radius, const float mass, float friction = 0.5f) const;
-	void AttachBoxCollider(Entity& inEntity, glm::vec3 halfExtents, float mass, float friction = 0.5f) const;
+	template<typename T, typename ...Args>
+	T* MakeEntity(Args&&... args)
+	{
+		T* object = static_cast<T*>(sceneObjects.emplace_back(eastl::make_unique<T>(eastl::forward<Args>(args)...)).get());
+		sceneTransformRelationships.insert_or_assign(&object->transform, object);
+		return object;
+	}
+
+
+	void AttachSphereCollider(SceneObject& aEntity, const float radius, const float mass, float friction = 0.5f) const;
+	void AttachBoxCollider(SceneObject& inEntity, glm::vec3 halfExtents, float mass, float friction = 0.5f) const;
 
 	// TODO: probably bind these to flycam instead?
 	void MouseMovement(const SDL_MouseMotionEvent& aMouseMotion);
@@ -66,10 +73,10 @@ public:
 	Texture* CreateTexture(const char* aName, const eastl::vector<eastl::string>& aPathsSet);
 
 protected:
-	virtual Entity* MakeEntity(); // todo: move to factory
+	virtual SceneObject& MakeEntity(); // todo: move to factory
 private:
-	void DrawObjectsRecursive(Entity& entityToDraw);
-	bool IsParentOfPickedEntity(const Entity& obj);
+	void DrawObjectsRecursive(SceneObject& entityToDraw);
+	bool IsParentOfPickedEntity(const SceneObject& obj);
 	void ChangeImGuizmoOperation(int aOperation);
 
 public:
@@ -82,14 +89,15 @@ public:
 
 protected:
 	// todo: feels like these probably shouldn't be here
-	eastl::vector<std::unique_ptr<Entity>> sceneObjects;
-	eastl::hash_map<Transform*, Entity*> sceneTransformRelationships;
-	eastl::hash_map<eastl::string, std::unique_ptr<Texture>> sceneTextures;
+	eastl::vector<eastl::unique_ptr<SceneObject>> sceneObjects;
+
+	eastl::hash_map<Transform*, SceneObject*> sceneTransformRelationships;
+	eastl::hash_map<eastl::string, eastl::unique_ptr<Texture>> sceneTextures;
 
 private:
 	// TODO: Make unique ptr
 	// todo: we don't really have a need for this!
 	PhysicsSystem* sceneInteractionPhysicsSystem = nullptr;
-	Entity* pickedEntity{nullptr};
+	SceneObject* pickedEntity{nullptr};
 	int mouseX{0}, mouseY{0};
 };

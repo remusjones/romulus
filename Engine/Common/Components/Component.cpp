@@ -4,9 +4,9 @@
 
 
 #include "Component.h"
-#include "Objects/Entity.h"
+#include "Objects/SceneObject.h"
 
-void Component::SetEntity(Entity* entity)
+void Component::SetEntity(SceneObject* entity)
 {
 	attachedEntity = entity;
 }

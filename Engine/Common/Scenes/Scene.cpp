@@ -47,7 +47,7 @@ void Scene::PreConstruct(const char* aSceneName)
 	PROFILE_BEGIN("SCENE CONSTRUCT");
 	m_sceneName = aSceneName;
 
-	physicsSystem                 = new PhysicsSystem();
+	physicsSystem = new PhysicsSystem();
 	sceneInteractionPhysicsSystem = new PhysicsSystem();
 
 	physicsSystem->Create();
@@ -58,8 +58,7 @@ void Scene::PreConstruct(const char* aSceneName)
 	                                 "Scene Mouse Press");
 
 	gInputSystem->RegisterKeyCodeInput(SDLK_W,
-	                                   [this](SDL_KeyboardEvent)
-	                                   {
+	                                   [this](SDL_KeyboardEvent) {
 		                                   if (!activeCamera->IsCameraConsumingInput())
 		                                   {
 			                                   ChangeImGuizmoOperation(ImGuizmo::TRANSLATE);
@@ -67,15 +66,13 @@ void Scene::PreConstruct(const char* aSceneName)
 	                                   }, "Scene Gizmo Translate");
 
 	gInputSystem->RegisterKeyCodeInput(SDLK_E,
-	                                   [this](SDL_KeyboardEvent)
-	                                   {
+	                                   [this](SDL_KeyboardEvent) {
 		                                   if (!activeCamera->IsCameraConsumingInput())
 			                                   ChangeImGuizmoOperation(ImGuizmo::ROTATE);
 	                                   }, "Scene Gizmo Rotate");
 
 	gInputSystem->RegisterKeyCodeInput(SDLK_R,
-	                                   [this](SDL_KeyboardEvent)
-	                                   {
+	                                   [this](SDL_KeyboardEvent) {
 		                                   if (!activeCamera->IsCameraConsumingInput())
 			                                   ChangeImGuizmoOperation(ImGuizmo::SCALE);
 	                                   }, "Scene Gizmo Scale");
@@ -95,15 +92,15 @@ void Scene::MouseInput(const SDL_MouseButtonEvent& aMouseInput)
 		return;
 
 	if (aMouseInput.button == SDL_BUTTON_LEFT
-		&& aMouseInput.type == SDL_EVENT_MOUSE_BUTTON_DOWN
-		&& !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
-		&& !ImGuizmo::IsOver())
+	    && aMouseInput.type == SDL_EVENT_MOUSE_BUTTON_DOWN
+	    && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
+	    && !ImGuizmo::IsOver())
 	{
 		const auto pickedRigidBody = PickRigidBody(mouseX, mouseY);
 		for (const auto& object : sceneObjects)
 		{
 			if (ColliderComponent comp; object->GetComponent<ColliderComponent>(comp)
-				&& pickedRigidBody == comp.GetRigidBody())
+			                            && pickedRigidBody == comp.GetRigidBody())
 			{
 				pickedEntity = object.get();
 				break;
@@ -131,10 +128,9 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 }
 
 
-void Scene::DrawObjectsRecursive(Entity& entityToDraw)
+void Scene::DrawObjectsRecursive(SceneObject& entityToDraw)
 {
-	const char* nodeLabel = entityToDraw.GetUniqueLabel(entityToDraw.mName);
-
+	ImGui::PushID(&entityToDraw);
 	if (IsParentOfPickedEntity(entityToDraw))
 	{
 		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
@@ -149,16 +145,18 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw)
 	{
 		nodeFlag |= ImGuiTreeNodeFlags_Selected;
 		ImGui::Begin("Picked Object");
-		ImGui::Text(pickedEntity->mName);
+		ImGui::Text(pickedEntity->name.data());
+		ImGui::PushID(&entityToDraw);
 		entityToDraw.OnImGuiRender();
+		ImGui::PopID();
 		ImGui::End();
 	}
 
-	if (ImGui::TreeNodeEx(nodeLabel, nodeFlag))
+	if (ImGui::TreeNodeEx(entityToDraw.name.data(), nodeFlag))
 	{
 		for (auto childTransform : entityToDraw.transform.GetChildren())
 		{
-			Entity& childEntity = *sceneTransformRelationships.at(childTransform);
+			SceneObject& childEntity = *sceneTransformRelationships.at(childTransform);
 			DrawObjectsRecursive(childEntity);
 		}
 		ImGui::TreePop();
@@ -168,22 +166,11 @@ void Scene::DrawObjectsRecursive(Entity& entityToDraw)
 	{
 		pickedEntity = &entityToDraw;
 	}
+	ImGui::PopID();
 }
 
-bool Scene::IsParentOfPickedEntity(const Entity& obj)
+bool Scene::IsParentOfPickedEntity(const SceneObject& obj)
 {
-	if (pickedEntity == nullptr)
-	{
-		return false;
-	}
-	for (const Entity* parentEntity = pickedEntity; parentEntity != nullptr;
-	     parentEntity               = sceneTransformRelationships[parentEntity->transform.GetParent()])
-	{
-		if (parentEntity == &obj)
-		{
-			return true;
-		}
-	}
 	return false;
 }
 
@@ -198,27 +185,26 @@ void Scene::OnImGuiRender()
 
 	const ImGuiIO& io = ImGui::GetIO();
 	ImGui::SeparatorText("Controls");
-	ImGui::BeginChild(GetUniqueLabel("Controls"),
+	ImGui::BeginChild("Controls",
 	                  ImVec2(0.0f, 0.0f),
-	                  ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
-	{
-		if (ImGui::RadioButton(GetUniqueLabel("Translate"), currentGizmoOperation == ImGuizmo::TRANSLATE))
+	                  ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY); {
+		if (ImGui::RadioButton("Translate", currentGizmoOperation == ImGuizmo::TRANSLATE))
 			currentGizmoOperation = ImGuizmo::TRANSLATE;
 
 		ImGui::SameLine();
-		if (ImGui::RadioButton(GetUniqueLabel("Rotate"), currentGizmoOperation == ImGuizmo::ROTATE))
+		if (ImGui::RadioButton("Rotate", currentGizmoOperation == ImGuizmo::ROTATE))
 			currentGizmoOperation = ImGuizmo::ROTATE;
 
 		ImGui::SameLine();
-		if (ImGui::RadioButton(GetUniqueLabel("Scale"), currentGizmoOperation == ImGuizmo::SCALE))
+		if (ImGui::RadioButton("Scale", currentGizmoOperation == ImGuizmo::SCALE))
 			currentGizmoOperation = ImGuizmo::SCALE;
 
 		if (currentGizmoOperation != ImGuizmo::SCALE)
 		{
-			if (ImGui::RadioButton(GetUniqueLabel("Local"), currentGizmoMode == ImGuizmo::LOCAL))
+			if (ImGui::RadioButton("Local", currentGizmoMode == ImGuizmo::LOCAL))
 				currentGizmoMode = ImGuizmo::LOCAL;
 			ImGui::SameLine();
-			if (ImGui::RadioButton(GetUniqueLabel("World"), currentGizmoMode == ImGuizmo::WORLD))
+			if (ImGui::RadioButton("World", currentGizmoMode == ImGuizmo::WORLD))
 				currentGizmoMode = ImGuizmo::WORLD;
 		}
 	}
@@ -229,9 +215,9 @@ void Scene::OnImGuiRender()
 		ImGui::Indent();
 		if (ImGui::CollapsingHeader("Lighting"))
 		{
-			ImGui::ColorEdit3(GetUniqueLabel("Point Light Color"), &sceneData.color[0]);
-			ImGui::DragFloat(GetUniqueLabel("Point Light Intensity"), &sceneData.lightIntensity, 0.0125f);
-			ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &sceneData.ambientStrength, 0.1f);
+			ImGui::ColorEdit3("Point Light Color", &sceneData.color[0]);
+			ImGui::DragFloat("Point Light Intensity", &sceneData.lightIntensity, 0.0125f);
+			ImGui::DragFloat("Ambient Lighting", &sceneData.ambientStrength, 0.1f);
 		}
 		if (ImGui::CollapsingHeader("Camera"))
 		{
@@ -261,8 +247,7 @@ void Scene::OnImGuiRender()
 		for (const auto& obj : sceneObjects)
 		{
 			ImGui::BeginGroup();
-			ImGui::Indent();
-			{
+			ImGui::Indent(); {
 				if (obj->transform.GetParent() == nullptr)
 				{
 					DrawObjectsRecursive(*obj);
@@ -275,10 +260,9 @@ void Scene::OnImGuiRender()
 
 
 	ImGui::SeparatorText("Statistics");
-	ImGui::BeginChild(GetUniqueLabel("Statistics"),
+	ImGui::BeginChild("Statistics",
 	                  ImVec2(0.0f, 0.0f),
-	                  ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
-	{
+	                  ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY); {
 		ImGui::Text("FPS: ");
 		ImGui::SameLine();
 		ImGui::Text(std::to_string(static_cast<int32_t>(gGraphics->GetFps())).c_str());
@@ -297,10 +281,9 @@ void Scene::OnImGuiRender()
 		ImGui::Text(std::to_string(static_cast<int32_t>(renderPipelines.size())).c_str());
 		if (ImGui::CollapsingHeader("Graphic Systems Info"))
 		{
-			if (ImGui::Button(GetUniqueLabel("Rebuild All")))
+			if (ImGui::Button("Rebuild All"))
 			{
-				gGraphics->vulkanRenderer->SubmitEndOfFrameTask([this]
-				{
+				gGraphics->vulkanRenderer->SubmitEndOfFrameTask([this] {
 					for (const auto& renderSystem : renderPipelines)
 					{
 						vkDeviceWaitIdle(gGraphics->logicalDevice);
@@ -376,61 +359,42 @@ void Scene::AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory)
 }
 
 // TODO: Make pointers managed
-MeshObject* Scene::CreateObject(const char* aName, const char* aMeshPath, Material& inMaterial,
-                                GraphicsPipeline& inPipeline, const glm::vec3& aPos, const glm::vec3& aRot,
-                                const glm::vec3& aScale)
+MeshObject* Scene::CreateObject(const eastl::string_view& inName, const eastl::string_view& inMeshPath, Material& inMaterial,
+                                GraphicsPipeline& inPipeline, const glm::vec3& inPos, const glm::vec3& inRot,
+                                const glm::vec3& inScale)
 {
-	auto object = std::make_unique<MeshObject>();
-	object->CreateObject(inMaterial, aName);
-	object->meshRenderer.BindRenderer(inPipeline);
-	object->meshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
+	auto* object = MakeEntity<MeshObject>();
+	object->CreateObject(inMaterial, inName);
+	object->GetRenderer().BindRenderer(inPipeline);
+	object->GetRenderer().LoadMesh((FileManagement::GetWorkingDirectory() + inMeshPath.data()).c_str());
 
-	object->transform.SetLocalPosition(aPos);
-	object->transform.SetLocalRotation(aRot);
-	object->transform.SetLocalScale(aScale);
+	object->transform.SetLocalPosition(inPos);
+	object->transform.SetLocalRotation(inRot);
+	object->transform.SetLocalScale(inScale);
 
-	//auto *sceneCollider = new ColliderComponent();
-	//sceneCollider->SetName("SceneCollider");
-	//ColliderCreateInfo colliderInfo;
-	//colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
-	//                                                                  object->mMeshRenderer.mMesh->GetIndices());
-	////   colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
-	//sceneCollider->Create(m_SceneInteractionPhysicsSystem, colliderInfo);
-	//object->AddComponent(sceneCollider);
-
-	// todo: this is wack
-	MeshObject* rawPtr = object.get();
-	AddEntity(std::move(object));
-	return rawPtr;
+	return object;
 }
 
-void Scene::AddEntity(std::unique_ptr<Entity> aEntity)
-{
-	// todo this is wack
-	sceneTransformRelationships[&aEntity->transform] = aEntity.get();
-	sceneObjects.push_back(std::move(aEntity));
-}
-
-void Scene::AttachSphereCollider(Entity& aEntity, const float radius, const float mass,
+void Scene::AttachSphereCollider(SceneObject& aEntity, const float radius, const float mass,
                                  const float friction) const
 {
 	auto sphereCollider = eastl::make_unique<ColliderComponent>();
 	ColliderCreateInfo sphereColliderInfo{};
 	sphereColliderInfo.collisionShape = new btSphereShape(radius);
-	sphereColliderInfo.mass           = mass;
-	sphereColliderInfo.friction       = friction;
+	sphereColliderInfo.mass = mass;
+	sphereColliderInfo.friction = friction;
 	sphereCollider->Create(physicsSystem, sphereColliderInfo);
 	aEntity.AddComponent(eastl::move(sphereCollider));
 }
 
-void Scene::AttachBoxCollider(Entity& inEntity, const glm::vec3 halfExtents, const float mass,
+void Scene::AttachBoxCollider(SceneObject& inEntity, const glm::vec3 halfExtents, const float mass,
                               const float friction) const
 {
 	auto boxCollider = eastl::make_unique<ColliderComponent>();
 	ColliderCreateInfo boxColliderInfo{};
 	boxColliderInfo.collisionShape = new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z));
-	boxColliderInfo.mass           = mass;
-	boxColliderInfo.friction       = friction;
+	boxColliderInfo.mass = mass;
+	boxColliderInfo.friction = friction;
 	boxCollider->Create(physicsSystem, boxColliderInfo);
 	inEntity.AddComponent(eastl::move(boxCollider));
 }
@@ -459,7 +423,7 @@ Texture* Scene::CreateTexture(const char* aName, const eastl::vector<eastl::stri
 {
 	if (!sceneTextures.contains(aName))
 	{
-		sceneTextures.insert_or_assign(aName, std::make_unique<Texture>());
+		sceneTextures.insert_or_assign(aName, eastl::make_unique<Texture>());
 
 		auto* texture = sceneTextures.at(aName).get();
 		texture->LoadImagesFromDisk(aPathsSet);
@@ -472,16 +436,7 @@ Texture* Scene::CreateTexture(const char* aName, const eastl::vector<eastl::stri
 	return nullptr;
 }
 
-Entity* Scene::MakeEntity()
+SceneObject& Scene::MakeEntity()
 {
-	std::unique_ptr<Entity> entity = std::make_unique<Entity>();
-	Entity* entityPtr              = entity.get();
-	sceneObjects.push_back(std::move(entity));
-	return entityPtr;
-}
-
-void Scene::AddEntity(Entity* aEntity)
-{
-	sceneTransformRelationships[&aEntity->transform] = aEntity;
-	sceneObjects.push_back(std::unique_ptr<Entity>(aEntity));
+	return *sceneObjects.emplace_back(eastl::make_unique<SceneObject>());
 }
