@@ -16,11 +16,11 @@
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <InputSystem.h>
-#include <Profiler.h>
 #include <Objects/Editor.h>
 #include <Scenes/SandboxScene.h>
 #include <Vulkan/Common/MeshObject.h>
 
+#include "Profiler.h"
 #include "spdlog/spdlog.h"
 
 VulkanGraphics* gGraphics = nullptr;
@@ -58,8 +58,8 @@ void VulkanGraphicsImpl::InitializeVulkan()
 	InitializeImgui();
 
 	CreateScenes();
+
 	romulusEditor = std::make_unique<Editor>();
-	romulusEditor->Create();
 	ImGuiDebugInstance::Get().RegisterDebugLayer(romulusEditor.get());
 }
 
@@ -163,6 +163,7 @@ void VulkanGraphicsImpl::Update()
 
 			PROFILE_BEGIN("Debug Render");
 			ImGuiDebugInstance::Get().DrawImGui();
+			ImGui::Render();
 			PROFILE_END();
 
 			PROFILE_BEGIN("Input Manager Update");
@@ -176,7 +177,6 @@ void VulkanGraphicsImpl::Update()
 			PROFILE_BEGIN("Scene Draw");
 			vulkanRenderer->DrawFrame(*activeScene);
 			PROFILE_END();
-
 
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();

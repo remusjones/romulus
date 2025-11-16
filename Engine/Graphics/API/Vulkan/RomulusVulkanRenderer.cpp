@@ -271,7 +271,6 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
                          VK_SUBPASS_CONTENTS_INLINE);
     activeScene.Render(currentCommandBuffer, imageIndex, currentFrame);
 
-    ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentCommandBuffer);
     vkCmdEndRenderPass(currentCommandBuffer);
 
