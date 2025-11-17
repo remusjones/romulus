@@ -296,6 +296,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
     VkPipelineStageFlags waitStages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     };
+
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -326,7 +327,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
     result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-    if (rebuildBuffer)
+    if (flags[c_rebuildBufferFlag])
     {
         swapChain->RecreateSwapChain();
 
@@ -334,8 +335,9 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         CreateCommandPool();
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
-        rebuildBuffer = false;
+        flags[c_rebuildBufferFlag] = false;
     }
+
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
         swapChain->RecreateSwapChain();
@@ -350,11 +352,14 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         CreateSyncObjects();
         semaphoresNeedToBeRecreated = false;
     }
-    while(!endOfFrameTasks.empty()) {
+
+    while(!endOfFrameTasks.empty())
+    {
         auto task = std::move(endOfFrameTasks.front());
         task();
         endOfFrameTasks.pop();
     }
+
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 

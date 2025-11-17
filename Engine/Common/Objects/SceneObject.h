@@ -36,7 +36,7 @@ public:
 	}
 
 	template <typename T>
-	bool GetComponents(std::vector<T>& result)
+	bool GetComponents(eastl::vector<T>& result)
 	{
 		for (auto& component : components)
 		{

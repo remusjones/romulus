@@ -7,9 +7,10 @@
 #include "Objects/Camera.h"
 #include "Objects/Camera.h"
 
-Transform::Transform() : position(0), rotation(glm::identity<glm::quat>()), scale(1), localMatrix(),
-                         matrixIsDirtyFlag(true), parent(nullptr)
+Transform::Transform() : position(0),
+rotation(glm::identity<glm::quat>()), scale(1), localMatrix(), parent(nullptr)
 {
+	flags[c_matrixIsDirtyFlag] = true;
 }
 
 glm::vec3 Transform::GetWorldPosition()
@@ -184,12 +185,12 @@ void Transform::SetMatrix(const glm::mat4& inMatrix)
 
 void Transform::SetDirty()
 {
-	matrixIsDirtyFlag = true;
+	flags[c_matrixIsDirtyFlag] = true;
 }
 
 bool Transform::GetDirty() const
 {
-	return matrixIsDirtyFlag;
+	return flags[c_matrixIsDirtyFlag];
 }
 
 void Transform::SetParent(Transform* inParent)
@@ -216,7 +217,7 @@ Transform* Transform::GetParent() const
 	return parent;
 }
 
-std::vector<Transform*> Transform::GetChildren() const
+eastl::vector<Transform*> Transform::GetChildren() const
 {
 	return children;
 }
@@ -253,31 +254,34 @@ void Transform::UpdateLocalMatrix()
 
 glm::mat4 Transform::GetWorldMatrix()
 {
-	if (matrixIsDirtyFlag)
+	if (flags[c_matrixIsDirtyFlag])
 	{
 		UpdateLocalMatrix();
 		for (const auto child : children)
 		{
 			child->SetDirty();
 		}
-		matrixIsDirtyFlag = false;
+		flags[c_matrixIsDirtyFlag] = false;
 	}
+
 	if (parent)
+	{
 		return parent->GetWorldMatrix() * localMatrix;
+	}
 
 	return localMatrix;
 }
 
 glm::mat4 Transform::GetLocalMatrix()
 {
-	if (matrixIsDirtyFlag)
+	if (flags[c_matrixIsDirtyFlag])
 	{
 		UpdateLocalMatrix();
 		for (const auto child : children)
 		{
 			child->SetDirty();
 		}
-		matrixIsDirtyFlag = false;
+		flags[c_matrixIsDirtyFlag] = false;
 	}
 
 	return localMatrix;

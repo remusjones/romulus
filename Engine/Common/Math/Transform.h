@@ -8,6 +8,10 @@
 #include <glm/detail/type_quat.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+
+#include "EASTL/bitset.h"
+#include "EASTL/vector.h"
+#include "EASTL/bonus/flags.h"
 #include "Objects/ImGuiDebugLayer.h"
 
 
@@ -56,7 +60,7 @@ public:
 
 	void SetParent(Transform* inParent);
 	Transform* GetParent() const;
-	std::vector<Transform*> GetChildren() const;
+	eastl::vector<Transform*> GetChildren() const;
 	size_t GetChildCount() const;
 
 	glm::mat4 GetWorldMatrix();
@@ -74,10 +78,12 @@ private:
 	glm::vec3 scale;
 
 	glm::mat4 localMatrix;
-	bool matrixIsDirtyFlag;
+
+	static constexpr uint8_t c_matrixIsDirtyFlag = 0;
+	eastl::bitset<1> flags;
 
 	Transform* parent;
-	std::vector<Transform*> children;
+	eastl::vector<Transform*> children;
 
 	void RemoveChild(Transform* child);
 	void AddChild(Transform* child);

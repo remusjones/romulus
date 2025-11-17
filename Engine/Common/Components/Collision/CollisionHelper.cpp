@@ -35,8 +35,8 @@ glm::quat CollisionHelper::BulletToGlm(const btQuaternion& otherQuaternion)
 	return glm::quat(otherQuaternion.w(), otherQuaternion.x(), otherQuaternion.y(), otherQuaternion.z());
 }
 
-btBvhTriangleMeshShape* CollisionHelper::MakeCollisionMesh(const std::vector<Vertex>& inVertices,
-                                                           const std::vector<int32_t>& inIndices)
+btBvhTriangleMeshShape* CollisionHelper::MakeCollisionMesh(const eastl::vector<Vertex>& inVertices,
+                                                           const eastl::vector<int32_t>& inIndices)
 {
 	btTriangleMesh* triangleMesh = new btTriangleMesh(); // Bullet Physics triangle mesh
 
@@ -54,7 +54,7 @@ btBvhTriangleMeshShape* CollisionHelper::MakeCollisionMesh(const std::vector<Ver
 	return new btBvhTriangleMeshShape(triangleMesh, true);
 }
 
-btBoxShape* CollisionHelper::MakeAABBCollision(const std::vector<Vertex>& inVertices)
+btBoxShape* CollisionHelper::MakeAABBCollision(const eastl::vector<Vertex>& inVertices)
 {
 	// Find min and max vertices along each axis
 	btVector3 minVertex(inVertices[0].position.x, inVertices[0].position.y, inVertices[0].position.z);

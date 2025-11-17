@@ -9,6 +9,7 @@
 #include "VulkanSwapChain.h"
 #include "Base/Common/Data/Vertex.h"
 #include "Base/Common/Data/FrameData.h"
+#include "EASTL/bitset.h"
 
 class Material;
 class Scene;
@@ -39,7 +40,7 @@ public:
 
 	void SubmitEndOfFrameTask(std::function<void()>&& task);
 
-	void QueueFrameBufferRebuild() { rebuildBuffer = true; }
+	void QueueFrameBufferRebuild() { flags[c_rebuildBufferFlag] = true; }
 
 	void CreateUploadContext();
 
@@ -69,7 +70,10 @@ public:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 private:
-	bool rebuildBuffer = false;
+
+	static constexpr uint8_t c_rebuildBufferFlag = 0;
+	eastl::bitset<1> flags;
+
 	// Cached Variables for layouts
 	VkDevice logicalDevice                      = nullptr;
 	VkPhysicalDevice physicalDevice             = nullptr;

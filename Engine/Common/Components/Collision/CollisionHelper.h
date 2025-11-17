@@ -19,7 +19,7 @@ public:
 	static btQuaternion GlmToBullet(const glm::quat& otherQuaternion);
 	static glm::vec3 BulletToGlm(const btVector3& otherVector);
 	static glm::quat BulletToGlm(const btQuaternion& otherQuaternion);
-	static btBvhTriangleMeshShape* MakeCollisionMesh(const std::vector<Vertex>& inVertices, const std::vector<int32_t>&
+	static btBvhTriangleMeshShape* MakeCollisionMesh(const eastl::vector<Vertex>& inVertices, const eastl::vector<int32_t>&
 	                                                 inIndices);
-	static btBoxShape* MakeAABBCollision(const std::vector<Vertex>& inVertices);
+	static btBoxShape* MakeAABBCollision(const eastl::vector<Vertex>& inVertices);
 };

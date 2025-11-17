@@ -7,7 +7,7 @@
 #include <vector>
 #include <SDL3/SDL_video.h>
 
-#include "DequeBuffer.h"
+#include <Types/DequeBuffer.h>
 #include "IApplication.h"
 #include "InputSystem.h"
 #include "Vulkan/RomulusVulkanRenderer.h"
