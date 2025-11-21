@@ -71,9 +71,10 @@ message("Adding EASTL")
 add_subdirectory(EASTL EASTL)
 # ------------------------------------
 
-# https://github.com/nothings/stb.git
-message("Adding stb")
-# The include directory is now handled by the main CMakeLists.txt
+#https://github.com/wolfpld/tracy.git
+message("Adding tracy")
+add_subdirectory(tracy tracy)
+target_compile_definitions(Romulus PRIVATE TRACY_ENABLE)
 # ------------------------------------
 
 

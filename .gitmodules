@@ -34,3 +34,6 @@
 [submodule "vendor/eastl"]
 	path = vendor/eastl
 	url = https://github.com/electronicarts/EASTL.git
+[submodule "vendor/tracy"]
+	path = vendor/tracy
+	url = https://github.com/wolfpld/tracy.git

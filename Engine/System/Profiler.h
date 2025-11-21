@@ -14,7 +14,7 @@
 #define FUNCTION_SIGNATURE __PRETTY_FUNCTION__
 #endif
 
-#define PROFILE_SCOPE(name) ScopedProfileTimer timer##__LINE__ = (Profiler::GetInstance().mRunning ? ScopedProfileTimer(name, Profiler::GetInstance(), FUNCTION_SIGNATURE, __LINE__) : ScopedProfileTimer())
+#define PROFILE_SCOPE(name) ScopedProfileTimer timer##__LINE__ = (Profiler::GetInstance().IsRunning() ? ScopedProfileTimer(name, Profiler::GetInstance(), FUNCTION_SIGNATURE, __LINE__) : ScopedProfileTimer())
 #define PROFILE_FUNCTION_SCOPED() PROFILE_SCOPE(FUNCTION_SIGNATURE)
 #define PROFILE_FUNCTION_SCOPED_NAMED(name) PROFILE_SCOPE(name)
 
@@ -23,6 +23,11 @@
 
 struct ManagedProfileTimer;
 struct ScopedProfileTimer;
+
+struct ProfilerConfig
+{
+	const char* c_sessionTraceFilename = "trace.json";
+};
 
 class Profiler final : public ImGuiDebugLayer
 {
@@ -54,15 +59,18 @@ private:
 
 public:
 	void OnImGuiRender() override;
+	bool IsRunning() const { return running; }
 
 private:
-	bool serializeTrace = false;
-	bool running = true;
 	eastl::stack<ManagedProfileTimer> timerStack;
 	eastl::hash_map<eastl::string_view, eastl::deque<TimerResult>> timerHistory;
-	const int maxDisplayedHistoryTime = 100;
-	const char* sessionTraceFilename = "trace.json";
+	ProfilerConfig config;
+
+	bool serializeTrace = false;
+	bool running = true;
+	int maxDisplayedHistoryTime = 100;
+
 	std::mutex traceWriteMutex;
 	std::ofstream sessionOutputStream;
-	long long traceFrameCounter = 0;
+	uint64_t traceFrameCounter = 0;
 };

@@ -10,6 +10,9 @@
 #include "Base/Common/Data/Vertex.h"
 #include "Base/Common/Data/FrameData.h"
 #include "EASTL/bitset.h"
+#include "EASTL/queue.h"
+#include "EASTL/vector.h"
+#include "tracy/TracyVulkan.hpp"
 
 class Material;
 class Scene;
@@ -43,23 +46,21 @@ public:
 	void QueueFrameBufferRebuild() { flags[c_rebuildBufferFlag] = true; }
 
 	void CreateUploadContext();
-
 	void CreateCommandBuffers();
-
 	void CreateCommandPool();
 	void DestroyCommandPool() const;
-
 	void CreateDescriptorPool();
 	void DrawFrame(Scene& activeScene);
 
 	void CreateSyncObjects();
+	void CreateTracy();
 	void Cleanup();
 
 private:
 	void CleanupOldSyncObjects();
 
 public:
-	std::vector<VkFence> imagesInFlight;
+	eastl::vector<VkFence> imagesInFlight;
 	VulkanSwapChain* swapChain;
 
 	VkQueue graphicsQueue;
@@ -80,12 +81,13 @@ private:
 	VkPhysicalDeviceProperties deviceProperties = {};
 
 	std::vector<FrameData> frameData;
+	tracy::VkCtx* tracyContext;
 
-	std::vector<VkFence> inFlightFencesToDestroy;
-	std::vector<VkSemaphore> imageAvailableSemaphoresToDestroy;
-	std::vector<VkSemaphore> mRenderFinishedSemaphoresToDestroy;
-	std::vector<VkSemaphore> renderFinishedSemaphores;
+	eastl::vector<VkFence> inFlightFencesToDestroy;
+	eastl::vector<VkSemaphore> imageAvailableSemaphoresToDestroy;
+	eastl::vector<VkSemaphore> mRenderFinishedSemaphoresToDestroy;
+	eastl::vector<VkSemaphore> renderFinishedSemaphores;
 
-	std::queue<std::function<void()>> endOfFrameTasks;
+	eastl::queue<std::function<void()>> endOfFrameTasks;
 	size_t currentFrame = 0;
 };

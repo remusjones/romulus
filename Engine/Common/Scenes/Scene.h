@@ -33,6 +33,8 @@ public:
 	virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 	                    uint32_t aCurrentFrame);
 
+
+	virtual void TickPhysics(float deltaTime);
 	virtual void Tick(float aDeltaTime);
 	virtual void Cleanup();
 	void OnImGuiRender() override;

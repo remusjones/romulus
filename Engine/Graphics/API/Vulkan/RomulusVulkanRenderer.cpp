@@ -16,6 +16,7 @@
 #include "Helpers/VulkanInitialization.h"
 #include "Scenes/Scene.h"
 #include "spdlog/spdlog.h"
+#include "tracy/TracyVulkan.hpp"
 
 void RomulusVulkanRenderer::Initialize(const VkDevice& inLogicalDevice,
                                        VulkanSwapChain* inSwapChain,
@@ -41,6 +42,7 @@ void RomulusVulkanRenderer::Initialize(const VkDevice& inLogicalDevice,
 void RomulusVulkanRenderer::Cleanup()
 {
     CleanupOldSyncObjects();
+    TracyVkDestroy(tracyContext);
 
     vkDestroyCommandPool(logicalDevice, uploadContext.commandPool, nullptr);
 
@@ -55,10 +57,10 @@ void RomulusVulkanRenderer::Cleanup()
 
         vkDestroyCommandPool(logicalDevice, frameData[i].mCommandPool, nullptr);
 
-        //mFrameData[i].mCameraBuffer.Destroy();
         frameData[i].sceneBuffer.Destroy();
     }
-    for (auto semaphore : renderFinishedSemaphores) {
+    for (auto semaphore : renderFinishedSemaphores)
+    {
         vkDestroySemaphore(logicalDevice, semaphore, nullptr);
     }
     vkDestroyDescriptorPool(logicalDevice, descriptorPool, nullptr);
@@ -68,23 +70,25 @@ void RomulusVulkanRenderer::Cleanup()
 void RomulusVulkanRenderer::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const
 {
     VkCommandBuffer cmd = uploadContext.commandBuffer;
+
+    vkWaitForFences(logicalDevice, 1, &uploadContext.uploadContext, VK_TRUE, UINT64_MAX);
+    vkResetFences(logicalDevice, 1, &uploadContext.uploadContext);
+    vkResetCommandPool(logicalDevice, uploadContext.commandPool, 0);
+
     const VkCommandBufferBeginInfo cmdBeginInfo = VulkanInitialization::CommandBufferBeginInfo(
         VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
     vkBeginCommandBuffer(cmd, &cmdBeginInfo);
     function(cmd);
-    vkResetFences(logicalDevice, 1, &uploadContext.uploadContext);
     vkEndCommandBuffer(cmd);
 
     const VkSubmitInfo submit = VulkanInitialization::SubmitInfo(&cmd);
 
-
     vkQueueSubmit(graphicsQueue, 1, &submit, uploadContext.uploadContext);
     vkWaitForFences(logicalDevice, 1, &uploadContext.uploadContext, true, 9999999999);
-    vkResetFences(logicalDevice, 1, &uploadContext.uploadContext);
-    vkResetCommandPool(logicalDevice, uploadContext.commandPool, 0);
 }
-void RomulusVulkanRenderer::SubmitEndOfFrameTask(std::function<void()> && task)
+
+void RomulusVulkanRenderer::SubmitEndOfFrameTask(std::function<void()>&& task)
 {
     endOfFrameTasks.emplace(std::move(task));
 }
@@ -94,7 +98,7 @@ void RomulusVulkanRenderer::CreateUploadContext()
     QueueFamilyIndices queueFamilies = gGraphics->GetQueueFamilyIndices();
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
 
     if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &uploadContext.commandPool) != VK_SUCCESS)
@@ -103,14 +107,14 @@ void RomulusVulkanRenderer::CreateUploadContext()
     }
 
     const VkCommandBufferAllocateInfo cmdAllocInfo = VulkanInitialization::CommandBufferAllocateInfo(uploadContext
-                                                                                                     .commandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        .commandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     vkAllocateCommandBuffers(logicalDevice, &cmdAllocInfo, &uploadContext.commandBuffer);
 
 
     VkFenceCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     info.pNext = nullptr;
-    info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     vkCreateFence(logicalDevice, &info, nullptr, &uploadContext.uploadContext);
     inFlightFencesToDestroy.push_back(uploadContext.uploadContext);
 }
@@ -134,6 +138,7 @@ void RomulusVulkanRenderer::CreateCommandPool()
 
     CreateUploadContext();
     CreateCommandBuffers();
+    CreateTracy();
 }
 
 void RomulusVulkanRenderer::CreateCommandBuffers()
@@ -153,7 +158,8 @@ void RomulusVulkanRenderer::CreateCommandBuffers()
     }
 }
 
-void RomulusVulkanRenderer::DestroyCommandPool() const {
+void RomulusVulkanRenderer::DestroyCommandPool() const
+{
     vkDestroyCommandPool(logicalDevice, uploadContext.commandPool, nullptr);
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -196,52 +202,17 @@ bool semaphoresNeedToBeRecreated = false;
 void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 {
     FrameData currentFrameData = frameData[currentFrame];
+    VkCommandBuffer currentCommandBuffer = currentFrameData.mCommandBuffer;
+
     vkWaitForFences(logicalDevice, 1, &currentFrameData.mRenderFence, VK_TRUE,
                     UINT64_MAX);
-
-    uint32_t imageIndex;
-    VkCommandBuffer currentCommandBuffer = currentFrameData.mCommandBuffer;
-    VkResult result = vkAcquireNextImageKHR(logicalDevice,
-                                            swapChain->mSwapChain,
-                                            0,
-                                            currentFrameData.mPresentSemaphore,
-                                            VK_NULL_HANDLE,
-                                            &imageIndex);
-
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-    {
-        swapChain->RecreateSwapChain();
-        // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
-        semaphoresNeedToBeRecreated = true;
-    }
-    else if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to acquire swap chain image");
-    }
 
     // Only reset the fence if we are submitting work
     vkResetFences(logicalDevice, 1, &currentFrameData.mRenderFence);
     vkResetCommandBuffer(currentCommandBuffer, 0);
+    uint32_t imageIndex;
 
 
-    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-    VkClearValue depthClear;
-    depthClear.depthStencil.depth = 1.f;
-    VkClearValue clearValues[] = {clearColor, depthClear};
-
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = gGraphics->swapChain->renderPass;
-    renderPassInfo.framebuffer = gGraphics->swapChain->mSwapChainFrameBuffers[
-        imageIndex];
-    renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = gGraphics->swapChain->swapChainExtents;
-    renderPassInfo.clearValueCount = 2;
-    renderPassInfo.pClearValues = &clearValues[0];
-
-
-    // ----BEGIN FRAME----
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -250,29 +221,72 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.width = static_cast<float>(gGraphics->swapChain->swapChainExtents.width);
+    // ----BEGIN FRAME----
 
-    viewport.y = static_cast<float>(gGraphics->swapChain->swapChainExtents.height);
-    viewport.height = -static_cast<float>(gGraphics->swapChain->swapChainExtents.height);
+    VkResult result; {
+        TracyVkZone(tracyContext, currentCommandBuffer, "DrawFrame");
 
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(currentCommandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = gGraphics->swapChain->swapChainExtents;
-    vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
+        result = vkAcquireNextImageKHR(logicalDevice,
+                                       swapChain->mSwapChain,
+                                       0,
+                                       currentFrameData.mPresentSemaphore,
+                                       VK_NULL_HANDLE,
+                                       &imageIndex);
 
 
-    vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo,
-                         VK_SUBPASS_CONTENTS_INLINE);
-    activeScene.Render(currentCommandBuffer, imageIndex, currentFrame);
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+        {
+            swapChain->RecreateSwapChain();
+            semaphoresNeedToBeRecreated = true;
+        }
+        else if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to acquire swap chain image");
+        }
 
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentCommandBuffer);
-    vkCmdEndRenderPass(currentCommandBuffer);
+        vkResetFences(logicalDevice, 1, &currentFrameData.mRenderFence);
+
+        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+        VkClearValue depthClear;
+        depthClear.depthStencil.depth = 1.f;
+        VkClearValue clearValues[] = {clearColor, depthClear};
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = gGraphics->swapChain->renderPass;
+        renderPassInfo.framebuffer = gGraphics->swapChain->mSwapChainFrameBuffers[
+            imageIndex];
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = gGraphics->swapChain->swapChainExtents;
+        renderPassInfo.clearValueCount = 2;
+        renderPassInfo.pClearValues = &clearValues[0];
+
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.width = static_cast<float>(gGraphics->swapChain->swapChainExtents.width);
+
+        viewport.y = static_cast<float>(gGraphics->swapChain->swapChainExtents.height);
+        viewport.height = -static_cast<float>(gGraphics->swapChain->swapChainExtents.height);
+
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(currentCommandBuffer, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = gGraphics->swapChain->swapChainExtents;
+        vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
+
+
+        vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo,
+                             VK_SUBPASS_CONTENTS_INLINE);
+        activeScene.Render(currentCommandBuffer, imageIndex, currentFrame);
+
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentCommandBuffer);
+        vkCmdEndRenderPass(currentCommandBuffer);
+    }
+
 
     if (vkEndCommandBuffer(currentCommandBuffer) != VK_SUCCESS)
     {
@@ -280,13 +294,11 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
     }
     // ----END FRAME----
 
-    // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
     {
         vkWaitForFences(logicalDevice, 1, &imagesInFlight[imageIndex],
                         VK_TRUE, UINT64_MAX);
     }
-    // Mark the image as now being in use by this frame
     imagesInFlight[imageIndex] = currentFrameData.mRenderFence;
 
     VkSubmitInfo submitInfo{};
@@ -314,6 +326,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
+
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -333,7 +346,6 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
         DestroyCommandPool();
         CreateCommandPool();
-        // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
         flags[c_rebuildBufferFlag] = false;
     }
@@ -353,12 +365,14 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         semaphoresNeedToBeRecreated = false;
     }
 
-    while(!endOfFrameTasks.empty())
+    while (!endOfFrameTasks.empty())
     {
-        auto task = std::move(endOfFrameTasks.front());
+        auto task = endOfFrameTasks.front();
         task();
         endOfFrameTasks.pop();
     }
+
+    FrameMark;
 
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
@@ -386,7 +400,7 @@ void RomulusVulkanRenderer::CleanupOldSyncObjects()
 
 void RomulusVulkanRenderer::CreateSyncObjects()
 {
-    for (auto& frameData : frameData)
+    for (FrameData& frameData : frameData)
     {
         inFlightFencesToDestroy.push_back(frameData.mRenderFence);
         imageAvailableSemaphoresToDestroy.push_back(frameData.mRenderSemaphore);
@@ -402,7 +416,7 @@ void RomulusVulkanRenderer::CreateSyncObjects()
     for (size_t i = 0; i < swapChain->mSwapChainImages.size(); i++)
     {
         if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr,
-            &renderFinishedSemaphores[i]) != VK_SUCCESS)
+                              &renderFinishedSemaphores[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create swapchain semaphore!");
         }
@@ -425,4 +439,9 @@ void RomulusVulkanRenderer::CreateSyncObjects()
                 "failed to create synchronization objects for a frame!");
         }
     }
+}
+
+void RomulusVulkanRenderer::CreateTracy()
+{
+    tracyContext = TracyVkContext(physicalDevice, logicalDevice, graphicsQueue, uploadContext.commandBuffer);
 }

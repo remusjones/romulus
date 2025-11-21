@@ -22,6 +22,8 @@
 
 #include "Profiler.h"
 #include "spdlog/spdlog.h"
+#include "tracy/Tracy.hpp"
+#include "tracy/TracyVulkan.hpp"
 
 VulkanGraphics* gGraphics = nullptr;
 
@@ -59,7 +61,7 @@ void VulkanGraphicsImpl::InitializeVulkan()
 
 	CreateScenes();
 
-	romulusEditor = std::make_unique<Editor>();
+	romulusEditor = eastl::make_unique<Editor>();
 	ImGuiDebugInstance::Get().RegisterDebugLayer(romulusEditor.get());
 }
 
@@ -120,6 +122,7 @@ void VulkanGraphicsImpl::ShutdownVulkan() const
 
 void VulkanGraphicsImpl::Update()
 {
+	ZoneScopedN("MainApplicationLoop");
 	// Start Clock for FPS Monitoring
 	auto startTime = std::chrono::high_resolution_clock::now();
 	auto fpsStartTime = std::chrono::high_resolution_clock::now();
@@ -136,6 +139,7 @@ void VulkanGraphicsImpl::Update()
 	// main loop
 	while (!bQuitting)
 	{
+		FrameMark;
 		while (SDL_PollEvent(&event))
 		{
 			ImGui_ImplSDL3_ProcessEvent(&event);
@@ -160,7 +164,6 @@ void VulkanGraphicsImpl::Update()
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(),
 			                             ImGuiDockNodeFlags_PassthruCentralNode);
 
-
 			PROFILE_BEGIN("Debug Render");
 			ImGuiDebugInstance::Get().DrawImGui();
 			ImGui::Render();
@@ -170,11 +173,15 @@ void VulkanGraphicsImpl::Update()
 			gInputSystem->Update();
 			PROFILE_END();
 
+			PROFILE_BEGIN("Scene Physics");
+			activeScene->TickPhysics(deltaTime);
+			PROFILE_END();
+
 			PROFILE_BEGIN("Scene Tick");
 			activeScene->Tick(deltaTime);
 			PROFILE_END();
 
-			PROFILE_BEGIN("Scene Draw");
+			//PROFILE_BEGIN("Scene Draw");
 			vulkanRenderer->DrawFrame(*activeScene);
 			PROFILE_END();
 
@@ -328,7 +335,7 @@ void VulkanGraphicsImpl::DestroySurface() const
 
 void VulkanGraphicsImpl::CreateScenes()
 {
-	activeScene = std::make_unique<SandboxScene>();
+	activeScene = eastl::make_unique<SandboxScene>();
 	activeScene->PreConstruct("Sandbox Scene");
 	activeScene->Construct();
 }
@@ -545,7 +552,7 @@ bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) cons
 }
 
 VkSurfaceFormatKHR VulkanGraphicsImpl::ChooseSwapSurfaceFormat(
-	const std::vector<VkSurfaceFormatKHR>& availableFormats)
+	const eastl::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	for (const auto& availableFormat : availableFormats)
 	{
@@ -561,7 +568,7 @@ VkSurfaceFormatKHR VulkanGraphicsImpl::ChooseSwapSurfaceFormat(
 }
 
 VkPresentModeKHR VulkanGraphicsImpl::ChooseSwapPresentMode(
-	const std::vector<VkPresentModeKHR>& availablePresentModes)
+	const eastl::vector<VkPresentModeKHR>& availablePresentModes)
 {
 	for (const auto& availablePresentMode : availablePresentModes)
 	{

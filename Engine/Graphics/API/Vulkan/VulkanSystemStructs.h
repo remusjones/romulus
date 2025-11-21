@@ -5,7 +5,7 @@
 #include <optional>
 #include <cstdint>
 #include <vulkan/vulkan_core.h>
-#include <vector>
+#include <EASTL/vector.h>
 
 struct QueueFamilyIndices
 {
@@ -21,6 +21,6 @@ struct QueueFamilyIndices
 struct SwapChainSupportDetails
 {
     VkSurfaceCapabilitiesKHR mCapabilities;
-    std::vector<VkSurfaceFormatKHR> mFormats;
-    std::vector<VkPresentModeKHR> mPresentModes;
+    eastl::vector<VkSurfaceFormatKHR> mFormats;
+    eastl::vector<VkPresentModeKHR> mPresentModes;
 };

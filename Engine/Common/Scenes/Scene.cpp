@@ -127,6 +127,10 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 	}
 }
 
+void Scene::TickPhysics(float deltaTime)
+{
+	physicsSystem->Tick(deltaTime);
+}
 
 void Scene::DrawObjectsRecursive(SceneObject& entityToDraw)
 {
@@ -319,8 +323,7 @@ void Scene::OnImGuiRender()
 
 void Scene::Tick(const float aDeltaTime)
 {
-	PROFILE_BEGIN("Scene Physics");
-	physicsSystem->Tick(aDeltaTime);
+
 	sceneInteractionPhysicsSystem->Tick(aDeltaTime);
 	for (const auto& obj : sceneObjects)
 	{

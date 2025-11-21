@@ -84,7 +84,7 @@ void Profiler::StartTraceSession()
 		EndTraceSession();
 	}
 
-	sessionOutputStream.open(sessionTraceFilename, std::ios::out);
+	sessionOutputStream.open(config.c_sessionTraceFilename, std::ios::out);
 	sessionOutputStream << "{\"otherData\": {}, \"traceEvents\":[";
 	sessionOutputStream.flush();
 }

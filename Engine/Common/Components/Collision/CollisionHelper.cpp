@@ -14,7 +14,6 @@ btTransform CollisionHelper::TransformToBulletTransform(const Transform& otherTr
 	return btTransform(GlmToBullet(otherTransform.GetLocalRotation()), GlmToBullet(otherTransform.GetLocalPosition()));
 }
 
-
 btVector3 CollisionHelper::GlmToBullet(const glm::vec3& otherVector)
 {
 	return btVector3(otherVector.x, otherVector.y, otherVector.z);
@@ -38,6 +37,7 @@ glm::quat CollisionHelper::BulletToGlm(const btQuaternion& otherQuaternion)
 btBvhTriangleMeshShape* CollisionHelper::MakeCollisionMesh(const eastl::vector<Vertex>& inVertices,
                                                            const eastl::vector<int32_t>& inIndices)
 {
+	// todo: is this deallocated? - move this to global allocator
 	btTriangleMesh* triangleMesh = new btTriangleMesh(); // Bullet Physics triangle mesh
 
 	for (int i = 0; i < inIndices.size(); i += 3)

@@ -10,6 +10,8 @@
 #include <Types/DequeBuffer.h>
 #include "IApplication.h"
 #include "InputSystem.h"
+#include "EASTL/unique_ptr.h"
+#include "EASTL/vector.h"
 #include "Vulkan/RomulusVulkanRenderer.h"
 #include "Vulkan/VulkanSystemStructs.h"
 
@@ -24,8 +26,8 @@ class VulkanGraphicsImpl final : public IApplication
 {
 public:
 	VulkanGraphicsImpl(const char* inWindowTitle, int inWindowWidth, int inWindowHeight);
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const eastl::vector<VkSurfaceFormatKHR>& availableFormats);
+	VkPresentModeKHR ChooseSwapPresentMode(const eastl::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
 
 	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device) const;
@@ -90,13 +92,13 @@ public:
 	VkSurfaceKHR surface            = VK_NULL_HANDLE;
 	VmaAllocator allocator          = VK_NULL_HANDLE;
 
-	std::unique_ptr<Scene> activeScene;
+	eastl::unique_ptr<Scene> activeScene;
 	SDL_Window* window = nullptr; // TODO: Move to interface
 	RomulusVulkanRenderer* vulkanRenderer = nullptr;
 	InputSystem inputManager;
 
 private:
-	std::unique_ptr<Editor> romulusEditor;
+	eastl::unique_ptr<Editor> romulusEditor;
 	QueueFamilyIndices familyIndices;
 
 	// TODO: Move these to IApplication
@@ -110,7 +112,7 @@ private:
 
 	VkDescriptorPool imguiDescriptionPool;
 	DequeBuffer<float> fpsCircularBuffer;
-	std::vector<VkExtensionProperties> Extensions;
+	eastl::vector<VkExtensionProperties> Extensions;
 	VkQueue graphicsQueue;
 	VkQueue PresentQueue;
 	VkRenderPass renderPass{};
@@ -121,12 +123,12 @@ private:
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 
-	const std::vector<const char*> deviceExtensions =
+	const eastl::vector<const char*> deviceExtensions =
 	{
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
-	const std::vector<const char*> validationLayers =
+	const eastl::vector<const char*> validationLayers =
 	{
 		"VK_LAYER_KHRONOS_validation"
 	};
