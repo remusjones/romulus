@@ -30,12 +30,12 @@ void MeshObject::CreateObject(
 	name = inName;
 	SPDLOG_INFO("Creating Object {}", name);
 
-	meshRenderer.material   = &inMaterial;
-	meshRenderer.mTransform = &transform;
+	meshRenderer.SetMaterial(0, &inMaterial);
+	meshRenderer.SetTransform(&transform);
 }
 
-void MeshObject::OnImGuiRender()
+void MeshObject::OnDebugGui()
 {
-	SceneObject::OnImGuiRender();
-	meshRenderer.material->OnImGuiRender();
+	SceneObject::OnDebugGui();
+	meshRenderer.GetMaterial(0)->OnDebugGui();
 }

@@ -28,7 +28,7 @@ public:
     void Construct() override;
     void Tick(float deltaTime) override;
     void Cleanup() override;
-    void OnImGuiRender() override;
+    void OnDebugGui() override;
     void CreateObject(Material& aMaterial, const eastl::string_view& objectName);
 
     MeshRenderer& GetRenderer() {return meshRenderer; }

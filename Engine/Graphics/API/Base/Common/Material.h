@@ -30,7 +30,7 @@ struct MaterialProperties
 class Material : public MaterialBase
 {
 public:
-	Material(const char* materialName = "Default") : materialName(materialName)
+	Material(const eastl::string_view& materialName) : materialName(materialName)
 	{
 	}
 
@@ -54,7 +54,7 @@ public:
 
 	MaterialProperties materialProperties;
 	AllocatedBuffer propertiesBuffer;
-	const char* materialName;
+	eastl::string_view materialName;
 
 protected:
 	MaterialBase* material;

@@ -45,7 +45,7 @@ void SkyboxRenderSystem::CreatePipeline()
         Vertex::GetBindingMask(true, false, false, false, false)
     );
 
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+    eastl::vector<VkVertexInputBindingDescription> bindingDescriptions;
     bindingDescriptions.push_back(Vertex::GetBindingDescription());
     pipelineConfig.mBindingDescriptions = bindingDescriptions;
 

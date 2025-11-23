@@ -7,7 +7,7 @@
 class Cubemap final : public Material
 {
 public:
-	Cubemap(const char* aMaterialName) { materialName = aMaterialName; }
+	Cubemap(const eastl::string_view& inMaterialName) : Material(inMaterialName) { }
 	void Create(MaterialBase* inBaseMaterial) override;
 	void Destroy() override;
 

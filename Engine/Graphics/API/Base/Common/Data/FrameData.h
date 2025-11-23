@@ -8,12 +8,11 @@
 
 struct FrameData
 {
-	VkCommandBuffer mCommandBuffer;
-	VkCommandPool mCommandPool;
-	VkSemaphore mRenderSemaphore;
-	VkSemaphore mPresentSemaphore;
-	VkFence mRenderFence;
-
+	VkCommandBuffer commandBuffer;
+	VkCommandPool commandPool;
+	VkSemaphore renderSemaphore;
+	VkSemaphore presentSemaphore;
+	VkFence renderFence;
 
 	//AllocatedBuffer mCameraBuffer;
 	AllocatedBuffer sceneBuffer;

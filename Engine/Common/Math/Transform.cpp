@@ -4,8 +4,6 @@
 
 #include "imgui.h"
 #include "glm/gtx/matrix_decompose.hpp"
-#include "Objects/Camera.h"
-#include "Objects/Camera.h"
 
 Transform::Transform() : position(0),
 rotation(glm::identity<glm::quat>()), scale(1), localMatrix(), parent(nullptr)
@@ -287,7 +285,7 @@ glm::mat4 Transform::GetLocalMatrix()
 	return localMatrix;
 }
 
-void Transform::OnImGuiRender()
+void Transform::OnDebugGui()
 {
 	ImGui::SeparatorText("Transform");
 	glm::vec3 rot = GetLocalEuler();

@@ -42,10 +42,10 @@ void FlyCamera::Construct()
 	SceneObject::Construct();
 }
 
-void FlyCamera::OnImGuiRender()
+void FlyCamera::OnDebugGui()
 {
 	ImGui::Indent();
-	SceneObject::OnImGuiRender();
+	SceneObject::OnDebugGui();
 	ImGui::SeparatorText("Settings");
 	ImGui::DragFloat("FOV", &fov, 0.1f);
 	ImGui::DragFloat("Z Near", &zNear, 0.01f);

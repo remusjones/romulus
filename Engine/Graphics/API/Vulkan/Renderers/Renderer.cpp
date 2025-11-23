@@ -7,7 +7,7 @@
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Material.h"
 
-void Renderer::Render(VkCommandBuffer commandBuffer, const Scene& scene)
+void Renderer::Render(VkCommandBuffer commandBuffer)
 {
     if (material->propertiesBuffer.IsAllocated())
     {

@@ -3,6 +3,8 @@
 //
 #define VMA_IMPLEMENTATION
 #define VK_USE_PLATFORM_WIN32_KHR
+#define DEBUG_RENDER 1
+
 #include <chrono>
 #include <cstring>
 #include <set>
@@ -30,39 +32,9 @@ VulkanGraphics* gGraphics = nullptr;
 void VulkanGraphicsImpl::Run()
 {
 	InitializeWindow();
-	InitializeVulkan();
+	InitializeRenderer();
 	Update();
 	Cleanup();
-}
-
-void VulkanGraphicsImpl::InitializeVulkan()
-{
-	gGraphics = this;
-	CreateInstance();
-	CreateDebugMessenger();
-	CreateSurface();
-	InitializePhysicalDevice();
-	CreateLogicalDevice();
-
-	VmaAllocatorCreateInfo allocatorInfo = {};
-	allocatorInfo.physicalDevice = physicalDevice;
-	allocatorInfo.device = logicalDevice;
-	allocatorInfo.instance = vulcanInstance;
-	vmaCreateAllocator(&allocatorInfo, &allocator);
-
-	swapChain = std::make_unique<VulkanSwapChain>();
-	swapChain->Initialize(logicalDevice,
-	                      physicalDevice,
-	                      surface,
-	                      renderPass,
-	                      *this);
-	CreateGraphicsPipeline();
-	InitializeImgui();
-
-	CreateScenes();
-
-	romulusEditor = eastl::make_unique<Editor>();
-	ImGuiDebugInstance::Get().RegisterDebugLayer(romulusEditor.get());
 }
 
 void VulkanGraphicsImpl::InitializeImgui()
@@ -164,10 +136,6 @@ void VulkanGraphicsImpl::Update()
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(),
 			                             ImGuiDockNodeFlags_PassthruCentralNode);
 
-			PROFILE_BEGIN("Debug Render");
-			ImGuiDebugInstance::Get().DrawImGui();
-			ImGui::Render();
-			PROFILE_END();
 
 			PROFILE_BEGIN("Input Manager Update");
 			gInputSystem->Update();
@@ -181,7 +149,17 @@ void VulkanGraphicsImpl::Update()
 			activeScene->Tick(deltaTime);
 			PROFILE_END();
 
-			//PROFILE_BEGIN("Scene Draw");
+#if DEBUG_RENDER
+			PROFILE_BEGIN("Debug Render");
+			debugManager->DrawImGui();
+			PROFILE_END();
+#endif
+
+			PROFILE_BEGIN("ImGui Render");
+			ImGui::Render();
+			PROFILE_END();
+
+			PROFILE_BEGIN("Scene Draw");
 			vulkanRenderer->DrawFrame(*activeScene);
 			PROFILE_END();
 
@@ -192,7 +170,7 @@ void VulkanGraphicsImpl::Update()
 		// Calculate Frames-Per-Second
 		frameCount++;
 		auto currentTime = std::chrono::high_resolution_clock::now();
-		deltaTime = std::chrono::duration_cast<std::chrono::duration<float> >
+		deltaTime = std::chrono::duration_cast<std::chrono::duration<float>>
 				(currentTime - startTime).count();
 
 		if (const auto elapsedTime = std::chrono::duration_cast<
@@ -235,6 +213,39 @@ VulkanGraphicsImpl::VulkanGraphicsImpl(const char* inWindowTitle,
 	windowTitle = inWindowTitle;
 	windowWidth = inWindowWidth;
 	windowHeight = inWindowHeight;
+}
+
+void VulkanGraphicsImpl::InitializeRenderer()
+{
+	gGraphics = this;
+
+	CreateInstance();
+	CreateDebugMessenger();
+	CreateSurface();
+	InitializePhysicalDevice();
+	CreateLogicalDevice();
+
+	VmaAllocatorCreateInfo allocatorInfo = {};
+	allocatorInfo.physicalDevice = physicalDevice;
+	allocatorInfo.device = logicalDevice;
+	allocatorInfo.instance = vulcanInstance;
+	vmaCreateAllocator(&allocatorInfo, &allocator);
+
+	swapChain = eastl::make_unique<VulkanSwapChain>();
+	swapChain->Initialize(logicalDevice,
+						  physicalDevice,
+						  surface,
+						  renderPass,
+						  *this);
+	CreateGraphicsPipeline();
+	InitializeImgui();
+
+	CreateScenes();
+
+	romulusEditor = eastl::make_unique<Editor>();
+	debugManager = eastl::make_unique<DebugManager>();
+	debugManager->Register(romulusEditor.get());
+
 }
 
 void VulkanGraphicsImpl::InitializeWindow()
@@ -335,7 +346,7 @@ void VulkanGraphicsImpl::DestroySurface() const
 
 void VulkanGraphicsImpl::CreateScenes()
 {
-	activeScene = eastl::make_unique<SandboxScene>();
+	activeScene = eastl::make_unique<SandboxScene>(debugManager.get());
 	activeScene->PreConstruct("Sandbox Scene");
 	activeScene->Construct();
 }
@@ -393,12 +404,12 @@ bool VulkanGraphicsImpl::CheckValidationLayerSupport() const
 	return true;
 }
 
-std::vector<const char*> VulkanGraphicsImpl::GetRequiredExtensions() const
+eastl::vector<const char*> VulkanGraphicsImpl::GetRequiredExtensions() const
 {
 	Uint32 count = 0;
 	const auto windowExtensions = SDL_Vulkan_GetInstanceExtensions(&count);
 
-	std::vector extensions(windowExtensions, windowExtensions + count);
+	eastl::vector<const char*> extensions(windowExtensions, windowExtensions + count);
 
 	if (enableValidationLayers)
 	{

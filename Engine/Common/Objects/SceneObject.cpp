@@ -48,9 +48,9 @@ void SceneObject::RemoveComponent(Component* component)
 	}
 }
 
-void SceneObject::OnImGuiRender()
+void SceneObject::OnDebugGui()
 {
 	ImGui::PushID(&transform);
-	transform.OnImGuiRender();
+	transform.OnDebugGui();
 	ImGui::PopID();
 }

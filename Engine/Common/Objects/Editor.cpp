@@ -8,27 +8,25 @@
 #include "VulkanGraphicsImpl.h"
 #include "Scenes/Scene.h"
 
-void Editor::OnImGuiRender()
+void Editor::OnDebugGui()
 {
-	gGraphics->activeScene->OnImGuiRender();
-	Profiler::GetInstance().OnImGuiRender();
+	gGraphics->activeScene->OnDebugGui();
+	Profiler::GetInstance().OnDebugGui();
 }
 
-ImGuiDebugInstance& ImGuiDebugInstance::Get()
+void DebugManager::Register(IDebugabble* object)
 {
-	static ImGuiDebugInstance instance;
-	return instance;
+	debugLayersToDraw.push_back(object);
 }
 
-void ImGuiDebugInstance::RegisterDebugLayer(ImGuiDebugLayer* inImGuiLayer)
+void DebugManager::DrawImGui()
 {
-	debugLayersToDraw.push_back(inImGuiLayer);
-}
 
-void ImGuiDebugInstance::DrawImGui()
-{
-	for (auto* imGuiLayer : debugLayersToDraw)
+	// cleanup any invalid values before drawing
+	eastl::erase(debugLayersToDraw, nullptr);
+
+	for (const auto& debuggable : debugLayersToDraw)
 	{
-		imGuiLayer->OnImGuiRender();
+		debuggable->OnDebugGui();
 	}
 }

@@ -5,6 +5,7 @@ InputSystem* gInputSystem = nullptr;
 
 InputSystem::InputSystem()
 {
+	// todo: this should be using a singleton pattern instead
 	assert(gInputSystem == nullptr);
 	gInputSystem = this;
 }
@@ -70,21 +71,21 @@ void InputSystem::Update()
 	}
 }
 
-void InputSystem::RegisterMouseInput(std::function<void(SDL_MouseMotionEvent)>&& callback,
+void InputSystem::RegisterMouseInput(eastl::function<void(SDL_MouseMotionEvent)>&& callback,
                                      const char* bindingName)
 {
 	const MouseMotionBinding newBinding(bindingName, std::move(callback));
 	mouseInputMotionBindings.push_back(newBinding);
 }
 
-void InputSystem::RegisterMouseInput(std::function<void(SDL_MouseButtonEvent)>&& callback, const char* bindingName)
+void InputSystem::RegisterMouseInput(eastl::function<void(SDL_MouseButtonEvent)>&& callback, const char* bindingName)
 {
 	const MouseInputBinding newBinding(bindingName, std::move(callback));
 	mouseInputBindings.push_back(newBinding);
 }
 
 void InputSystem::RegisterKeyCodeInput(const SDL_Keycode keycode,
-                                       std::function<void(SDL_KeyboardEvent aKeyboardEvent)>&& callback,
+                                       eastl::function<void(SDL_KeyboardEvent aKeyboardEvent)>&& callback,
                                        const char* bindingName)
 {
 	const KeyCodeInputBinding newBinding(bindingName, (std::move(callback)));

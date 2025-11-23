@@ -5,7 +5,7 @@
 #pragma once
 
 #include <bitset>
-#include <vector>
+#include <EASTL/vector.h>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_core.h>
 
@@ -38,10 +38,10 @@ public:
 		return bindingDescription;
 	}
 
-	static std::vector<VkVertexInputAttributeDescription>
+	static eastl::vector<VkVertexInputAttributeDescription>
 	GetAttributeDescriptions()
 	{
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(5);
+		eastl::vector<VkVertexInputAttributeDescription> attributeDescriptions(5);
 		attributeDescriptions[0].binding  = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
@@ -69,10 +69,10 @@ public:
 		return attributeDescriptions;
 	}
 
-	static std::vector<VkVertexInputAttributeDescription>
+	static eastl::vector<VkVertexInputAttributeDescription>
 	GetAttributeDescriptions(std::bitset<5> bindingMask)
 	{
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+		eastl::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 		attributeDescriptions.reserve(bindingMask.count());
 
 		auto addAttributeDescription = [&attributeDescriptions, bindingMask](

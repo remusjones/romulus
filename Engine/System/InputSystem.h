@@ -4,6 +4,11 @@
 #include <unordered_map>
 #include <SDL3/SDL_events.h>
 
+#include "EASTL/hash_map.h"
+#include "EASTL/queue.h"
+#include "EASTL/vector.h"
+#include "EASTL/internal/function.h"
+
 struct KeyCodeInputBinding
 {
     KeyCodeInputBinding(const char* inBindingName,
@@ -12,31 +17,31 @@ struct KeyCodeInputBinding
     };
 
     const char* bindingName;
-    std::function<void(SDL_KeyboardEvent keyboardEvent)> callback;
+    eastl::function<void(SDL_KeyboardEvent keyboardEvent)> callback;
 };
 
 struct MouseMotionBinding
 {
     MouseMotionBinding(const char* inBindingName,
-                       std::function<void(SDL_MouseMotionEvent aMouseMotionEvent)>&& inCallback) : bindingName(
+                       eastl::function<void(SDL_MouseMotionEvent aMouseMotionEvent)>&& inCallback) : bindingName(
             inBindingName),
         callback(inCallback) {
     };
 
     const char* bindingName;
-    std::function<void(SDL_MouseMotionEvent)> callback;
+    eastl::function<void(SDL_MouseMotionEvent)> callback;
 };
 
 struct MouseInputBinding
 {
     MouseInputBinding(const char* bindingName,
-                       std::function<void(SDL_MouseButtonEvent mouseButtonEvent)>&& inCallback) : bindingName(
+                       eastl::function<void(SDL_MouseButtonEvent mouseButtonEvent)>&& inCallback) : bindingName(
             bindingName),
         callback(inCallback) {
     };
 
     const char* bindingName;
-    std::function<void(SDL_MouseButtonEvent)> callback;
+    eastl::function<void(SDL_MouseButtonEvent)> callback;
 };
 
 // TODO: Add Input event map bindings
@@ -51,26 +56,26 @@ public:
 
     void RegisterKeyCodeInput(
         SDL_Keycode keycode,
-        std::function<void(SDL_KeyboardEvent aKeyboardEvent)>&& callback,
+        eastl::function<void(SDL_KeyboardEvent aKeyboardEvent)>&& callback,
         const char* bindingName = "Default"
     );
 
     void RegisterMouseInput(
-        std::function<void(SDL_MouseMotionEvent)>&& callback,
+        eastl::function<void(SDL_MouseMotionEvent)>&& callback,
         const char* bindingName = "Default");
 
     void RegisterMouseInput(
-        std::function<void(SDL_MouseButtonEvent)>&& callback,
+        eastl::function<void(SDL_MouseButtonEvent)>&& callback,
         const char* bindingName = "Default");
 
     // TODO: make descriptor map
-    std::unordered_map<uint32_t, std::vector<KeyCodeInputBinding>> keyboardBindings;
+    eastl::hash_map<uint32_t, std::vector<KeyCodeInputBinding>> keyboardBindings;
 
     // TODO: make map
-    std::vector<MouseMotionBinding> mouseInputMotionBindings;
-    std::vector<MouseInputBinding> mouseInputBindings;
+    eastl::vector<MouseMotionBinding> mouseInputMotionBindings;
+    eastl::vector<MouseInputBinding> mouseInputBindings;
 
-    std::queue<SDL_Event> queuedEvents;
+    eastl::queue<SDL_Event> queuedEvents;
 };
 
 extern InputSystem *gInputSystem;

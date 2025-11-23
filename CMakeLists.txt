@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5) # required for eastl
 
+
+if(MSVC)
+    add_compile_definitions(_AMD64_) # required for msvc
+endif()
+
 find_package(Vulkan REQUIRED)
 
 file(GLOB_RECURSE PROJECT_SOURCE_FILES CONFIGURE_DEPENDS

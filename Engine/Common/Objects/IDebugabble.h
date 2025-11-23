@@ -7,9 +7,9 @@
 #include "EASTL/string.h"
 
 // todo: this should probably just be a mixin
-class ImGuiDebugLayer
+class IDebugabble
 {
 public:
-	virtual ~ImGuiDebugLayer() = default;
-	virtual void OnImGuiRender() = 0;
+	virtual ~IDebugabble() = default;
+	virtual void OnDebugGui() = 0;
 };

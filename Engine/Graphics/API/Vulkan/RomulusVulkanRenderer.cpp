@@ -49,13 +49,13 @@ void RomulusVulkanRenderer::Cleanup()
     // Destroy Frame data
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(logicalDevice, frameData[i].mPresentSemaphore,
+        vkDestroySemaphore(logicalDevice, frameData[i].presentSemaphore,
                            nullptr);
-        vkDestroySemaphore(logicalDevice, frameData[i].mRenderSemaphore,
+        vkDestroySemaphore(logicalDevice, frameData[i].renderSemaphore,
                            nullptr);
-        vkDestroyFence(logicalDevice, frameData[i].mRenderFence, nullptr);
+        vkDestroyFence(logicalDevice, frameData[i].renderFence, nullptr);
 
-        vkDestroyCommandPool(logicalDevice, frameData[i].mCommandPool, nullptr);
+        vkDestroyCommandPool(logicalDevice, frameData[i].commandPool, nullptr);
 
         frameData[i].sceneBuffer.Destroy();
     }
@@ -130,7 +130,7 @@ void RomulusVulkanRenderer::CreateCommandPool()
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
-        if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &frameData[i].mCommandPool) != VK_SUCCESS)
+        if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &frameData[i].commandPool) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create command pool");
         }
@@ -147,11 +147,11 @@ void RomulusVulkanRenderer::CreateCommandBuffers()
     {
         VkCommandBufferAllocateInfo allocInfo;
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = frameData[i].mCommandPool;
+        allocInfo.commandPool = frameData[i].commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = 1;
 
-        if (vkAllocateCommandBuffers(logicalDevice, &allocInfo, &frameData[i].mCommandBuffer) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(logicalDevice, &allocInfo, &frameData[i].commandBuffer) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to allocate command buffers");
         }
@@ -163,7 +163,7 @@ void RomulusVulkanRenderer::DestroyCommandPool() const
     vkDestroyCommandPool(logicalDevice, uploadContext.commandPool, nullptr);
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroyCommandPool(logicalDevice, frameData[i].mCommandPool, nullptr);
+        vkDestroyCommandPool(logicalDevice, frameData[i].commandPool, nullptr);
     }
 }
 
@@ -202,13 +202,13 @@ bool semaphoresNeedToBeRecreated = false;
 void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 {
     FrameData currentFrameData = frameData[currentFrame];
-    VkCommandBuffer currentCommandBuffer = currentFrameData.mCommandBuffer;
+    VkCommandBuffer currentCommandBuffer = currentFrameData.commandBuffer;
 
-    vkWaitForFences(logicalDevice, 1, &currentFrameData.mRenderFence, VK_TRUE,
+    vkWaitForFences(logicalDevice, 1, &currentFrameData.renderFence, VK_TRUE,
                     UINT64_MAX);
 
     // Only reset the fence if we are submitting work
-    vkResetFences(logicalDevice, 1, &currentFrameData.mRenderFence);
+    vkResetFences(logicalDevice, 1, &currentFrameData.renderFence);
     vkResetCommandBuffer(currentCommandBuffer, 0);
     uint32_t imageIndex;
 
@@ -223,13 +223,14 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
     // ----BEGIN FRAME----
 
-    VkResult result; {
+    VkResult result = VK_SUCCESS;
+    {
         TracyVkZone(tracyContext, currentCommandBuffer, "DrawFrame");
 
         result = vkAcquireNextImageKHR(logicalDevice,
                                        swapChain->mSwapChain,
                                        0,
-                                       currentFrameData.mPresentSemaphore,
+                                       currentFrameData.presentSemaphore,
                                        VK_NULL_HANDLE,
                                        &imageIndex);
 
@@ -244,7 +245,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
             throw std::runtime_error("failed to acquire swap chain image");
         }
 
-        vkResetFences(logicalDevice, 1, &currentFrameData.mRenderFence);
+        vkResetFences(logicalDevice, 1, &currentFrameData.renderFence);
 
         VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         VkClearValue depthClear;
@@ -299,12 +300,12 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         vkWaitForFences(logicalDevice, 1, &imagesInFlight[imageIndex],
                         VK_TRUE, UINT64_MAX);
     }
-    imagesInFlight[imageIndex] = currentFrameData.mRenderFence;
+    imagesInFlight[imageIndex] = currentFrameData.renderFence;
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {currentFrameData.mPresentSemaphore};
+    VkSemaphore waitSemaphores[] = {currentFrameData.presentSemaphore};
     VkPipelineStageFlags waitStages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
     };
@@ -314,14 +315,14 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &currentFrameData.mCommandBuffer;
+    submitInfo.pCommandBuffers = &currentFrameData.commandBuffer;
 
     VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[imageIndex]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo,
-                      currentFrameData.mRenderFence) != VK_SUCCESS)
+                      currentFrameData.renderFence) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
@@ -402,9 +403,9 @@ void RomulusVulkanRenderer::CreateSyncObjects()
 {
     for (FrameData& frameData : frameData)
     {
-        inFlightFencesToDestroy.push_back(frameData.mRenderFence);
-        imageAvailableSemaphoresToDestroy.push_back(frameData.mRenderSemaphore);
-        mRenderFinishedSemaphoresToDestroy.push_back(frameData.mPresentSemaphore);
+        inFlightFencesToDestroy.push_back(frameData.renderFence);
+        imageAvailableSemaphoresToDestroy.push_back(frameData.renderSemaphore);
+        mRenderFinishedSemaphoresToDestroy.push_back(frameData.presentSemaphore);
     }
     SPDLOG_DEBUG("Creating Semaphores and Fences");
     imagesInFlight.resize(swapChain->mSwapChainImages.size(), VK_NULL_HANDLE);
@@ -429,11 +430,11 @@ void RomulusVulkanRenderer::CreateSyncObjects()
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr,
-                              &frameData[i].mPresentSemaphore) != VK_SUCCESS ||
+                              &frameData[i].presentSemaphore) != VK_SUCCESS ||
             vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr,
-                              &frameData[i].mRenderSemaphore) != VK_SUCCESS ||
+                              &frameData[i].renderSemaphore) != VK_SUCCESS ||
             vkCreateFence(logicalDevice, &fenceInfo, nullptr,
-                          &frameData[i].mRenderFence) != VK_SUCCESS)
+                          &frameData[i].renderFence) != VK_SUCCESS)
         {
             throw std::runtime_error(
                 "failed to create synchronization objects for a frame!");

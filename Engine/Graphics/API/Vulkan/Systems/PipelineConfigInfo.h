@@ -3,6 +3,8 @@
 //
 
 #pragma once
+#include <vulkan/vulkan.h>
+#include <EASTL/vector.h>
 
 struct PipelineConfigInfo {
 
@@ -15,12 +17,12 @@ struct PipelineConfigInfo {
     VkPipelineColorBlendStateCreateInfo colorBlendInfo;
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
 
-    std::vector<VkDynamicState> dynamicStateEnables;
+    eastl::vector<VkDynamicState> dynamicStateEnables;
     VkPipelineDynamicStateCreateInfo dynamicStateInfo;
     VkPipelineLayout pipelineLayout = nullptr;
     VkRenderPass renderPass = nullptr;
     uint32_t subpass = 0;
 
-    std::vector<VkVertexInputBindingDescription> mBindingDescriptions{};
-    std::vector<VkVertexInputAttributeDescription> mAttributeDescriptions{};
+    eastl::vector<VkVertexInputBindingDescription> mBindingDescriptions{};
+    eastl::vector<VkVertexInputAttributeDescription> mAttributeDescriptions{};
 };

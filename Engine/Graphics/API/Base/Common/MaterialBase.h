@@ -6,12 +6,12 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
-#include "Objects/ImGuiDebugLayer.h"
+#include "Objects/IDebugabble.h"
 
-class MaterialBase : public ImGuiDebugLayer
+class MaterialBase : public IDebugabble
 {
 public:
-	virtual void OnImGuiRender()
+	virtual void OnDebugGui()
 	{
 	};
 	virtual void Destroy();

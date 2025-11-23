@@ -12,6 +12,7 @@
 #include "InputSystem.h"
 #include "EASTL/unique_ptr.h"
 #include "EASTL/vector.h"
+#include "Objects/Editor.h"
 #include "Vulkan/RomulusVulkanRenderer.h"
 #include "Vulkan/VulkanSystemStructs.h"
 
@@ -20,12 +21,14 @@ class Scene;
 class VulkanSwapChain;
 class MeshObject;
 
+
 // TODO: This should really only contain window information, and initial vulkan creation. Everything else
 // TODO: should probably go within the Engine class
 class VulkanGraphicsImpl final : public IApplication
 {
 public:
 	VulkanGraphicsImpl(const char* inWindowTitle, int inWindowWidth, int inWindowHeight);
+
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const eastl::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR ChooseSwapPresentMode(const eastl::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
@@ -40,14 +43,12 @@ public:
 	DequeBuffer<float>& GetFpsHistory() { return fpsCircularBuffer; }
 
 private:
-	void InitializeVulkan();
 	void InitializeImgui();
 
 	void ShutdownImgui() const;
 	void ShutdownVulkan() const;
-
-	void InitializeWindow();
 	void ShutdownWindow() const;
+
 	void Update();
 	void Cleanup();
 
@@ -74,6 +75,7 @@ private:
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
 		void* userData);
+
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* createInfo,
 	                                      const VkAllocationCallbacks* allocator,
 	                                      VkDebugUtilsMessengerEXT* debugMessenger);
@@ -81,31 +83,38 @@ private:
 	                                   const VkAllocationCallbacks* allocator);
 	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 	bool CheckValidationLayerSupport() const;
-	std::vector<const char*> GetRequiredExtensions() const;
+
+	eastl::vector<const char*> GetRequiredExtensions() const;
+
+private:
+	void InitializeWindow() override;
+	void InitializeRenderer() override;
+
 
 public:
 	// todo: evaluate these external usages, and make getters
-	std::unique_ptr<VulkanSwapChain> swapChain;
+	eastl::unique_ptr<VulkanSwapChain> swapChain;
 	VkInstance vulcanInstance = VK_NULL_HANDLE;
 	VkDevice logicalDevice{};
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkSurfaceKHR surface            = VK_NULL_HANDLE;
 	VmaAllocator allocator          = VK_NULL_HANDLE;
 
+	eastl::unique_ptr<Editor> romulusEditor;
 	eastl::unique_ptr<Scene> activeScene;
+	eastl::unique_ptr<DebugManager> debugManager;
+
 	SDL_Window* window = nullptr; // TODO: Move to interface
 	RomulusVulkanRenderer* vulkanRenderer = nullptr;
 	InputSystem inputManager;
 
 private:
-	eastl::unique_ptr<Editor> romulusEditor;
 	QueueFamilyIndices familyIndices;
 
 	// TODO: Move these to IApplication
 	int windowWidth;
 	int windowHeight;
 	const char* windowTitle;
-
 
 	float deltaTime;
 	float fps;

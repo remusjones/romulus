@@ -22,14 +22,14 @@ std::chrono::microseconds TimerResult::GetDurationMicroseconds() const
 ScopedProfileTimer::ScopedProfileTimer(const eastl::string_view& aName, Profiler& aBoundProfiler, const eastl::string_view& aFunctionSignature,
     const int aLineNumber): metadata(aFunctionSignature, aLineNumber)
 {
-    start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::steady_clock::now();
     profileName = aName;
     profiler = &aBoundProfiler;
 }
 
 ScopedProfileTimer::~ScopedProfileTimer()
 {
-    end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::steady_clock::now();
     profiler->EndSample(GetResult());
 }
 
@@ -48,14 +48,14 @@ TimerResult ScopedProfileTimer::GetResult() const
 ManagedProfileTimer::ManagedProfileTimer(const eastl::string_view& inProfilerName, Profiler& inProfiler,
     const eastl::string_view& functionSignature, int lineNumber): metadata(functionSignature, lineNumber)
 {
-    start = std::chrono::high_resolution_clock::now();
+    start = std::chrono::steady_clock::now();
     profilerName = inProfilerName;
     profiler = &inProfiler;
 }
 
 void ManagedProfileTimer::StopTimer()
 {
-    end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::steady_clock::now();
     profiler->EndSample(GetResult());
 }
 

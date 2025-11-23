@@ -12,10 +12,10 @@
 #include "EASTL/bitset.h"
 #include "EASTL/vector.h"
 #include "EASTL/bonus/flags.h"
-#include "Objects/ImGuiDebugLayer.h"
+#include "Objects/IDebugabble.h"
 
 
-class Transform final : public ImGuiDebugLayer
+class Transform final : public IDebugabble
 {
 public:
 	Transform();
@@ -70,7 +70,7 @@ public:
 	glm::mat4 GetTranslationMatrix() const { return glm::translate(glm::identity<glm::mat4>(), position); }
 	glm::mat4 GetScaleMatrix() const { return glm::scale(glm::identity<glm::mat4>(), scale); }
 
-	void OnImGuiRender() override;
+	void OnDebugGui() override;
 
 private:
 	glm::vec3 position;

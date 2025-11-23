@@ -6,7 +6,7 @@
 #include "ScopedProfileTimer.h"
 #include "EASTL/deque.h"
 #include "EASTL/stack.h"
-#include "Objects/ImGuiDebugLayer.h"
+#include "Objects/IDebugabble.h"
 
 #ifdef _MSC_VER
 #define FUNCTION_SIGNATURE __FUNCSIG__
@@ -29,7 +29,7 @@ struct ProfilerConfig
 	const char* c_sessionTraceFilename = "trace.json";
 };
 
-class Profiler final : public ImGuiDebugLayer
+class Profiler final : public IDebugabble
 {
 public:
 	// TODO: Maybe make a profiler factory for different sessions/groups?
@@ -58,7 +58,7 @@ private:
 	void EndTraceSession();
 
 public:
-	void OnImGuiRender() override;
+	void OnDebugGui() override;
 	bool IsRunning() const { return running; }
 
 private:

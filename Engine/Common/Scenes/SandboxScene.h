@@ -14,6 +14,7 @@
 #include <Vulkan/Systems/UnlitRenderSystem.h>
 #include <Vulkan/Systems/WireframeRenderSystem.h>
 
+class DebugManager;
 class LineRenderer;
 class Cubemap;
 class Primitive;
@@ -21,6 +22,7 @@ class Primitive;
 class SandboxScene final : public Scene
 {
 public:
+	SandboxScene(class IDebugRegistry* inDebugRegistry) : Scene(inDebugRegistry){};
 	void PreConstruct(const char* inSceneName) override;
 
 	void Construct() override;
@@ -29,7 +31,7 @@ public:
 
 	void Cleanup() override;
 
-	void OnImGuiRender() override;
+	void OnDebugGui() override;
 
 private:
 	PipelineConfigInfo defaultPipelineConfig;
@@ -54,4 +56,7 @@ private:
 	MaterialFactory materialUnlitFactory;
 	MaterialFactory materialPBRFactory;
 	MaterialFactory genericMaterialFactory;
+
+
+	eastl::vector<Renderer*> allocatedRenderers;
 };

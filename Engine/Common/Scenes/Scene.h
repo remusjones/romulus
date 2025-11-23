@@ -11,8 +11,9 @@
 #include "EASTL/string.h"
 #include "EASTL/vector.h"
 #include "Objects/FlyCamera.h"
-#include "Objects/ImGuiDebugLayer.h"
+#include "Objects/IDebugabble.h"
 
+class IDebugRegistry;
 class GraphicsPipelineFactory;
 class Texture;
 class btRigidBody;
@@ -23,10 +24,11 @@ class GraphicsPipeline;
 class Camera;
 class MeshObject;
 
-class Scene : public ImGuiDebugLayer
+class Scene : public IDebugabble
 {
 public:
 	virtual ~Scene();
+	explicit Scene(IDebugRegistry* inDebugRegistry);
 
 	virtual void PreConstruct(const char* aSceneName);
 	virtual void Construct();
@@ -35,9 +37,9 @@ public:
 
 
 	virtual void TickPhysics(float deltaTime);
-	virtual void Tick(float aDeltaTime);
+	virtual void Tick(float deltaTime);
 	virtual void Cleanup();
-	void OnImGuiRender() override;
+	void OnDebugGui() override;
 
 	void AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory);
 
@@ -72,31 +74,34 @@ public:
 
 	const btRigidBody* PickRigidBody(int x, int y) const;
 
-	Texture* CreateTexture(const char* aName, const eastl::vector<eastl::string>& aPathsSet);
+	Texture* CreateTexture(const eastl::string_view& aName, const eastl::vector<eastl::string>& aPathsSet);
 
 protected:
 	virtual SceneObject& MakeEntity(); // todo: move to factory
+
 private:
 	void DrawObjectsRecursive(SceneObject& entityToDraw);
 	bool IsParentOfPickedEntity(const SceneObject& obj);
 	void ChangeImGuizmoOperation(int aOperation);
 
 public:
-	// TODO: Make unique ptr
-	FlyCamera* activeCamera;
-	std::vector<GraphicsPipelineFactory*> renderPipelines;
+	eastl::vector<GraphicsPipelineFactory*> renderPipelines;
 	GPUSceneData sceneData;
-	const char* m_sceneName; //
+
 	PhysicsSystem* physicsSystem;
+	FlyCamera* activeCamera;
+
+	// TODO: Make unique ptr
+	eastl::string_view m_sceneName;
 
 protected:
 	// todo: feels like these probably shouldn't be here
 	eastl::vector<eastl::unique_ptr<SceneObject>> sceneObjects;
-
 	eastl::hash_map<Transform*, SceneObject*> sceneTransformRelationships;
-	eastl::hash_map<eastl::string, eastl::unique_ptr<Texture>> sceneTextures;
+	eastl::hash_map<eastl::string_view, eastl::unique_ptr<Texture>> sceneTextures;
 
 private:
+	IDebugRegistry* debugRegistry;
 	// TODO: Make unique ptr
 	// todo: we don't really have a need for this!
 	PhysicsSystem* sceneInteractionPhysicsSystem = nullptr;

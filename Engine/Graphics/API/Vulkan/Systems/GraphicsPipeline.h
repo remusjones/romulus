@@ -41,7 +41,7 @@ public:
     const char* pipelineName;
     PipelineConfigInfo pipelineConfig;
     VkPipeline romulusPipelineConfig;
-    std::vector<VkPipelineShaderStageCreateInfo> shaders;
-    std::vector<Renderer*> renderers;
+    eastl::vector<VkPipelineShaderStageCreateInfo> shaders;
+    eastl::vector<Renderer*> renderers;
     VkPipelineDepthStencilStateCreateInfo depthStencilCreateInfo;
 };

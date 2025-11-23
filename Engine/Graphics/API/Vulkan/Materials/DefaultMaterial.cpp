@@ -7,9 +7,8 @@
 #include <Base/Common/Buffers/Texture.h>
 #include <Vulkan/RomulusVulkanRenderer.h>
 
-DefaultMaterial::DefaultMaterial(const char* inMaterialName)
+DefaultMaterial::DefaultMaterial(const eastl::string_view& inMaterialName) : Material(inMaterialName)
 {
-	materialName = inMaterialName;
 }
 
 void DefaultMaterial::Create(MaterialBase* baseMaterial)
@@ -29,9 +28,9 @@ void DefaultMaterial::Create(MaterialBase* baseMaterial)
 	MakeDefaults();
 }
 
-void DefaultMaterial::OnImGuiRender()
+void DefaultMaterial::OnDebugGui()
 {
-	Material::OnImGuiRender();
+	Material::OnDebugGui();
 
 	ImGui::SeparatorText("Material");
 	ImGui::ColorEdit4("Color", &materialProperties.color[0]);

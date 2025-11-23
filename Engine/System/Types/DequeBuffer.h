@@ -1,12 +1,12 @@
 #pragma once
-#include <queue>
+#include "EASTL/deque.h"
 
 template<typename T>
 class DequeBuffer
 {
 public:
 	explicit DequeBuffer(const size_t size)
-		: size(size)
+		: buffer(size), size(size)
 	{
 	}
 
@@ -19,6 +19,6 @@ public:
 		}
 	}
 
-	std::deque<T> buffer;
+	eastl::deque<T> buffer;
 	size_t size;
 };

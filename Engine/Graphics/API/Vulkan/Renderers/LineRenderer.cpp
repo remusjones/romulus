@@ -10,7 +10,7 @@
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 
-void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, const LineRenderMode aMode)
+void LineRenderer::SetLinePositions(const eastl::vector<glm::vec3>& aPositions, LineRenderMode aMode)
 {
     const glm::vec3 color = Color::White().RGB();
 
@@ -25,7 +25,7 @@ void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, co
         return;
     }
 
-    mLinePositions = std::vector<Vertex>(aPositions.size());
+    mLinePositions = eastl::vector<Vertex>(aPositions.size());
     for (int i = 0; i < aPositions.size(); i++)
     {
         mLinePositions[i] = {aPositions[i], {}, color};
@@ -43,7 +43,7 @@ void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, co
                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
-void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, const std::vector<Color>& aColors,
+void LineRenderer::SetLinePositions(const eastl::vector<glm::vec3>& aPositions, const eastl::vector<Color>& aColors,
                                     const LineRenderMode aMode)
 {
     mLineRenderMode = aMode;
@@ -56,7 +56,7 @@ void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, co
         return;
     }
 
-    mLinePositions = std::vector<Vertex>(aPositions.size());
+    mLinePositions = eastl::vector<Vertex>(aPositions.size());
     for (int i = 0; i < aPositions.size(); i++)
     {
         mLinePositions[i] = {aPositions[i], {}, aColors[i].RGB()};
@@ -74,7 +74,7 @@ void LineRenderer::SetLinePositions(const std::vector<glm::vec3>& aPositions, co
                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
-void LineRenderer::DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor)
+void LineRenderer::DrawLine(const glm::vec3& aStart, const glm::vec3& aEnd, const Color& aColor)
 {
     mTemporaryLines.reserve(2);
 
@@ -125,7 +125,7 @@ void LineRenderer::BindRenderer(GraphicsPipeline& aBoundGraphicsPipeline)
     graphicsPipeline->AddRenderer(this);
 }
 
-void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
+void LineRenderer::Render(VkCommandBuffer aCommandBuffer)
 {
     if (mAllocatedPositions)
     {
@@ -185,3 +185,5 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
         mTemporaryLines.clear(); // TODO: Reduce allocations here for a new frame, and instead reuse buffer
     }
 }
+
+

@@ -3,14 +3,14 @@
 //
 
 #pragma once
-#include "ImGuiDebugLayer.h"
+#include "IDebugabble.h"
 #include "Components/Component.h"
 #include "EASTL/unique_ptr.h"
 #include "Math/Transform.h"
 
 // todo: Should this be called an entity?
 // Ideally we use an actual entity system and this will get confusing!
-class SceneObject : public ImGuiDebugLayer
+class SceneObject : public IDebugabble
 {
 public:
 	virtual void Construct();
@@ -60,7 +60,7 @@ public:
 	}
 
 
-	void OnImGuiRender() override;
+	void OnDebugGui() override;
 
 	Transform transform;
 	eastl::string_view name;

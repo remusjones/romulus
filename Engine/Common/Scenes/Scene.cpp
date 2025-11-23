@@ -42,6 +42,11 @@ Scene::~Scene()
 	// do nothing
 }
 
+Scene::Scene(IDebugRegistry* inDebugRegistry)
+{
+	debugRegistry = inDebugRegistry;
+}
+
 void Scene::PreConstruct(const char* aSceneName)
 {
 	PROFILE_BEGIN("SCENE CONSTRUCT");
@@ -135,10 +140,6 @@ void Scene::TickPhysics(float deltaTime)
 void Scene::DrawObjectsRecursive(SceneObject& entityToDraw)
 {
 	ImGui::PushID(&entityToDraw);
-	if (IsParentOfPickedEntity(entityToDraw))
-	{
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-	}
 
 	ImGuiTreeNodeFlags nodeFlag = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
@@ -151,7 +152,7 @@ void Scene::DrawObjectsRecursive(SceneObject& entityToDraw)
 		ImGui::Begin("Picked Object");
 		ImGui::Text(pickedEntity->name.data());
 		ImGui::PushID(&entityToDraw);
-		entityToDraw.OnImGuiRender();
+		entityToDraw.OnDebugGui();
 		ImGui::PopID();
 		ImGui::End();
 	}
@@ -183,9 +184,9 @@ void Scene::ChangeImGuizmoOperation(const int aOperation)
 	currentGizmoOperation = static_cast<ImGuizmo::OPERATION>(aOperation);
 }
 
-void Scene::OnImGuiRender()
+void Scene::OnDebugGui()
 {
-	ImGui::Begin(m_sceneName);
+	ImGui::Begin(m_sceneName.data());
 
 	const ImGuiIO& io = ImGui::GetIO();
 	ImGui::SeparatorText("Controls");
@@ -225,7 +226,7 @@ void Scene::OnImGuiRender()
 		}
 		if (ImGui::CollapsingHeader("Camera"))
 		{
-			activeCamera->OnImGuiRender();
+			activeCamera->OnDebugGui();
 		}
 		ImGui::Unindent();
 	}
@@ -306,9 +307,9 @@ void Scene::OnImGuiRender()
 					ImGui::Text("Material Count: ");
 					ImGui::SameLine();
 					ImGui::Text(std::to_string(system->graphicsPipeline->renderers.size()).c_str());
-					for (const auto renderer : system->graphicsPipeline->renderers)
+					for (const auto& renderer : system->graphicsPipeline->renderers)
 					{
-						ImGui::Text(renderer->material->materialName);
+						ImGui::Text(renderer->GetMaterial(0)->materialName.data());
 					}
 					ImGui::Unindent();
 				}
@@ -321,13 +322,13 @@ void Scene::OnImGuiRender()
 	ImGui::End();
 }
 
-void Scene::Tick(const float aDeltaTime)
+void Scene::Tick(const float deltaTime)
 {
-
-	sceneInteractionPhysicsSystem->Tick(aDeltaTime);
+	PROFILE_BEGIN("Scene Tick");
+	sceneInteractionPhysicsSystem->Tick(deltaTime);
 	for (const auto& obj : sceneObjects)
 	{
-		obj->Tick(aDeltaTime);
+		obj->Tick(deltaTime);
 	}
 	PROFILE_END();
 }
@@ -341,7 +342,7 @@ void Scene::Cleanup()
 	}
 
 	delete activeCamera;
-	for (const auto system : renderPipelines)
+	for (const auto& system : renderPipelines)
 	{
 		system->graphicsPipeline->Destroy();
 	}
@@ -422,7 +423,7 @@ const btRigidBody* Scene::PickRigidBody(const int x, const int y) const
 	return nullptr;
 }
 
-Texture* Scene::CreateTexture(const char* aName, const eastl::vector<eastl::string>& aPathsSet)
+Texture* Scene::CreateTexture(const eastl::string_view& aName, const eastl::vector<eastl::string>& aPathsSet)
 {
 	if (!sceneTextures.contains(aName))
 	{
@@ -439,7 +440,12 @@ Texture* Scene::CreateTexture(const char* aName, const eastl::vector<eastl::stri
 	return nullptr;
 }
 
+#define DEBUG_RENDER 1
 SceneObject& Scene::MakeEntity()
 {
-	return *sceneObjects.emplace_back(eastl::make_unique<SceneObject>());
+	auto& newObject = *sceneObjects.emplace_back(eastl::make_unique<SceneObject>());
+#if DEBUG_RENDER
+	debugRegistry->Register(&newObject);
+#endif
+	return newObject;
 }

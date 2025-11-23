@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Renderer.h"
+#include "Math/Transform.h"
 
 
 class PrimitiveMesh;
@@ -12,7 +13,7 @@ class Mesh;
 class SkyboxRenderer final : public Renderer
 {
 public:
-	void Render(VkCommandBuffer commandBuffer, const Scene& scene) override;
+	void Render(VkCommandBuffer commandBuffer) override;
 	void BindRenderer(GraphicsPipeline& boundGraphicsPipeline) override;
 	void DestroyRenderer() override;
 

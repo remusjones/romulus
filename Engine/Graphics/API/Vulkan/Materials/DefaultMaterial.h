@@ -18,13 +18,13 @@ public:
     };
 
 
-    DefaultMaterial(const char* inMaterialName);
+    DefaultMaterial(const eastl::string_view& inMaterialName);
     DefaultMaterial() = default;
 
 
     void Create(MaterialBase *baseMaterial = nullptr) override;
 
-    void OnImGuiRender() override;
+    void OnDebugGui() override;
 
     void MakeDefaults() const;
 

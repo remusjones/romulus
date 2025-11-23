@@ -34,7 +34,7 @@ struct ScopedProfileTimer
 {
 	eastl::string_view profileName;
 	Profiler* profiler;
-	std::chrono::time_point<std::chrono::system_clock> start, end;
+	std::chrono::time_point<std::chrono::steady_clock> start, end;
 	TimerMetadata metadata;
 
 	explicit ScopedProfileTimer(const eastl::string_view& aName, Profiler& aBoundProfiler, const eastl::string_view& aFunctionSignature,
@@ -49,7 +49,7 @@ struct ManagedProfileTimer
 {
 	eastl::string_view profilerName;
 	Profiler* profiler;
-	std::chrono::time_point<std::chrono::system_clock> start, end;
+	std::chrono::time_point<std::chrono::steady_clock> start, end;
 	TimerMetadata metadata;
 
 	explicit ManagedProfileTimer(const eastl::string_view& inProfilerName, Profiler& inProfiler, const eastl::string_view& functionSignature,

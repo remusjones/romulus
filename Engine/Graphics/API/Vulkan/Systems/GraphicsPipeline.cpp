@@ -31,10 +31,10 @@ void GraphicsPipeline::Create()
         pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
         // Bind these elsewhere?
-        std::vector<VkDescriptorSetLayout> layouts;
-        for (auto& mRenderer : renderers)
+        eastl::vector<VkDescriptorSetLayout> layouts;
+        for (const auto& mRenderer : renderers)
         {
-            layouts.push_back(mRenderer->material->GetDescriptorLayout());
+            layouts.push_back(mRenderer->GetMaterial(0)->GetDescriptorLayout());
         }
         //hook the global set layout
         pipelineLayoutInfo.setLayoutCount = layouts.size();
@@ -240,7 +240,7 @@ void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 
     configInfo.subpass = static_cast<uint32_t>(GraphicsPipeline::SubPasses::SUBPASS_GEOMETRY);
 
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+    eastl::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
     bindingDescriptions[0] = Vertex::GetBindingDescription();
 
     configInfo.mBindingDescriptions = bindingDescriptions;
@@ -258,6 +258,7 @@ void GraphicsPipeline::Draw(VkCommandBuffer commandBuffer, const Scene& scene) c
     {
         throw std::runtime_error("RomulusGraphicsPipeline is null");\
     }
+
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       romulusPipelineConfig);
 
@@ -269,12 +270,12 @@ void GraphicsPipeline::Draw(VkCommandBuffer commandBuffer, const Scene& scene) c
 
     for (Renderer* const& renderer : renderers)
     {
-        std::vector<VkDescriptorSet> descriptorSets;
-        descriptorSets.push_back(renderer->material->GetDescriptorSet());
+        eastl::vector<VkDescriptorSet> descriptorSets;
+        descriptorSets.push_back(renderer->GetMaterial(0)->GetDescriptorSet());
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig.pipelineLayout, 0,
                                 descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
-        renderer->Render(commandBuffer, scene);
+        renderer->Render(commandBuffer);
     }
 }

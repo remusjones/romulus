@@ -138,7 +138,7 @@ void Profiler::EndTraceSession()
 	sessionOutputStream.close();
 }
 
-void Profiler::OnImGuiRender()
+void Profiler::OnDebugGui()
 {
 	ImGui::Begin("Profiler");
 	if (ImGui::Checkbox("Running", &running))

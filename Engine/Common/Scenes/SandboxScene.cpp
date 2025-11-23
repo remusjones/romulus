@@ -134,8 +134,10 @@ void SandboxScene::Construct()
 	//
 	cubeMapMesh = MakeEntity<Primitive>("Skybox");
 	auto* mSkyboxRenderer = new SkyboxRenderer();
+	allocatedRenderers.push_back(mSkyboxRenderer);
+
 	cubeMapMesh->renderer = mSkyboxRenderer; // todo inconsistent use of renderer allocations compared to meshrenderer here
-	mSkyboxRenderer->material = cubemap;
+	mSkyboxRenderer->SetMaterial(0, cubemap);
 	mSkyboxRenderer->transform = &cubeMapMesh->transform;
 	mSkyboxRenderer->BindRenderer(*cubemapRenderPipeline->graphicsPipeline);
 	mSkyboxRenderer->LoadMesh((FileManagement::GetWorkingDirectory() +
@@ -152,6 +154,8 @@ void SandboxScene::Construct()
 	lineRendererEntity->renderer = lineRenderer;
 
 	lineRenderer = new LineRenderer();
+	allocatedRenderers.push_back(lineRenderer);
+
 	lineRenderer->mTransform = &lineRendererEntity->transform;
 	lineRenderer->SetLinePositions(
 		{
@@ -161,7 +165,7 @@ void SandboxScene::Construct()
 			glm::vec3(10, -10, 0)
 		});
 
-	lineRenderer->material = &unlitMaterial;
+	lineRenderer->SetMaterial(0, &unlitMaterial);
 	lineRenderer->BindRenderer(*lineRendererPipeline->graphicsPipeline);
 
 	//
@@ -183,7 +187,7 @@ float deltaAccumulated;
 void SandboxScene::Tick(float deltaTime)
 {
 	deltaAccumulated += deltaTime / 5;
-	light->GetRenderer().material->materialProperties.color =
+	light->GetRenderer().GetMaterial(0)->materialProperties.color =
 			glm::vec4(sceneData.color.x, sceneData.color.y, sceneData.color.z, 1);
 
 	sceneData.position = light->transform.GetLocalPosition();
@@ -207,28 +211,37 @@ void SandboxScene::Tick(float deltaTime)
 		                               Color::Yellow()
 	                               });
 
-	lineRenderer->DrawLine(
-		floor->transform.GetWorldPosition(),
-		monkey->transform.GetWorldPosition(),
-		Color::Magenta());
+	//lineRenderer->DrawLine(
+	//	floor->transform.GetWorldPosition(),
+	//	monkey->transform.GetWorldPosition(),
+	//	Color::Magenta());
 
 	activeCamera->Tick(deltaTime);
 }
 
 void SandboxScene::Cleanup()
 {
+
+	for (const auto& renderer : allocatedRenderers)
+	{
+		renderer->DestroyRenderer();
+		delete renderer;
+	}
+
 	for (const auto& loadedTextures : sceneTextures)
 	{
 		loadedTextures.second->Destroy();
 	}
-	lineRenderer->DestroyRenderer();
+
+
 	materialUnlitFactory.Destroy();
 	materialPBRFactory.Destroy();
 	genericMaterialFactory.Destroy();
+
 	Scene::Cleanup();
 }
 
-void SandboxScene::OnImGuiRender()
+void SandboxScene::OnDebugGui()
 {
-	Scene::OnImGuiRender();
+	Scene::OnDebugGui();
 }

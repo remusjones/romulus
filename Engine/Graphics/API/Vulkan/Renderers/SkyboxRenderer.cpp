@@ -7,7 +7,7 @@
 #include "Base/Common/Data/PrimitiveMesh.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
-void SkyboxRenderer::Render(const VkCommandBuffer commandBuffer, const Scene& scene)
+void SkyboxRenderer::Render(const VkCommandBuffer commandBuffer)
 {
 	mesh->Bind(commandBuffer);
 	vkCmdPushConstants(commandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,

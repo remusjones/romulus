@@ -7,12 +7,14 @@
 #include <vulkan/vulkan_core.h>
 #include <EASTL/vector.h>
 
+#include "EASTL/optional.h"
+
 struct QueueFamilyIndices
 {
-    std::optional<uint32_t> mGraphicsFamily;
-    std::optional<uint32_t> mPresentFamily;
+    eastl::optional<uint32_t> mGraphicsFamily;
+    eastl::optional<uint32_t> mPresentFamily;
 
-    bool IsComplete() const
+    [[nodiscard]] bool IsComplete() const
     {
         return mGraphicsFamily.has_value() && mPresentFamily.has_value();
     }

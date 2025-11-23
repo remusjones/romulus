@@ -26,14 +26,14 @@ void MeshRenderer::BindRenderer(GraphicsPipeline& aBoundGraphicsPipeline)
     graphicsPipeline->AddRenderer(this);
 }
 
-void MeshRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
+void MeshRenderer::Render(VkCommandBuffer commandBuffer)
 {
-    mMesh->Bind(aCommandBuffer);
+    mMesh->Bind(commandBuffer);
     pushConstants.model = mTransform->GetWorldMatrix();
-    vkCmdPushConstants(aCommandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,
+    vkCmdPushConstants(commandBuffer, graphicsPipeline->pipelineConfig.pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                        sizeof(PushConstants), &pushConstants);
 
-    vkCmdDrawIndexed(aCommandBuffer, mMesh->GetIndicesSize(), 1, 0, 0, 0);
-    Renderer::Render(aCommandBuffer, aScene);
+    vkCmdDrawIndexed(commandBuffer, mMesh->GetIndicesSize(), 1, 0, 0, 0);
+    Renderer::Render(commandBuffer);
 }

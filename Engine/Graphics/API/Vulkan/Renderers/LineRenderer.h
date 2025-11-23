@@ -4,13 +4,15 @@
 
 #pragma once
 #include "Renderer.h"
-#include "Base/Common/Data/Vertex.h"
+#include "Base/Common/Buffers/AllocatedBuffer.h"
+#include "EASTL/vector.h"
 
+class Transform;
 class Color;
 /*
  * Draws line(s) between "positions"
  */
-class LineRenderer : public Renderer
+class LineRenderer final : public Renderer
 {
 public:
     enum LineRenderMode
@@ -21,32 +23,26 @@ public:
         LINES_SEGMENTED,
     };
 
-    void SetLinePositions(const std::vector<glm::vec3>& aPositions, LineRenderMode aMode = LINES_CONTINUOUS);
+    void SetLinePositions(const eastl::vector<glm::vec3>& aPositions, LineRenderMode aMode = LINES_CONTINUOUS);
 
-    void SetLinePositions(const std::vector<glm::vec3>& aPositions, const std::vector<Color>& aColors,
+    void SetLinePositions(const eastl::vector<glm::vec3>& aPositions, const eastl::vector<Color>& aColors,
                           LineRenderMode aMode = LINES_CONTINUOUS);
 
-    void DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor);
-
+    void DrawLine(const glm::vec3& aStart, const glm::vec3& aEnd, const Color& aColor);
     void DestroyRenderer() override;
-
     void BindRenderer(GraphicsPipeline& aBoundGraphicsPipeline) override;
-
-    void Render(VkCommandBuffer aCommandBuffer, const Scene& aScene) override;
-
-private:
-    void SetLinePositions(const std::vector<Vertex>& aLines, LineRenderMode aMode = LINES_CONTINUOUS);
+    void Render(VkCommandBuffer aCommandBuffer) override;
 
 public:
     Transform* mTransform;
 
 private:
     AllocatedBuffer* mAllocatedPositions;
-    std::vector<Vertex> mLinePositions;
+    AllocatedBuffer* mTemporaryAllocatedPositions;
+
+    eastl::vector<Vertex> mLinePositions;
+    eastl::vector<Vertex> mTemporaryLines;
 
     uint32_t currentAllocationCount = 0;
-    AllocatedBuffer* mTemporaryAllocatedPositions;
-    std::vector<Vertex> mTemporaryLines;
-
     LineRenderMode mLineRenderMode{};
 };

@@ -3,26 +3,29 @@
 //
 
 #pragma once
-#include "ImGuiDebugLayer.h"
+#include "IDebugabble.h"
 #include "EASTL/vector.h"
+#include "EASTL/weak_ptr.h"
 
-class Editor : public ImGuiDebugLayer
+class Editor : public IDebugabble
 {
 public:
-	void OnImGuiRender() override;
+	void OnDebugGui() override;
 };
 
-class ImGuiDebugInstance
+class IDebugRegistry
 {
 public:
-	static ImGuiDebugInstance& Get();
-	ImGuiDebugInstance(const ImGuiDebugInstance&) = delete;
-	ImGuiDebugInstance& operator=(const ImGuiDebugInstance&) = delete;
+	virtual ~IDebugRegistry() = default;
+	virtual void Register(IDebugabble* object) = 0;
+};
 
-	void RegisterDebugLayer(ImGuiDebugLayer* inImGuiLayer);
+class DebugManager final : public  IDebugRegistry
+{
+public:
+	void Register(IDebugabble* object) override;
 	void DrawImGui();
 
 private:
-	ImGuiDebugInstance() = default;
-	eastl::vector<ImGuiDebugLayer*> debugLayersToDraw;
+	eastl::vector<IDebugabble*> debugLayersToDraw;
 };
