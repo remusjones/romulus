@@ -3,89 +3,95 @@
 //
 
 #pragma once
+
 #include <vector>
 #include <glm/glm.hpp>
-#include <glm/detail/type_quat.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
-#include "EASTL/bitset.h"
 #include "EASTL/vector.h"
-#include "EASTL/bonus/flags.h"
-#include "Objects/IDebugabble.h"
+#include "Objects/IDebuggable.h"
 
-
-class Transform final : public IDebugabble
+class Transform final : public IDebuggable
 {
 public:
-	Transform();
+    Transform();
+    ~Transform();
 
-	//TODO: Make vectors constant
-	glm::vec3 Forward() const { return rotation * glm::vec3(0, 0, 1); }
-	glm::vec3 Up() const { return rotation * glm::vec3(0, 1, 0); }
-	glm::vec3 Right() const { return rotation * glm::vec3(1, 0, 0); }
+    [[nodiscard]] glm::vec3 Forward() const { return glm::rotate(rotation, WorldForward); }
+    [[nodiscard]] glm::vec3 Up() const      { return glm::rotate(rotation, WorldUp); }
+    [[nodiscard]] glm::vec3 Right() const   { return glm::rotate(rotation, WorldRight); }
 
-	// todo: all these should be cached for multiple requests per changed vector
-	// - can we hash the matrix and do cache to avoid recalculating all these per get?
-	glm::vec3 GetLocalPosition() const;
-	glm::quat GetLocalRotation() const;
-	glm::vec3 GetLocalEuler() const;
-	glm::vec3 GetLocalScale() const;
-	glm::vec3 GetWorldPosition();
-	glm::quat GetWorldRotation();
-	glm::vec3 GetWorldScale();
+    [[nodiscard]] const glm::vec3& GetLocalPosition() const { return position; }
+    [[nodiscard]] const glm::quat& GetLocalRotation() const { return rotation; }
+    [[nodiscard]] const glm::vec3& GetLocalScale() const    { return scale; }
+    [[nodiscard]] glm::vec3 GetLocalEuler() const           { return glm::eulerAngles(rotation); }
 
-	void Translate(const glm::vec3& translation);
-	void TranslateLocal(const glm::vec3& translation);
+    [[nodiscard]] glm::vec3 GetWorldPosition();
+    [[nodiscard]] glm::quat GetWorldRotation();
+    [[nodiscard]] glm::vec3 GetWorldScale();
 
-	void SetLocalPosition(const glm::vec3& inPosition);
-	void SetWorldPosition(const glm::vec3& inPositon);
+    // ==================================================================================
+    // Setters (Triggers Dirty Flags)
+    // ==================================================================================
 
-	void SetLocalRotation(const glm::vec3& inRotation);
-	void SetLocalRotation(const glm::quat& inRotation);
-	void SetWorldRotation(const glm::quat& inRotation);
+    void Translate(const glm::vec3& translation);
+    void TranslateLocal(const glm::vec3& translation);
 
-	void RotateAxisLocal(float inAngle, glm::vec3 inRotation);
-	void RotateAxisLocal(const glm::vec2& inEulerAxisRotation);
-	void RotateAxisLocal(const glm::vec3& inEulerRotation);
-	void LocalRotate(const glm::quat& inRotation);
+    void SetLocalPosition(const glm::vec3& inPosition);
+    void SetWorldPosition(const glm::vec3& inPosition);
 
-	void SetLocalScale(const glm::vec3& inScale);
-	void SetWorldScale(const glm::vec3& inScale);
+    void SetLocalRotation(const glm::vec3& inEulerAngles);
+    void SetLocalRotation(const glm::quat& inRotation);
+    void SetWorldRotation(const glm::quat& inRotation);
 
-	void SetMatrix(const glm::mat4& inMatrix);
+    void RotateLocal(const glm::vec3& axis, float angleRadians);
+    void RotateLocal(const glm::quat& rotation);
 
-	void SetDirty();
-	bool GetDirty() const;
+    void SetLocalScale(const glm::vec3& inScale);
+    void SetLocalMatrix(const glm::mat4& inMatrix);
 
-	void SetParent(Transform* inParent);
-	Transform* GetParent() const;
-	eastl::vector<Transform*> GetChildren() const;
-	size_t GetChildCount() const;
+    void SetParent(Transform* inParent, bool keepWorldTransform = true);
+    void AddChild(Transform* child);
+    void RemoveChild(Transform* child);
+    [[nodiscard]] Transform* GetParent() const { return parent; }
+    [[nodiscard]] const eastl::vector<Transform*>& GetChildren() const { return children; }
+    [[nodiscard]] size_t GetChildCount() const { return children.size(); }
 
-	glm::mat4 GetWorldMatrix();
-	glm::mat4 GetLocalMatrix();
+    // Returns the cached world matrix, recalculating if dirty
+    [[nodiscard]] const glm::mat4& GetWorldMatrix();
 
-	glm::mat4 GetRotationMatrix() const { return glm::mat4_cast(rotation); }
-	glm::mat4 GetTranslationMatrix() const { return glm::translate(glm::identity<glm::mat4>(), position); }
-	glm::mat4 GetScaleMatrix() const { return glm::scale(glm::identity<glm::mat4>(), scale); }
+    // Returns the cached local matrix, recalculating if dirty
+    [[nodiscard]] const glm::mat4& GetLocalMatrix();
 
-	void OnDebugGui() override;
+    void OnDebugGui() override;
 
 private:
-	glm::vec3 position;
-	glm::quat rotation;
-	glm::vec3 scale;
+    void MarkWorldDirty();
+    void MarkLocalDirty();
 
-	glm::mat4 localMatrix;
+    void RecalculateLocalMatrix();
+    void RecalculateWorldMatrix();
 
-	static constexpr uint8_t c_matrixIsDirtyFlag = 0;
-	eastl::bitset<1> flags;
+private:
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); // Identity
+    glm::vec3 scale    = glm::vec3(1.0f);
 
-	Transform* parent;
-	eastl::vector<Transform*> children;
+    // Caches
+    glm::mat4 localMatrix = glm::mat4(1.0f);
+    glm::mat4 worldMatrix = glm::mat4(1.0f);
 
-	void RemoveChild(Transform* child);
-	void AddChild(Transform* child);
-	void UpdateLocalMatrix();
+    // Hierarchy
+    Transform* parent = nullptr;
+    eastl::vector<Transform*> children;
+
+    // Dirty Flags
+    bool isLocalDirty = true;
+    bool isWorldDirty = true;
+
+    static constexpr glm::vec3 WorldUp      = glm::vec3(0, 1, 0);
+    static constexpr glm::vec3 WorldForward = glm::vec3(0, 0, 1);
+    static constexpr glm::vec3 WorldRight   = glm::vec3(1, 0, 0);
 };

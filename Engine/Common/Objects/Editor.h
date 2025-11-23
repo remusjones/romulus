@@ -3,11 +3,10 @@
 //
 
 #pragma once
-#include "IDebugabble.h"
-#include "EASTL/vector.h"
-#include "EASTL/weak_ptr.h"
+#include "IDebuggable.h"
+#include "EASTL/hash_set.h"
 
-class Editor : public IDebugabble
+class Editor : public IDebuggable
 {
 public:
 	void OnDebugGui() override;
@@ -17,15 +16,17 @@ class IDebugRegistry
 {
 public:
 	virtual ~IDebugRegistry() = default;
-	virtual void Register(IDebugabble* object) = 0;
+	virtual void Register(IDebuggable* object) = 0;
+	virtual void Unregister(IDebuggable* object) = 0;
 };
 
 class DebugManager final : public  IDebugRegistry
 {
 public:
-	void Register(IDebugabble* object) override;
+	void Register(IDebuggable* object) override;
+	void Unregister(IDebuggable* object) override;
 	void DrawImGui();
 
 private:
-	eastl::vector<IDebugabble*> debugLayersToDraw;
+	eastl::hash_set<IDebuggable*> debugLayersToDraw;
 };

@@ -195,7 +195,7 @@ void SandboxScene::Tick(float deltaTime)
 	sceneData.viewPos = glm::vec4(activeCamera->transform.GetLocalPosition(), 1.0f);
 	sceneData.viewProjectionMatrix = activeCamera->GetPerspectiveMatrix();
 
-	monkey->transform.RotateAxisLocal(deltaTime / 5, glm::vec3(0.0f, 1, 0));
+	monkey->transform.RotateLocal(glm::vec3(0.0f, 1, 0), deltaTime / 5);
 	Scene::Tick(deltaTime);
 
 

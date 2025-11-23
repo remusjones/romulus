@@ -14,16 +14,19 @@ void Editor::OnDebugGui()
 	Profiler::GetInstance().OnDebugGui();
 }
 
-void DebugManager::Register(IDebugabble* object)
+void DebugManager::Register(IDebuggable* object)
 {
-	debugLayersToDraw.push_back(object);
+	debugLayersToDraw.insert(object);
+}
+
+void DebugManager::Unregister(IDebuggable* object)
+{
+	debugLayersToDraw.erase(object);
 }
 
 void DebugManager::DrawImGui()
 {
-
 	// cleanup any invalid values before drawing
-	eastl::erase(debugLayersToDraw, nullptr);
 
 	for (const auto& debuggable : debugLayersToDraw)
 	{

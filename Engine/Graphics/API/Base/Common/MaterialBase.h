@@ -6,14 +6,13 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
-#include "Objects/IDebugabble.h"
+#include "Objects/IDebuggable.h"
 
-class MaterialBase : public IDebugabble
+class MaterialBase : public IDebuggable
 {
 public:
-	virtual void OnDebugGui()
-	{
-	};
+	void OnDebugGui() override {};
+
 	virtual void Destroy();
 	virtual void AddBinding(uint32_t inBinding, uint32_t inCount, VkDescriptorType inDescriptorType,
 	                        VkShaderStageFlagBits inStageFlags);

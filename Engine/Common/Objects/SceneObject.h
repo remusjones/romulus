@@ -3,14 +3,14 @@
 //
 
 #pragma once
-#include "IDebugabble.h"
+#include "IDebuggable.h"
 #include "Components/Component.h"
 #include "EASTL/unique_ptr.h"
 #include "Math/Transform.h"
 
 // todo: Should this be called an entity?
 // Ideally we use an actual entity system and this will get confusing!
-class SceneObject : public IDebugabble
+class SceneObject : public IDebuggable
 {
 public:
 	virtual void Construct();

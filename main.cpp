@@ -1,5 +1,6 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include <glm/vec4.hpp>
 #include "VulkanGraphicsImpl.h"
 #include "spdlog/spdlog.h"

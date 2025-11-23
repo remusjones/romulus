@@ -1,304 +1,295 @@
 #include "Transform.h"
+
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/euler_angles.hpp>
-#include <glm/gtc/quaternion.hpp>
 
 #include "imgui.h"
-#include "glm/gtx/matrix_decompose.hpp"
 
-Transform::Transform() : position(0),
-rotation(glm::identity<glm::quat>()), scale(1), localMatrix(), parent(nullptr)
+Transform::Transform()
 {
-	flags[c_matrixIsDirtyFlag] = true;
+    children.reserve(5);
 }
+
+Transform::~Transform()
+{
+    if (parent)
+    {
+        parent->RemoveChild(this);
+    }
+
+    for (auto* child : children)
+    {
+        child->parent = nullptr;
+        child->MarkWorldDirty();
+    }
+}
+
 
 glm::vec3 Transform::GetWorldPosition()
 {
-	return glm::vec3(GetWorldMatrix()[3]);
+    return glm::vec3(GetWorldMatrix()[3]);
 }
 
 glm::quat Transform::GetWorldRotation()
 {
-	const glm::mat4 matrix = GetWorldMatrix();
-	const glm::mat3 upper_mat3(matrix);
-	return glm::quat(upper_mat3);
+    glm::vec3 decompScale;
+    glm::quat decompRotation;
+    glm::vec3 decompTranslation;
+    glm::vec3 skew;
+    glm::vec4 perspective;
+
+    glm::decompose(GetWorldMatrix(), decompScale, decompRotation, decompTranslation, skew, perspective);
+    return decompRotation;
 }
 
 glm::vec3 Transform::GetWorldScale()
 {
-	glm::mat4 matrix = GetWorldMatrix();
-	glm::vec3 vectorScale;
-	vectorScale.x = glm::length(glm::vec3(matrix[0]));
-	vectorScale.y = glm::length(glm::vec3(matrix[1]));
-	vectorScale.z = glm::length(glm::vec3(matrix[2]));
-	return vectorScale;
+    const glm::mat4& mat = GetWorldMatrix();
+    return {
+        glm::length(glm::vec3(mat[0])),
+        glm::length(glm::vec3(mat[1])),
+        glm::length(glm::vec3(mat[2]))
+    };
 }
 
-glm::vec3 Transform::GetLocalPosition() const
-{
-	return position;
-}
-
-glm::quat Transform::GetLocalRotation() const
-{
-	return rotation;
-}
-
-glm::vec3 Transform::GetLocalEuler() const
-{
-	return glm::degrees(glm::eulerAngles(rotation));
-}
-
-glm::vec3 Transform::GetLocalScale() const
-{
-	return scale;
-}
+// ==================================================================================
+// Setters
+// ==================================================================================
 
 void Transform::Translate(const glm::vec3& translation)
 {
-	position += translation;
-	SetDirty();
+    position += translation;
+    MarkLocalDirty();
 }
 
 void Transform::TranslateLocal(const glm::vec3& translation)
 {
-	position += rotation * translation;
-	SetDirty();
+    position += rotation * translation;
+    MarkLocalDirty();
 }
 
 void Transform::SetLocalPosition(const glm::vec3& inPosition)
 {
-	position = inPosition;
-	SetDirty();
+    if (position == inPosition) return;
+
+    position = inPosition;
+    MarkLocalDirty();
 }
 
-void Transform::SetLocalRotation(const glm::vec3& inRotation)
+void Transform::SetLocalRotation(const glm::vec3& inEulerAngles)
 {
-	const glm::vec3 axisRotation = glm::radians(inRotation);
-	rotation                    = axisRotation;
-	SetDirty();
+    glm::quat newRot = glm::quat(inEulerAngles);
+
+    if (rotation == newRot) return;
+    rotation = newRot;
+    MarkLocalDirty();
 }
 
 void Transform::SetLocalRotation(const glm::quat& inRotation)
 {
-	rotation = inRotation;
-	SetDirty();
+    if (rotation == inRotation) return;
+    rotation = inRotation;
+    MarkLocalDirty();
 }
 
-void Transform::SetWorldPosition(const glm::vec3& inPositon)
+void Transform::SetLocalScale(const glm::vec3& inScale)
 {
-	if (parent != nullptr)
-	{
-		const glm::vec3 parentPosition = parent->GetWorldPosition();
-		position = inPositon - parentPosition;
-	}
-	else
-	{
-		position = inPositon;
-	}
-	SetDirty();
+    if (scale == inScale) return;
+    scale = inScale;
+    MarkLocalDirty();
+}
+
+void Transform::SetWorldPosition(const glm::vec3& inPosition)
+{
+    if (parent)
+    {
+        glm::mat4 parentInverse = glm::inverse(parent->GetWorldMatrix());
+        position = glm::vec3(parentInverse * glm::vec4(inPosition, 1.0f));
+    }
+    else
+    {
+        position = inPosition;
+    }
+    MarkLocalDirty();
 }
 
 void Transform::SetWorldRotation(const glm::quat& inRotation)
 {
-	if (parent != nullptr)
-	{
-		const glm::quat parentRotation = parent->GetWorldRotation();
-		rotation = glm::inverse(parentRotation) * inRotation;
-	}
-	else
-	{
-		rotation = inRotation;
-	}
-	SetDirty();
+    if (parent)
+    {
+        glm::quat parentWorldRot = parent->GetWorldRotation();
+        rotation = glm::inverse(parentWorldRot) * inRotation;
+    }
+    else
+    {
+        rotation = inRotation;
+    }
+    MarkLocalDirty();
 }
 
-void Transform::SetWorldScale(const glm::vec3& inScale)
+void Transform::RotateLocal(const glm::vec3& axis, float angleRadians)
 {
-	if (parent != nullptr)
-	{
-		const glm::vec3 parentScale = parent->GetWorldScale();
-		scale = inScale / parentScale;
-	}
-	else
-	{
-		scale = inScale;
-	}
-	SetDirty();
+    glm::quat rot = glm::angleAxis(angleRadians, axis);
+    rotation = rotation * rot;
+    MarkLocalDirty();
 }
 
-void Transform::RotateAxisLocal(float inAngle, glm::vec3 inRotation)
+void Transform::RotateLocal(const glm::quat& inRotation)
 {
-	rotation = rotation * glm::angleAxis(inAngle, inRotation);
-	SetDirty();
+    rotation = rotation * inRotation;
+    MarkLocalDirty();
 }
 
-void Transform::RotateAxisLocal(const glm::vec2& inEulerAxisRotation)
+void Transform::SetLocalMatrix(const glm::mat4& inMatrix)
 {
-	const glm::vec2 axisRotation = glm::radians(inEulerAxisRotation);
+    glm::vec3 skew;
+    glm::vec4 perspective;
+    glm::decompose(inMatrix, scale, rotation, position, skew, perspective);
 
-	rotation = rotation * glm::angleAxis(axisRotation.x, glm::vec3(1, 0, 0));
-	rotation = glm::angleAxis(axisRotation.y, glm::vec3(0, 1, 0)) * rotation;
-	SetDirty();
+    MarkLocalDirty();
 }
 
-void Transform::RotateAxisLocal(const glm::vec3& inEulerRotation)
+void Transform::SetParent(Transform* inParent, bool keepWorldTransform)
 {
-	const glm::vec3 axisRotation = glm::radians(inEulerRotation);
+    if (parent == inParent) return;
 
-	rotation = rotation * glm::angleAxis(axisRotation.x, glm::vec3(1, 0, 0));
-	rotation = glm::angleAxis(axisRotation.y, glm::vec3(0, 1, 0)) * rotation;
-	rotation = rotation * glm::angleAxis(axisRotation.z, glm::vec3(0, 0, 1));
-	SetDirty();
-}
+    glm::mat4 newMatrix;
+    if (keepWorldTransform)
+    {
+        newMatrix = GetWorldMatrix();
+    }
 
-void Transform::LocalRotate(const glm::quat& inRotation)
-{
-	rotation *= inRotation;
-	SetDirty();
-}
+    if (parent)
+    {
+        parent->RemoveChild(this);
+    }
 
+    parent = inParent;
 
-void Transform::SetLocalScale(const glm::vec3& inScale)
-{
-	scale = inScale;
-	SetDirty();
-}
+    if (parent)
+    {
+        parent->AddChild(this);
+    }
 
-void Transform::SetMatrix(const glm::mat4& inMatrix)
-{
-	position = glm::vec3(inMatrix[3][0], inMatrix[3][1], inMatrix[3][2]);
+    if (keepWorldTransform)
+    {
+        if(parent)
+        {
+            glm::mat4 parentInverse = glm::inverse(parent->GetWorldMatrix());
+            SetLocalMatrix(parentInverse * newMatrix);
+        }
+        else
+        {
+            SetLocalMatrix(newMatrix);
+        }
+    }
 
-	scale.x = glm::length(glm::vec3(inMatrix[0][0], inMatrix[0][1], inMatrix[0][2]));
-	scale.y = glm::length(glm::vec3(inMatrix[1][0], inMatrix[1][1], inMatrix[1][2]));
-	scale.z = glm::length(glm::vec3(inMatrix[2][0], inMatrix[2][1], inMatrix[2][2]));
-
-	glm::mat3 rotationMatrix;
-	rotationMatrix[0] = glm::normalize(glm::vec3(inMatrix[0]));
-	rotationMatrix[1] = glm::normalize(glm::vec3(inMatrix[1]));
-	rotationMatrix[2] = glm::normalize(glm::vec3(inMatrix[2]));
-	rotation          = glm::quat(rotationMatrix);
-
-	SetDirty();
-}
-
-void Transform::SetDirty()
-{
-	flags[c_matrixIsDirtyFlag] = true;
-}
-
-bool Transform::GetDirty() const
-{
-	return flags[c_matrixIsDirtyFlag];
-}
-
-void Transform::SetParent(Transform* inParent)
-{
-	if (parent != nullptr)
-	{
-		parent->RemoveChild(this);
-	}
-
-	parent = inParent;
-
-	if (parent != nullptr)
-	{
-		parent->AddChild(this);
-		parent->SetDirty();
-	}
-
-
-	SetDirty();
-}
-
-Transform* Transform::GetParent() const
-{
-	return parent;
-}
-
-eastl::vector<Transform*> Transform::GetChildren() const
-{
-	return children;
-}
-
-size_t Transform::GetChildCount() const
-{
-	return children.size();
-}
-
-void Transform::RemoveChild(Transform* child)
-{
-	if (const auto it = std::ranges::find(children, child); it != children.end())
-	{
-		children.erase(it);
-	}
-
-	child->SetParent(nullptr);
-	parent->SetDirty();
+    MarkWorldDirty();
 }
 
 void Transform::AddChild(Transform* child)
 {
-	children.push_back(child);
-	child->SetDirty();
+    if (eastl::find(children.begin(), children.end(), child) == children.end())
+    {
+        children.push_back(child);
+    }
 }
 
-void Transform::UpdateLocalMatrix()
+void Transform::RemoveChild(Transform* child)
 {
-	localMatrix = glm::mat4(1.0f);
-	localMatrix = glm::translate(localMatrix, position);
-	localMatrix = localMatrix * glm::mat4_cast(rotation);
-	localMatrix = glm::scale(localMatrix, scale);
+    auto it = eastl::find(children.begin(), children.end(), child);
+    if (it != children.end())
+    {
+        children.erase(it);
+    }
 }
 
-glm::mat4 Transform::GetWorldMatrix()
+void Transform::MarkLocalDirty()
 {
-	if (flags[c_matrixIsDirtyFlag])
-	{
-		UpdateLocalMatrix();
-		for (const auto child : children)
-		{
-			child->SetDirty();
-		}
-		flags[c_matrixIsDirtyFlag] = false;
-	}
-
-	if (parent)
-	{
-		return parent->GetWorldMatrix() * localMatrix;
-	}
-
-	return localMatrix;
+    isLocalDirty = true;
+    MarkWorldDirty();
 }
 
-glm::mat4 Transform::GetLocalMatrix()
+void Transform::MarkWorldDirty()
 {
-	if (flags[c_matrixIsDirtyFlag])
-	{
-		UpdateLocalMatrix();
-		for (const auto child : children)
-		{
-			child->SetDirty();
-		}
-		flags[c_matrixIsDirtyFlag] = false;
-	}
+    if (isWorldDirty) return;
 
-	return localMatrix;
+    isWorldDirty = true;
+
+    for (Transform* child : children)
+    {
+        child->MarkWorldDirty();
+    }
+}
+
+void Transform::RecalculateLocalMatrix()
+{
+    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), position);
+    glm::mat4 rotationMatrix = glm::mat4_cast(rotation);
+    glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+    // T * R * S
+    localMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+    isLocalDirty = false;
+}
+
+const glm::mat4& Transform::GetLocalMatrix()
+{
+    if (isLocalDirty)
+    {
+        RecalculateLocalMatrix();
+    }
+    return localMatrix;
+}
+
+void Transform::RecalculateWorldMatrix()
+{
+    const glm::mat4& local = GetLocalMatrix();
+
+    if (parent)
+    {
+        worldMatrix = parent->GetWorldMatrix() * local;
+    }
+    else
+    {
+        worldMatrix = local;
+    }
+
+    isWorldDirty = false;
+}
+
+const glm::mat4& Transform::GetWorldMatrix()
+{
+    if (isWorldDirty)
+    {
+        RecalculateWorldMatrix();
+    }
+    return worldMatrix;
 }
 
 void Transform::OnDebugGui()
 {
-	ImGui::SeparatorText("Transform");
-	glm::vec3 rot = GetLocalEuler();
-	if (ImGui::DragFloat3("Position", &position[0], 0.1f))
-	{
-		SetDirty();
-	}
-	if (ImGui::DragFloat3("Rotation", &rot[0], 0.1f))
-	{
-		SetLocalRotation(rot);
-	}
-	if (ImGui::DragFloat3("Scale", &scale[0], 0.1f))
-	{
-		SetDirty();
-	}
+    ImGui::SeparatorText("Transform");
+
+    glm::vec3 pos = position;
+    glm::vec3 rotEuler = glm::degrees(glm::eulerAngles(rotation));
+    glm::vec3 scl = scale;
+
+    if (ImGui::DragFloat3("Position", &pos[0], 0.1f))
+    {
+        SetLocalPosition(pos);
+    }
+
+    if (ImGui::DragFloat3("Rotation", &rotEuler[0], 0.1f))
+    {
+        SetLocalRotation(glm::radians(rotEuler));
+    }
+
+    if (ImGui::DragFloat3("Scale", &scl[0], 0.1f))
+    {
+        SetLocalScale(scl);
+    }
+
+    ImGui::Text("Children: %zu", children.size());
+    ImGui::Text(isWorldDirty ? "Dirty: Yes" : "Dirty: No");
 }

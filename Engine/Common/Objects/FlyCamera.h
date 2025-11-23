@@ -5,6 +5,8 @@
 #pragma once
 #include <SDL3/SDL_events.h>
 #include "Camera.h"
+#include "EASTL/bitset.h"
+#include "EASTL/bonus/flags.h"
 
 
 struct KeyboardEvent;
@@ -28,8 +30,23 @@ public:
 	bool IsCameraConsumingInput() const;
 
 private:
-	glm::vec3 MoveVector = {};
-	bool Input[6]        = {};
-	float_t Speed        = 10;
-	bool RightMouseDown  = false;
+	enum ECameraInput : uint8_t
+	{
+		FORWARD = 0,
+		BACKWARD = 1,
+		LEFT = 2,
+		RIGHT = 3,
+		UP = 4,
+		DOWN = 5,
+		RIGHT_MOUSE = 6
+	};
+
+	eastl::bitset<7> inputBitset;
+
+	glm::vec3 moveVector		= {};
+
+	float speed					= 10;
+	float currentYaw			= 0.0f;
+	float currentPitch			= 0.0f;
+	float sensitivity			= 0.002f;
 };

@@ -13,13 +13,13 @@ class Camera : public SceneObject
 {
 public:
 	// TODO: Only update vpm when m_transform gets marked dirty
-	glm::mat4 GetViewProjectionMatrix() const;
-	glm::mat4 GetPerspectiveMatrix() const;
-	glm::mat4 GetViewMatrix() const;
+	glm::mat4 GetViewProjectionMatrix();
+	glm::mat4 GetPerspectiveMatrix();
+	glm::mat4 GetViewMatrix();
 
 	Ray GetRayTo(int x, int y);
 
-	GPUCameraData GetCameraInformation() const;
+	GPUCameraData GetCameraInformation();
 
 	float_t fov   = 70.0f;
 	float_t zNear = 0.1f;

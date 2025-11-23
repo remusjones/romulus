@@ -11,7 +11,6 @@
 #include "EASTL/string.h"
 #include "EASTL/vector.h"
 #include "Objects/FlyCamera.h"
-#include "Objects/IDebugabble.h"
 
 class IDebugRegistry;
 class GraphicsPipelineFactory;
@@ -24,7 +23,7 @@ class GraphicsPipeline;
 class Camera;
 class MeshObject;
 
-class Scene : public IDebugabble
+class Scene : public IDebuggable
 {
 public:
 	virtual ~Scene();

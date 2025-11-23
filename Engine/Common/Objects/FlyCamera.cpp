@@ -59,58 +59,65 @@ void FlyCamera::OnDebugGui()
 
 void FlyCamera::Forward(const SDL_KeyboardEvent& keyboardEvent)
 {
-	Input[0] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
+	inputBitset[ECameraInput::FORWARD] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
 }
 
 void FlyCamera::Backward(const SDL_KeyboardEvent& keyboardEvent)
 {
-	Input[1] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
+	inputBitset[ECameraInput::BACKWARD] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
 }
 
 void FlyCamera::Left(const SDL_KeyboardEvent& keyboardEvent)
 {
-	Input[2] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
+	inputBitset[ECameraInput::LEFT] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
 }
 
 void FlyCamera::Right(const SDL_KeyboardEvent& keyboardEvent)
 {
-	Input[3] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
+	inputBitset[ECameraInput::RIGHT] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
 }
 
 void FlyCamera::Up(const SDL_KeyboardEvent& keyboardEvent)
 {
-	Input[4] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
+	inputBitset[ECameraInput::UP] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
 }
 
 void FlyCamera::Down(const SDL_KeyboardEvent& keyboardEvent)
 {
-	Input[5] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
+	inputBitset[ECameraInput::DOWN] = keyboardEvent.type == SDL_EVENT_KEY_DOWN;
 }
 
 void FlyCamera::MouseMovement(const SDL_MouseMotionEvent& mouseMotion)
 {
-	if (!RightMouseDown)
+	if (!inputBitset[ECameraInput::RIGHT_MOUSE])
 		return;
 
-	const float xDelta = mouseMotion.xrel;
-	const float yDelta = mouseMotion.yrel;
+	const float deltaYaw   = -mouseMotion.xrel * sensitivity;
+	const float deltaPitch = -mouseMotion.yrel * sensitivity;
 
-	constexpr float sensitivity = 0.1f;
-	const glm::vec2 delta = -glm::vec2(yDelta, xDelta) * sensitivity;
-	transform.RotateAxisLocal(delta);
+	currentYaw   += deltaYaw;
+	currentPitch += deltaPitch;
+
+	constexpr float pitchLimit = glm::radians(89.0f);
+	currentPitch = glm::clamp(currentPitch, -pitchLimit, pitchLimit);
+
+	glm::quat qYaw   = glm::angleAxis(currentYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::quat qPitch = glm::angleAxis(currentPitch, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	transform.SetLocalRotation(qYaw * qPitch);
 }
 
 void FlyCamera::MouseInput(const SDL_MouseButtonEvent& inMouseInput)
 {
 	if (inMouseInput.button == SDL_BUTTON_RIGHT)
 	{
-		RightMouseDown = inMouseInput.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
+		inputBitset[ECameraInput::RIGHT_MOUSE] = inMouseInput.type == SDL_EVENT_MOUSE_BUTTON_DOWN;
 	}
 }
 
 bool FlyCamera::IsCameraConsumingInput() const
 {
-	return RightMouseDown;
+	return inputBitset[ECameraInput::RIGHT_MOUSE];
 }
 
 glm::vec3 lerp(glm::vec3& x, glm::vec3& y, float t)
@@ -125,20 +132,21 @@ void FlyCamera::Tick(float deltaTime)
 	//LOG(INFO) << x << " " << y;
 	if (IsCameraConsumingInput())
 	{
-		MoveVector = glm::vec3();
-		MoveVector.z += Input[0] ? -Speed : 0;
-		MoveVector.z += Input[1] ? Speed : 0;
-		MoveVector.x += Input[2] ? -Speed : 0;
-		MoveVector.x += Input[3] ? Speed : 0;
-		MoveVector.y += Input[4] ? Speed : 0;
-		MoveVector.y += Input[5] ? -Speed : 0;
-		transform.TranslateLocal(MoveVector * deltaTime);
+		moveVector = glm::vec3();
+		moveVector.z += inputBitset[ECameraInput::FORWARD] ? -speed : 0;
+		moveVector.z += inputBitset[ECameraInput::BACKWARD] ? speed : 0;
+		moveVector.x += inputBitset[ECameraInput::LEFT] ? -speed : 0;
+		moveVector.x += inputBitset[ECameraInput::RIGHT] ? speed : 0;
+		moveVector.y += inputBitset[ECameraInput::UP] ? speed : 0;
+		moveVector.y += inputBitset[ECameraInput::DOWN] ? -speed : 0;
+
+		transform.TranslateLocal(moveVector * deltaTime);
 	} else
 	{
 		constexpr float dampeningSpeed = 25.f;
 		glm::vec3 zero = glm::zero<glm::vec3>();
-		MoveVector = lerp(MoveVector, zero, deltaTime * dampeningSpeed);
-		transform.TranslateLocal(MoveVector * deltaTime);
+		moveVector = lerp(moveVector, zero, deltaTime * dampeningSpeed);
+		transform.TranslateLocal(moveVector * deltaTime);
 	}
 
 

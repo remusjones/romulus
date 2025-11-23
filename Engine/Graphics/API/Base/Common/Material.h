@@ -12,7 +12,6 @@
 #include <Base/Common/Buffers/Texture.h>
 
 #include "EASTL/hash_map.h"
-#include "EASTL/map.h"
 #include "EASTL/vector.h"
 
 class Buffer;

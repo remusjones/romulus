@@ -6,7 +6,7 @@
 #include "ScopedProfileTimer.h"
 #include "EASTL/deque.h"
 #include "EASTL/stack.h"
-#include "Objects/IDebugabble.h"
+#include "Objects/IDebuggable.h"
 
 #ifdef _MSC_VER
 #define FUNCTION_SIGNATURE __FUNCSIG__
@@ -29,7 +29,7 @@ struct ProfilerConfig
 	const char* c_sessionTraceFilename = "trace.json";
 };
 
-class Profiler final : public IDebugabble
+class Profiler final : public IDebuggable
 {
 public:
 	// TODO: Maybe make a profiler factory for different sessions/groups?

@@ -243,7 +243,7 @@ void Scene::OnDebugGui()
 		                         currentGizmoOperation, currentGizmoMode,
 		                         glm::value_ptr(matrix), nullptr))
 		{
-			pickedEntity->transform.SetMatrix(matrix);
+			pickedEntity->transform.SetLocalMatrix(matrix);
 		}
 	}
 

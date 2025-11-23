@@ -45,8 +45,9 @@ private:
 	LineRenderer* lineRenderer;
 	Primitive* cubeMapMesh;
 	Primitive* lineRendererEntity;
-
 	Cubemap* cubemap;
+
+
 	std::unique_ptr<SkyboxRenderSystem> cubemapRenderPipeline;
 	std::unique_ptr<UnlitRenderSystem> unlitRenderPipeline;
 	std::unique_ptr<WireframeRenderSystem> wireframeRenderPipeline;

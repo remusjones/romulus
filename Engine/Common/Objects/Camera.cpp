@@ -6,12 +6,12 @@
 #include <VulkanGraphicsImpl.h>
 #include <Physics/Ray.h>
 
-glm::mat4 Camera::GetViewProjectionMatrix() const
+glm::mat4 Camera::GetViewProjectionMatrix()
 {
 	return GetPerspectiveMatrix() * GetViewMatrix();
 }
 
-glm::mat4 Camera::GetPerspectiveMatrix() const
+glm::mat4 Camera::GetPerspectiveMatrix()
 {
 	const glm::mat4 perspective =
 		glm::perspective(glm::radians(fov),
@@ -22,9 +22,15 @@ glm::mat4 Camera::GetPerspectiveMatrix() const
 	return perspective;
 }
 
-glm::mat4 Camera::GetViewMatrix() const
+glm::mat4 Camera::GetViewMatrix()
 {
-	return glm::inverse(transform.GetTranslationMatrix() * transform.GetRotationMatrix());
+	const glm::vec3 pos = transform.GetWorldPosition();
+	const glm::quat rot = transform.GetWorldRotation();
+
+	glm::mat4 viewRotation = glm::mat4_cast(glm::conjugate(rot));
+	glm::mat4 viewTranslation = glm::translate(glm::mat4(1.0f), -pos);
+
+	return viewRotation * viewTranslation;
 }
 
 Ray Camera::GetRayTo(const int x, const int y)
@@ -48,7 +54,7 @@ Ray Camera::GetRayTo(const int x, const int y)
 	return ray;
 }
 
-GPUCameraData Camera::GetCameraInformation() const
+GPUCameraData Camera::GetCameraInformation()
 {
 	GPUCameraData information{};
 	information.mViewProjectionMatrix = GetViewProjectionMatrix();
