@@ -18,10 +18,10 @@ enum class VertexAttributeBinding : uint32_t
 	Tangent
 };
 
+typedef int32_t Index;
 
 class alignas(16) Vertex
 {
-
 public:
 	glm::vec3 position;
 	glm::vec3 normal;

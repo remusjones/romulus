@@ -19,11 +19,11 @@ bool PrimitiveMesh::LoadFromObject(const char* filename)
 {
 	if (LoadUtilities::LoadMeshFromDisk(filename, vertices, indices))
 	{
-		verticesBuffer = new AllocatedBuffer(vertices.data(), (sizeof(vertices[0]) + 1) * vertices.size(),
+		verticesBuffer = new AllocatedBuffer(vertices.data(), sizeof(Vertex) * vertices.size(),
 		                                     VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 		                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-		indicesBuffer = new AllocatedBuffer(indices.data(), (sizeof(indices[0]) + 1) * indices.size(),
+		indicesBuffer = new AllocatedBuffer(indices.data(), sizeof(Index) * indices.size(),
 		                                    VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 		                                    VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 

@@ -5,6 +5,7 @@
 #pragma once
 #include "Renderer.h"
 #include "Base/Common/Buffers/AllocatedBuffer.h"
+#include "Base/Common/Data/Vertex.h"
 #include "EASTL/vector.h"
 
 class Transform;

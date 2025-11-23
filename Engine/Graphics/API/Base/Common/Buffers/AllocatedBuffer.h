@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "AllocatedVertexBuffer.h"
+#include "vk_mem_alloc.h"
 
 class AllocatedBuffer {
 public:

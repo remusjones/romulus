@@ -4,17 +4,14 @@
 
 #pragma once
 #include <vector>
-#include <vk_mem_alloc.h>
-
-class AllocatedBuffer;
-class Vertex;
+#include "Base/Common/Data/Vertex.h"
+#include "AllocatedBuffer.h"
 
 class AllocatedVertexBuffer
 {
 public:
 	AllocatedVertexBuffer() = default;
-	AllocatedVertexBuffer(const std::vector<Vertex>& vertices, const std::vector<int32_t>
-	                      & indices);
+	AllocatedVertexBuffer(const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
 
 
 	~AllocatedVertexBuffer();
