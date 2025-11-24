@@ -12,9 +12,9 @@ class Mesh
 {
 public:
 	Mesh();
-	~Mesh();
 
 	void Bind(VkCommandBuffer commandBuffer) const;
+	void Destroy();
 	bool LoadFromObject(const char* fileName);
 	void CalculateTangents(std::vector<Vertex>& vertices, const std::vector<int32_t>& indices);
 

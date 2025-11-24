@@ -3,10 +3,10 @@
 //
 
 #include "LineRenderer.h"
-#include "Base/Common/Color.h"
+
 #include "VulkanGraphicsImpl.h"
-#include "Base/Common/Data/Vertex.h"
-#include "Objects/Camera.h"
+#include "Base/Common/Color.h"
+#include "Math/Transform.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 

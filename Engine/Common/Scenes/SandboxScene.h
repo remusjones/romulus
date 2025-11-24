@@ -14,8 +14,9 @@
 #include <Vulkan/Systems/UnlitRenderSystem.h>
 #include <Vulkan/Systems/WireframeRenderSystem.h>
 
+#include "Vulkan/Renderers/LineRenderer.h"
+
 class DebugManager;
-class LineRenderer;
 class Cubemap;
 class Primitive;
 

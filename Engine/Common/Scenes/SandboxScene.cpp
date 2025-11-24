@@ -4,21 +4,13 @@
 
 #include "SandboxScene.h"
 
-#include <FileManagement.h>
-#include <VulkanGraphicsImpl.h>
-#include <Base/Common/Color.h>
-#include <Base/Common/Material.h>
-#include <Base/Common/Buffers/Texture.h>
-#include <Components/Collision/ColliderComponent.h>
-#include <Objects/Camera.h>
-#include <Objects/FlyCamera.h>
-#include <Vulkan/Common/MeshObject.h>
-#include <Vulkan/Common/Primative.h>
-#include <Vulkan/Materials/Cubemap.h>
-#include <Vulkan/Materials/DefaultMaterial.h>
-#include <Vulkan/Renderers/LineRenderer.h>
-#include <Vulkan/Renderers/SkyboxRenderer.h>
-#include <Vulkan/Systems/GraphicsPipeline.h>
+#include "FileManagement.h"
+#include "Base/Common/Color.h"
+#include "Vulkan/Common/MeshObject.h"
+#include "Vulkan/Common/Primative.h"
+#include "Vulkan/Materials/Cubemap.h"
+#include "Vulkan/Materials/DefaultMaterial.h"
+#include "Vulkan/Renderers/SkyboxRenderer.h"
 
 void SandboxScene::PreConstruct(const char* inSceneName)
 {

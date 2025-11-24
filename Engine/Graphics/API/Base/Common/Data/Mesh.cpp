@@ -12,11 +12,6 @@ Mesh::Mesh() : vertexBuffer(nullptr)
 {
 }
 
-Mesh::~Mesh()
-{
-	delete vertexBuffer;
-}
-
 void Mesh::Bind(VkCommandBuffer commandBuffer) const
 {
 	const VkBuffer vertexBuffers[] = {vertexBuffer->verticesBuffer->GetBuffer()};
@@ -25,6 +20,11 @@ void Mesh::Bind(VkCommandBuffer commandBuffer) const
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, vertexBuffer->indicesBuffer->GetBuffer(),
 	                     0, VK_INDEX_TYPE_UINT32);
+}
+
+void Mesh::Destroy()
+{
+	delete vertexBuffer;
 }
 
 bool Mesh::LoadFromObject(const char* fileName)

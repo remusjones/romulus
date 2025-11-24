@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <vector>
 #include "PipelineConfigInfo.h"
 #include "Base/Common/Material.h"
 

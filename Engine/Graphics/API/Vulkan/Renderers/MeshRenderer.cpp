@@ -4,19 +4,16 @@
 
 #include "MeshRenderer.h"
 
+#include "Base/Common/MeshAllocator.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
-void MeshRenderer::LoadMesh(const char* aPath)
+void MeshRenderer::LoadMesh(MeshAllocator* inAllocator, const eastl::string_view& inPath)
 {
-    // todo this should load from a global pool
-    // eg. find or load mesh from path?
-    mMesh = new Mesh();
-    mMesh->LoadFromObject(aPath);
+    mMesh = inAllocator->LoadMesh(inPath);
 }
 
 void MeshRenderer::DestroyRenderer()
 {
-    delete mMesh;
     Renderer::DestroyRenderer();
 }
 

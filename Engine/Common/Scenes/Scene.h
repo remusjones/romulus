@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "Base/Common/MeshAllocator.h"
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPUSceneData.h"
 #include "EASTL/string.h"
@@ -98,6 +99,7 @@ protected:
 	eastl::vector<eastl::unique_ptr<SceneObject>> sceneObjects;
 	eastl::hash_map<Transform*, SceneObject*> sceneTransformRelationships;
 	eastl::hash_map<eastl::string_view, eastl::unique_ptr<Texture>> sceneTextures;
+	eastl::unique_ptr<MeshAllocator> meshAllocator;
 
 private:
 	IDebugRegistry* debugRegistry;

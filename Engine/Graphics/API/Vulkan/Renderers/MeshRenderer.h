@@ -8,10 +8,12 @@
 #include "Math/Transform.h"
 
 
+class MeshAllocator;
+
 class MeshRenderer final : public Renderer
 {
 public:
-    void LoadMesh(const char* aPath);
+    void LoadMesh(MeshAllocator* inAllocator, const eastl::string_view& inPath);
     void DestroyRenderer() override;
     void BindRenderer(GraphicsPipeline& aBoundGraphicsPipeline) override;
     void Render(VkCommandBuffer commandBuffer) override;

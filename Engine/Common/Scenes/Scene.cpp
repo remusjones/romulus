@@ -54,6 +54,7 @@ void Scene::PreConstruct(const char* aSceneName)
 
 	physicsSystem = new PhysicsSystem();
 	sceneInteractionPhysicsSystem = new PhysicsSystem();
+	meshAllocator = eastl::make_unique<MeshAllocator>();
 
 	physicsSystem->Create();
 	sceneInteractionPhysicsSystem->Create();
@@ -353,6 +354,8 @@ void Scene::Cleanup()
 	sceneInteractionPhysicsSystem->Destroy();
 	delete sceneInteractionPhysicsSystem;
 	sceneInteractionPhysicsSystem = nullptr;
+
+	meshAllocator->Cleanup();
 }
 
 void Scene::AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory)
@@ -370,7 +373,7 @@ MeshObject* Scene::CreateObject(const eastl::string_view& inName, const eastl::s
 	auto* object = MakeEntity<MeshObject>();
 	object->CreateObject(inMaterial, inName);
 	object->GetRenderer().BindRenderer(inPipeline);
-	object->GetRenderer().LoadMesh((FileManagement::GetWorkingDirectory() + inMeshPath.data()).c_str());
+	object->GetRenderer().LoadMesh(meshAllocator.get(), (FileManagement::GetWorkingDirectory() + inMeshPath.data()).c_str());
 
 	object->transform.SetLocalPosition(inPos);
 	object->transform.SetLocalRotation(inRot);

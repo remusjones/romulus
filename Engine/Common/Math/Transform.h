@@ -32,10 +32,6 @@ public:
     [[nodiscard]] glm::quat GetWorldRotation();
     [[nodiscard]] glm::vec3 GetWorldScale();
 
-    // ==================================================================================
-    // Setters (Triggers Dirty Flags)
-    // ==================================================================================
-
     void Translate(const glm::vec3& translation);
     void TranslateLocal(const glm::vec3& translation);
 

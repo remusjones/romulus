@@ -188,6 +188,7 @@ void VulkanGraphicsImpl::Update()
 
 void VulkanGraphicsImpl::Cleanup()
 {
+	SPDLOG_INFO("Destroying VulkanGraphicsImpl");
 	vkDeviceWaitIdle(logicalDevice);
 	DestroyScenes();
 	ShutdownImgui();
@@ -198,7 +199,6 @@ void VulkanGraphicsImpl::Cleanup()
 	DestroySurface();
 	DestroyInstance();
 
-	SPDLOG_INFO("Destroying VulkanGraphicsImpl");
 	ShutdownWindow();
 }
 
