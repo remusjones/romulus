@@ -39,7 +39,7 @@ void RomulusVulkanRenderer::Initialize(const VkDevice& inLogicalDevice,
     CreateCommandPool();
 }
 
-void RomulusVulkanRenderer::Cleanup()
+void RomulusVulkanRenderer::Destroy()
 {
     CleanupOldSyncObjects();
     TracyVkDestroy(tracyContext);
@@ -197,8 +197,6 @@ void RomulusVulkanRenderer::CreateDescriptorPool()
     }
 }
 
-bool semaphoresNeedToBeRecreated = false;
-
 void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 {
     FrameData currentFrameData = frameData[currentFrame];
@@ -238,7 +236,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             swapChain->RecreateSwapChain();
-            semaphoresNeedToBeRecreated = true;
+            flags[c_semaphoresNeedToBeRecreatedFlag] = true;
         }
         else if (result != VK_SUCCESS)
         {
@@ -347,7 +345,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
         DestroyCommandPool();
         CreateCommandPool();
-        semaphoresNeedToBeRecreated = true;
+        flags[c_semaphoresNeedToBeRecreatedFlag] = true;
         flags[c_rebuildBufferFlag] = false;
     }
 
@@ -360,12 +358,13 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
         throw std::runtime_error("failed to present swap chain image!");
     }
 
-    if (semaphoresNeedToBeRecreated)
+    if (flags[c_semaphoresNeedToBeRecreatedFlag])
     {
         CreateSyncObjects();
-        semaphoresNeedToBeRecreated = false;
+        flags[c_semaphoresNeedToBeRecreatedFlag] = false;
     }
 
+    // execute any end-frame tasks here
     while (!endOfFrameTasks.empty())
     {
         auto task = endOfFrameTasks.front();

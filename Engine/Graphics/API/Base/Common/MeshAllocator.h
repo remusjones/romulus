@@ -16,7 +16,7 @@ public:
     Mesh* LoadMesh(const eastl::string_view& inPath);
 
     void ReleaseMesh(const eastl::string_view& inPath);
-    void Cleanup();
+    void Destroy();
 
 private:
     eastl::hash_map<eastl::string_view, eastl::unique_ptr<Mesh>> allocatedMeshMap;

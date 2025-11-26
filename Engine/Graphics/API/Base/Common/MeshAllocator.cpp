@@ -36,7 +36,7 @@ void MeshAllocator::ReleaseMesh(const eastl::string_view& inPath)
     }
 }
 
-void MeshAllocator::Cleanup()
+void MeshAllocator::Destroy()
 {
     for (auto& meshPair : allocatedMeshMap)
     {

@@ -4,7 +4,7 @@
 
 #include "Primative.h"
 
-void Primitive::Cleanup()
+void Primitive::Destroy()
 {
-	SceneObject::Cleanup();
+	SceneObject::Destroy();
 }

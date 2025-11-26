@@ -17,10 +17,10 @@ void MeshObject::Tick(float deltaTime)
 	SceneObject::Tick(deltaTime);
 }
 
-void MeshObject::Cleanup()
+void MeshObject::Destroy()
 {
 	meshRenderer.DestroyRenderer();
-	SceneObject::Cleanup();
+	SceneObject::Destroy();
 }
 
 void MeshObject::CreateObject(

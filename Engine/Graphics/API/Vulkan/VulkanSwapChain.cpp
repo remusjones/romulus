@@ -27,7 +27,7 @@ void VulkanSwapChain::RecreateSwapChain()
 	}
 
 	vkDeviceWaitIdle(logicalDevice);
-	Cleanup();
+	Destroy();
 	CreateSwapChain();
 	CreateImageViews();
 	CreateFrameBuffers();
@@ -190,7 +190,7 @@ void VulkanSwapChain::CreateDepthBufferView()
 	}
 }
 
-void VulkanSwapChain::Cleanup()
+void VulkanSwapChain::Destroy()
 {
 	SPDLOG_INFO("Destroying Frame Buffer");
 	for (const auto& swapChainFrameBuffer : mSwapChainFrameBuffers)

@@ -211,7 +211,7 @@ void SandboxScene::Tick(float deltaTime)
 	activeCamera->Tick(deltaTime);
 }
 
-void SandboxScene::Cleanup()
+void SandboxScene::Destroy()
 {
 
 	for (const auto& renderer : allocatedRenderers)
@@ -230,7 +230,7 @@ void SandboxScene::Cleanup()
 	materialPBRFactory.Destroy();
 	genericMaterialFactory.Destroy();
 
-	Scene::Cleanup();
+	Scene::Destroy();
 }
 
 void SandboxScene::OnDebugGui()

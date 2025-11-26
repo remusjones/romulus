@@ -27,7 +27,7 @@ class MeshObject : public SceneObject
 public:
     void Construct() override;
     void Tick(float deltaTime) override;
-    void Cleanup() override;
+    void Destroy() override;
     void OnDebugGui() override;
     void CreateObject(Material& aMaterial, const eastl::string_view& objectName);
 

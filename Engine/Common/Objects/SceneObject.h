@@ -16,7 +16,7 @@ public:
 	virtual void Construct();
 
 	virtual void Tick(float aDeltaTime);
-	virtual void Cleanup();
+	virtual void Destroy();
 	virtual void AddComponent(eastl::unique_ptr<Component> component);
 	virtual void RemoveComponent(Component* component);
 

@@ -23,7 +23,7 @@ void SceneObject::Tick(const float aDeltaTime)
 	}
 }
 
-void SceneObject::Cleanup()
+void SceneObject::Destroy()
 {
 	// todo: this is strange
 	for (const auto& component : components)

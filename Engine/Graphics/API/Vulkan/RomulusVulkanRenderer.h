@@ -54,7 +54,7 @@ public:
 
 	void CreateSyncObjects();
 	void CreateTracy();
-	void Cleanup();
+	void Destroy();
 
 private:
 	void CleanupOldSyncObjects();
@@ -73,7 +73,9 @@ public:
 private:
 
 	static constexpr uint8_t c_rebuildBufferFlag = 0;
-	eastl::bitset<1> flags;
+	static constexpr uint8_t c_semaphoresNeedToBeRecreatedFlag = 0;
+
+	eastl::bitset<2> flags;
 
 	// Cached Variables for layouts
 	VkDevice logicalDevice                      = nullptr;

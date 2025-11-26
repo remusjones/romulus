@@ -26,7 +26,7 @@ public:
     void CreateDepthBufferView();
     void CreateRenderPass();
 
-    void Cleanup();
+    void Destroy();
 
 
     VkPhysicalDevice physicalDevice;

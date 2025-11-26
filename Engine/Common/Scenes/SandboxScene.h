@@ -30,7 +30,7 @@ public:
 
 	void Tick(float deltaTime) override;
 
-	void Cleanup() override;
+	void Destroy() override;
 
 	void OnDebugGui() override;
 

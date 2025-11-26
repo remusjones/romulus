@@ -34,7 +34,7 @@ void VulkanGraphicsImpl::Run()
 	InitializeWindow();
 	InitializeRenderer();
 	Update();
-	Cleanup();
+	Destroy();
 }
 
 void VulkanGraphicsImpl::InitializeImgui()
@@ -94,7 +94,8 @@ void VulkanGraphicsImpl::ShutdownVulkan() const
 
 void VulkanGraphicsImpl::Update()
 {
-	ZoneScopedN("MainApplicationLoop");
+	//ZoneScopedN("MainApplicationLoop");
+
 	// Start Clock for FPS Monitoring
 	auto startTime = std::chrono::high_resolution_clock::now();
 	auto fpsStartTime = std::chrono::high_resolution_clock::now();
@@ -186,7 +187,7 @@ void VulkanGraphicsImpl::Update()
 	}
 }
 
-void VulkanGraphicsImpl::Cleanup()
+void VulkanGraphicsImpl::Destroy()
 {
 	SPDLOG_INFO("Destroying VulkanGraphicsImpl");
 	vkDeviceWaitIdle(logicalDevice);
@@ -353,7 +354,7 @@ void VulkanGraphicsImpl::CreateScenes()
 
 void VulkanGraphicsImpl::DestroyScenes() const
 {
-	activeScene->Cleanup();
+	activeScene->Destroy();
 }
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline()
@@ -370,8 +371,8 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline()
 
 void VulkanGraphicsImpl::DestroyGraphicsPipeline()
 {
-	vulkanRenderer->Cleanup();
-	swapChain->Cleanup();
+	vulkanRenderer->Destroy();
+	swapChain->Destroy();
 }
 
 bool VulkanGraphicsImpl::CheckValidationLayerSupport() const
@@ -517,7 +518,7 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
 		throw std::runtime_error("failed to find GPUs with Vulkan support");
 	}
 
-	std::vector<VkPhysicalDevice> devices(deviceCount);
+	eastl::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(vulcanInstance, &deviceCount, devices.data());
 
 	for (const auto& device : devices)
@@ -546,9 +547,7 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
 bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const
 {
 	const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
-
 	const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
-
 	bool swapChainAdequate = false;
 
 	if (extensionsSupported)

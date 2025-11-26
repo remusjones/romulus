@@ -334,12 +334,12 @@ void Scene::Tick(const float deltaTime)
 	PROFILE_END();
 }
 
-void Scene::Cleanup()
+void Scene::Destroy()
 {
 	SPDLOG_INFO("Cleaning up scene {}", m_sceneName);
 	for (const auto& obj : sceneObjects)
 	{
-		obj->Cleanup();
+		obj->Destroy();
 	}
 
 	delete activeCamera;
@@ -355,7 +355,7 @@ void Scene::Cleanup()
 	delete sceneInteractionPhysicsSystem;
 	sceneInteractionPhysicsSystem = nullptr;
 
-	meshAllocator->Cleanup();
+	meshAllocator->Destroy();
 }
 
 void Scene::AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory)

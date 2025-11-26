@@ -13,7 +13,7 @@ public:
 	Primitive() = default;
 	Primitive(const eastl::string_view& aEntityName) : renderer(nullptr) { name = aEntityName; }
 
-	void Cleanup() override;
+	void Destroy() override;
 
 	// todo: make a getter, and protect
 	Renderer* renderer;

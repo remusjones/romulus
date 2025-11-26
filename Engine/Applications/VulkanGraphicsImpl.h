@@ -50,7 +50,7 @@ private:
 	void ShutdownWindow() const;
 
 	void Update();
-	void Cleanup();
+	void Destroy();
 
 	void CreateInstance();
 	void DestroyInstance() const;

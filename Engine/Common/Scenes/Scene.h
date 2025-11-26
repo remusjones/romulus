@@ -38,7 +38,7 @@ public:
 
 	virtual void TickPhysics(float deltaTime);
 	virtual void Tick(float deltaTime);
-	virtual void Cleanup();
+	virtual void Destroy();
 	void OnDebugGui() override;
 
 	void AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory);
