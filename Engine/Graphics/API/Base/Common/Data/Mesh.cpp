@@ -14,7 +14,7 @@ Mesh::Mesh() : vertexBuffer(nullptr)
 
 void Mesh::Bind(VkCommandBuffer commandBuffer) const
 {
-	const VkBuffer vertexBuffers[] = {vertexBuffer->verticesBuffer->GetBuffer()};
+	const VkBuffer vertexBuffers[] = { vertexBuffer->verticesBuffer->GetBuffer()};
 	const VkDeviceSize offsets[]   = {0};
 
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -24,7 +24,7 @@ void Mesh::Bind(VkCommandBuffer commandBuffer) const
 
 void Mesh::Destroy()
 {
-	delete vertexBuffer;
+	vertexBuffer->Destroy();
 }
 
 bool Mesh::LoadFromObject(const char* fileName)
@@ -33,7 +33,7 @@ bool Mesh::LoadFromObject(const char* fileName)
 	{
 		CalculateTangents(vertices, indices);
 
-		vertexBuffer = new AllocatedVertexBuffer(vertices, indices);
+		vertexBuffer = eastl::make_unique<AllocatedVertexBuffer>(vertices, indices);
 
 		eastl::string bufferName;
 		bufferName.append(fileName);

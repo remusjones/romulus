@@ -199,7 +199,7 @@ void RomulusVulkanRenderer::CreateDescriptorPool()
 
 void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 {
-    FrameData currentFrameData = frameData[currentFrame];
+    FrameData& currentFrameData = frameData[currentFrame];
     VkCommandBuffer currentCommandBuffer = currentFrameData.commandBuffer;
 
     vkWaitForFences(logicalDevice, 1, &currentFrameData.renderFence, VK_TRUE,

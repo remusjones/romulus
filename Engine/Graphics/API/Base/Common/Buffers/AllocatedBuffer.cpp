@@ -50,14 +50,14 @@ bool AllocatedBuffer::IsAllocated() const
 void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags aUsage)
 {
 	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size               = aSize;
-	bufferInfo.usage              = aUsage;
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = aSize;
+	bufferInfo.usage = aUsage;
 
 	VmaAllocationCreateInfo vmaallocInfo = {};
-	vmaallocInfo.usage                   = VMA_MEMORY_USAGE_AUTO;
-	vmaallocInfo.flags                   = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-		VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	vmaallocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+	vmaallocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+	                     VMA_ALLOCATION_CREATE_MAPPED_BIT;
 	if (const VkResult result = vmaCreateBuffer(gGraphics->allocator, &bufferInfo, &vmaallocInfo,
 	                                            &mBuffer,
 	                                            &allocation, nullptr); result != VK_SUCCESS)
@@ -69,7 +69,13 @@ void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags 
 
 void AllocatedBuffer::Destroy()
 {
+	if (mBuffer == VK_NULL_HANDLE && allocation == nullptr)
+	{
+		return;
+	}
+
 	vmaDestroyBuffer(gGraphics->allocator, mBuffer, allocation);
-	mBuffer     = nullptr;
+
+	mBuffer = VK_NULL_HANDLE;
 	allocation = nullptr;
 }

@@ -85,6 +85,7 @@ void VulkanGraphicsImpl::ShutdownImgui() const
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplSDL3_Shutdown();
 	vkDestroyDescriptorPool(logicalDevice, imguiDescriptionPool, nullptr);
+	ImGui::DestroyContext();
 }
 
 void VulkanGraphicsImpl::ShutdownVulkan() const
@@ -94,8 +95,6 @@ void VulkanGraphicsImpl::ShutdownVulkan() const
 
 void VulkanGraphicsImpl::Update()
 {
-	//ZoneScopedN("MainApplicationLoop");
-
 	// Start Clock for FPS Monitoring
 	auto startTime = std::chrono::high_resolution_clock::now();
 	auto fpsStartTime = std::chrono::high_resolution_clock::now();
@@ -112,7 +111,7 @@ void VulkanGraphicsImpl::Update()
 	// main loop
 	while (!bQuitting)
 	{
-		FrameMark;
+		ZoneScopedN("MainApplicationLoop");
 		while (SDL_PollEvent(&event))
 		{
 			ImGui_ImplSDL3_ProcessEvent(&event);
@@ -128,6 +127,7 @@ void VulkanGraphicsImpl::Update()
 				gGraphics->vulkanRenderer->QueueFrameBufferRebuild();
 			}
 		}
+
 		if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED))
 		{
 			ImGui_ImplVulkan_NewFrame();
@@ -184,13 +184,19 @@ void VulkanGraphicsImpl::Update()
 			fpsStartTime = currentTime;
 		}
 		startTime = currentTime;
+		FrameMark;
 	}
 }
 
 void VulkanGraphicsImpl::Destroy()
 {
 	SPDLOG_INFO("Destroying VulkanGraphicsImpl");
-	vkDeviceWaitIdle(logicalDevice);
+
+	if (logicalDevice != nullptr)
+	{
+		vkDeviceWaitIdle(logicalDevice);
+	}
+
 	DestroyScenes();
 	ShutdownImgui();
 	DestroyGraphicsPipeline();
@@ -199,7 +205,6 @@ void VulkanGraphicsImpl::Destroy()
 	DestroyDebugMessenger();
 	DestroySurface();
 	DestroyInstance();
-
 	ShutdownWindow();
 }
 
@@ -274,7 +279,7 @@ void VulkanGraphicsImpl::ShutdownWindow() const
 
 void VulkanGraphicsImpl::CreateInstance()
 {
-	vulkanRenderer = new RomulusVulkanRenderer();
+	vulkanRenderer = eastl::make_unique<RomulusVulkanRenderer>();
 	SPDLOG_INFO("Creating Vulkan Instance");
 
 	if (enableValidationLayers && !CheckValidationLayerSupport())
@@ -326,10 +331,9 @@ void VulkanGraphicsImpl::CreateInstance()
 	}
 }
 
-void VulkanGraphicsImpl::DestroyInstance() const
+void VulkanGraphicsImpl::DestroyInstance()
 {
 	vkDestroyInstance(vulcanInstance, nullptr);
-	delete vulkanRenderer;
 }
 
 void VulkanGraphicsImpl::CreateSurface()
@@ -352,9 +356,10 @@ void VulkanGraphicsImpl::CreateScenes()
 	activeScene->Construct();
 }
 
-void VulkanGraphicsImpl::DestroyScenes() const
+void VulkanGraphicsImpl::DestroyScenes()
 {
 	activeScene->Destroy();
+	activeScene.reset();
 }
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline()
@@ -373,6 +378,9 @@ void VulkanGraphicsImpl::DestroyGraphicsPipeline()
 {
 	vulkanRenderer->Destroy();
 	swapChain->Destroy();
+
+	swapChain.reset();
+	vulkanRenderer.reset();
 }
 
 bool VulkanGraphicsImpl::CheckValidationLayerSupport() const

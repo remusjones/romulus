@@ -38,6 +38,7 @@ bool PrimitiveMesh::LoadFromObject(const char* filename)
 
 PrimitiveMesh::~PrimitiveMesh()
 {
+	// todo: move to explicit destroy function instead
 	if (verticesBuffer)
 	{
 		verticesBuffer->Destroy();

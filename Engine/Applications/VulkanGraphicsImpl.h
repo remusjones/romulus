@@ -53,7 +53,7 @@ private:
 	void Destroy();
 
 	void CreateInstance();
-	void DestroyInstance() const;
+	void DestroyInstance();
 
 	void CreateDebugMessenger();
 	void DestroyDebugMessenger();
@@ -68,7 +68,7 @@ private:
 	void DestroyGraphicsPipeline();
 
 	void CreateScenes();
-	void DestroyScenes() const;
+	void DestroyScenes();
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -103,9 +103,10 @@ public:
 	eastl::unique_ptr<Editor> romulusEditor;
 	eastl::unique_ptr<Scene> activeScene;
 	eastl::unique_ptr<DebugManager> debugManager;
+	eastl::unique_ptr<RomulusVulkanRenderer> vulkanRenderer;
+
 
 	SDL_Window* window = nullptr; // TODO: Move to interface
-	RomulusVulkanRenderer* vulkanRenderer = nullptr;
 	InputSystem inputManager;
 
 private:

@@ -5,8 +5,8 @@
 #pragma once
 #include <vector>
 #include "Vertex.h"
-
-class AllocatedVertexBuffer;
+#include "Base/Common/Buffers/AllocatedVertexBuffer.h"
+#include "EASTL/unique_ptr.h"
 
 class Mesh
 {
@@ -28,6 +28,5 @@ private:
 	std::vector<Vertex> vertices;
 	std::vector<int32_t> indices;
 
-	// todo: this needs to be allocated in a collection
-	AllocatedVertexBuffer* vertexBuffer;
+	eastl::unique_ptr<AllocatedVertexBuffer> vertexBuffer;
 };

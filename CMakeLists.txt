@@ -59,7 +59,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 
-# Add static libc++ options only for GNU toolchains (e.g., MinGW)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_options(${PROJECT_NAME} PRIVATE
             "-static-libgcc"
