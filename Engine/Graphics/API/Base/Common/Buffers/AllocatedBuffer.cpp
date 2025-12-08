@@ -11,7 +11,6 @@ AllocatedBuffer::AllocatedBuffer(const void* inData, const VkDeviceSize inBuffer
 {
 	void* data;
 	Create(inBufferSize, inUsageFlags);
-	//copy vertex data
 	vmaMapMemory(gGraphics->allocator, allocation, &data);
 	memcpy(data, inData, inBufferSize);
 	vmaUnmapMemory(gGraphics->allocator, allocation);
@@ -69,13 +68,20 @@ void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags 
 
 void AllocatedBuffer::Destroy()
 {
-	if (mBuffer == VK_NULL_HANDLE && allocation == nullptr)
-	{
-		return;
-	}
+    if (mBuffer == VK_NULL_HANDLE && allocation == nullptr)
+    {
+        return;
+    }
 
-	vmaDestroyBuffer(gGraphics->allocator, mBuffer, allocation);
+    if (gGraphics->allocator)
+    {
+        vmaDestroyBuffer(gGraphics->allocator, mBuffer, allocation);
+    }
+    else
+    {
+        SPDLOG_ERROR("AllocatedBuffer::Destroy skipped vmaDestroyBuffer because gGraphics->allocator is null");
+    }
 
-	mBuffer = VK_NULL_HANDLE;
-	allocation = nullptr;
+    mBuffer = VK_NULL_HANDLE;
+    allocation = nullptr;
 }

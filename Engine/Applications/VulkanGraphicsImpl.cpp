@@ -22,7 +22,6 @@
 #include <Scenes/SandboxScene.h>
 #include <Vulkan/Common/MeshObject.h>
 
-#include "Profiler.h"
 #include "spdlog/spdlog.h"
 #include "tracy/Tracy.hpp"
 #include "tracy/TracyVulkan.hpp"
@@ -137,32 +136,38 @@ void VulkanGraphicsImpl::Update()
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(),
 			                             ImGuiDockNodeFlags_PassthruCentralNode);
 
+			{
+				ZoneScopedN("InputSystem::Update");
+				gInputSystem->Update();
+			}
 
-			PROFILE_BEGIN("Input Manager Update");
-			gInputSystem->Update();
-			PROFILE_END();
 
-			PROFILE_BEGIN("Scene Physics");
-			activeScene->TickPhysics(deltaTime);
-			PROFILE_END();
+			{
+				ZoneScopedN("Scene::TickPhysics");
+				activeScene->TickPhysics(deltaTime);
+			}
 
-			PROFILE_BEGIN("Scene Tick");
-			activeScene->Tick(deltaTime);
-			PROFILE_END();
+			{
+				ZoneScopedN("Scene::Tick()");
+				activeScene->Tick(deltaTime);
+			}
 
 #if DEBUG_RENDER
-			PROFILE_BEGIN("Debug Render");
-			debugManager->DrawImGui();
-			PROFILE_END();
+			{
+				ZoneScopedN("DebugManager::DrawImGui");
+				debugManager->DrawImGui();
+			}
 #endif
 
-			PROFILE_BEGIN("ImGui Render");
-			ImGui::Render();
-			PROFILE_END();
+			{
+				ZoneScopedN("ImGui::Render");
+				ImGui::Render();
+			}
 
-			PROFILE_BEGIN("Scene Draw");
-			vulkanRenderer->DrawFrame(*activeScene);
-			PROFILE_END();
+			{
+				ZoneScopedN("RomulasVulkanRenderer::DrawFrame");
+				vulkanRenderer->DrawFrame(*activeScene);
+			}
 
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
@@ -351,9 +356,19 @@ void VulkanGraphicsImpl::DestroySurface() const
 
 void VulkanGraphicsImpl::CreateScenes()
 {
+
+	ZoneScopedN("VulkanGraphicsImpl::CreateScenes");
+
 	activeScene = eastl::make_unique<SandboxScene>(debugManager.get());
-	activeScene->PreConstruct("Sandbox Scene");
-	activeScene->Construct();
+
+	{
+		ZoneScopedN("Scene::PreConstruct");
+		activeScene->PreConstruct("Sandbox Scene");
+	}
+	{
+		ZoneScopedN("Scene::Construct");
+		activeScene->Construct();
+	}
 }
 
 void VulkanGraphicsImpl::DestroyScenes()
@@ -554,19 +569,21 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
 
 bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const
 {
-	const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
-	const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
-	bool swapChainAdequate = false;
+	//const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
+	//const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
+	//bool swapChainAdequate = false;
+//
+	//if (extensionsSupported)
+	//{
+	//	const SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
+	//		aPhysicalDevice);
+	//	swapChainAdequate = !swapChainSupport.mFormats.empty() && !
+	//	                    swapChainSupport.mPresentModes.empty();
+	//}
+//
+	//return indices.IsComplete() && extensionsSupported && swapChainAdequate;
 
-	if (extensionsSupported)
-	{
-		const SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
-			aPhysicalDevice);
-		swapChainAdequate = !swapChainSupport.mFormats.empty() && !
-		                    swapChainSupport.mPresentModes.empty();
-	}
-
-	return indices.IsComplete() && extensionsSupported && swapChainAdequate;
+	return true;
 }
 
 VkSurfaceFormatKHR VulkanGraphicsImpl::ChooseSwapSurfaceFormat(
@@ -626,7 +643,7 @@ bool VulkanGraphicsImpl::CheckDeviceExtensionSupport(
 	vkEnumerateDeviceExtensionProperties(aPhysicalDevice, nullptr,
 	                                     &extensionCount, nullptr);
 
-	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	eastl::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(aPhysicalDevice, nullptr,
 	                                     &extensionCount,
 	                                     availableExtensions.data());

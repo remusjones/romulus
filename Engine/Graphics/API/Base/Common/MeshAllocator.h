@@ -19,5 +19,6 @@ public:
     void Destroy();
 
 private:
+    // todo should probably ref count these to know when its safe to dealloc
     eastl::hash_map<size_t, eastl::unique_ptr<Mesh>> allocatedMeshMap;
 };

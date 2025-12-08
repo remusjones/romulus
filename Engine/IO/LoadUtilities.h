@@ -40,6 +40,6 @@ public:
 	static bool CreateImage(int aWidth, int aHeight, VulkanGraphics* aEngine, AllocatedImage& aResult,
 	                        Color_RGBA aColor);
 	static bool LoadMeshFromDisk(const char* filePath,
-	                             std::vector<Vertex>& resultVertices,
-	                             std::vector<int32_t>& resultIndices);
+	                             eastl::vector<Vertex>& resultVertices,
+	                             eastl::vector<int32_t>& resultIndices);
 };

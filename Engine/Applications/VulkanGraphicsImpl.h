@@ -4,20 +4,20 @@
 //
 #pragma once
 #include <memory>
-#include <vector>
 #include <SDL3/SDL_video.h>
 
 #include <Types/DequeBuffer.h>
 #include "IApplication.h"
+
 #include "InputSystem.h"
 #include "EASTL/unique_ptr.h"
 #include "EASTL/vector.h"
 #include "Objects/Editor.h"
 #include "Vulkan/RomulusVulkanRenderer.h"
 #include "Vulkan/VulkanSystemStructs.h"
+#include "Scenes/Scene.h"
 
 class Editor;
-class Scene;
 class VulkanSwapChain;
 class MeshObject;
 

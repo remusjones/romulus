@@ -12,7 +12,7 @@ class AllocatedVertexBuffer
 {
 public:
 	AllocatedVertexBuffer() = default;
-	AllocatedVertexBuffer(const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
+	AllocatedVertexBuffer(const eastl::vector<Vertex>& vertices, const eastl::vector<Index>& indices);
 
 	void Destroy();
 

@@ -7,8 +7,8 @@
 #include "AllocatedBuffer.h"
 #include "Base/Common/Data/Vertex.h"
 
-AllocatedVertexBuffer::AllocatedVertexBuffer(const std::vector<Vertex>& vertices,
-                                             const std::vector<Index>& indices)
+AllocatedVertexBuffer::AllocatedVertexBuffer(const eastl::vector<Vertex>& vertices,
+                                             const eastl::vector<Index>& indices)
 {
 	verticesBuffer = eastl::make_unique<AllocatedBuffer>(vertices.data(),
 	                                      sizeof(Vertex) * vertices.size(),
@@ -23,10 +23,15 @@ AllocatedVertexBuffer::AllocatedVertexBuffer(const std::vector<Vertex>& vertices
 
 void AllocatedVertexBuffer::Destroy()
 {
+    if (verticesBuffer)
+    {
+        verticesBuffer->Destroy();
+        verticesBuffer.reset();
+    }
 
-	verticesBuffer->Destroy();
-	verticesBuffer.reset();
-
-	indicesBuffer->Destroy();
-	verticesBuffer.reset();
+    if (indicesBuffer)
+    {
+        indicesBuffer->Destroy();
+        indicesBuffer.reset();
+    }
 }

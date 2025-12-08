@@ -434,8 +434,8 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
 }
 
 
-bool LoadUtilities::LoadMeshFromDisk(const char* filePath, std::vector<Vertex>& resultVertices,
-                                     std::vector<int32_t>& resultIndices)
+bool LoadUtilities::LoadMeshFromDisk(const char* filePath, eastl::vector<Vertex>& resultVertices,
+                                     eastl::vector<int32_t>& resultIndices)
 {
 	// todo: can't use eastl here due to tinyobj not supporting it
 

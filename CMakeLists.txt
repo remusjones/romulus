@@ -30,6 +30,8 @@ add_subdirectory(Assets)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         GLM_ENABLE_EXPERIMENTAL
+        TRACY_ENABLE=1
+        TRACY_MEMORY_ENABLE=1
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
