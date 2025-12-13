@@ -252,21 +252,20 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = gGraphics->swapChain->renderPass;
-        renderPassInfo.framebuffer = gGraphics->swapChain->mSwapChainFrameBuffers[
-            imageIndex];
+        renderPassInfo.renderPass = gGraphics->GetRenderPass();
+        renderPassInfo.framebuffer = gGraphics->GetFrameBuffer(imageIndex);
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = gGraphics->swapChain->swapChainExtents;
+        renderPassInfo.renderArea.extent = gGraphics->GetWindowExtents();
         renderPassInfo.clearValueCount = 2;
         renderPassInfo.pClearValues = &clearValues[0];
 
 
         VkViewport viewport{};
         viewport.x = 0.0f;
-        viewport.width = static_cast<float>(gGraphics->swapChain->swapChainExtents.width);
+        viewport.width = renderPassInfo.renderArea.extent.width;
 
-        viewport.y = static_cast<float>(gGraphics->swapChain->swapChainExtents.height);
-        viewport.height = -static_cast<float>(gGraphics->swapChain->swapChainExtents.height);
+        viewport.y = renderPassInfo.renderArea.extent.height;
+        viewport.height = -renderPassInfo.renderArea.extent.height;
 
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
@@ -274,7 +273,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
         VkRect2D scissor{};
         scissor.offset = {0, 0};
-        scissor.extent = gGraphics->swapChain->swapChainExtents;
+        scissor.extent = renderPassInfo.renderArea.extent;
         vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
 
 

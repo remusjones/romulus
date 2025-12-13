@@ -28,7 +28,7 @@ void WireframeRenderSystem::CreatePipeline()
     assert(pipelineLayout != nullptr);
 
     GraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
-    pipelineConfig.renderPass = gGraphics->swapChain->renderPass;
+    pipelineConfig.renderPass = gGraphics->GetRenderPass();
     pipelineConfig.pipelineLayout = pipelineLayout;
     pipelineConfig.subpass = static_cast<uint32_t>(GraphicsPipeline::SubPasses::SUBPASS_GEOMETRY);
     pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;

@@ -50,7 +50,7 @@ void GraphicsPipeline::Create()
 
         pipelineConfig.depthStencilInfo = VulkanInitialization::DepthStencilCreateInfo(true, true,
             VK_COMPARE_OP_LESS_OR_EQUAL);
-        pipelineConfig.renderPass = gGraphics->swapChain->renderPass;
+        pipelineConfig.renderPass = gGraphics->GetRenderPass();
     }
 
     // Vertex Information

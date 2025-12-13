@@ -16,8 +16,8 @@ glm::mat4 Camera::GetPerspectiveMatrix()
 	const glm::mat4 perspective =
 		glm::perspective(glm::radians(fov),
 		                 static_cast<float>(
-		                 	gGraphics->swapChain->swapChainExtents.width) /
-		                 	static_cast<float>(gGraphics->swapChain->swapChainExtents.height), zNear, zFar);
+		                 	gGraphics->GetWindowsWidth()) /
+		                 	static_cast<float>(gGraphics->GetWindowsHeight()), zNear, zFar);
 
 	return perspective;
 }
@@ -35,8 +35,8 @@ glm::mat4 Camera::GetViewMatrix()
 
 Ray Camera::GetRayTo(const int x, const int y)
 {
-	const float width  = gGraphics->swapChain->swapChainExtents.width;
-	const float height = gGraphics->swapChain->swapChainExtents.height;
+	const float width  = gGraphics->GetWindowsWidth();
+	const float height = gGraphics->GetWindowsHeight();
 
 	const float normalizedPointX = x / (width * 0.5f) - 1.0f;
 	const float normalizedPointY = y / (height * 0.5f) - 1.0f;

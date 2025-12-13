@@ -29,10 +29,6 @@ class VulkanGraphicsImpl final : public IApplication
 public:
 	VulkanGraphicsImpl(const char* inWindowTitle, int inWindowWidth, int inWindowHeight);
 
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const eastl::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR ChooseSwapPresentMode(const eastl::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
-
 	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device) const;
 	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device) const;
 	QueueFamilyIndices GetQueueFamilyIndices() const { return familyIndices; }
@@ -40,17 +36,22 @@ public:
 	void Run() override;
 	float DeltaTimeUnscaled() const { return deltaTime; }
 	float GetFps() const { return fps; }
+
+
+	// swapchain helpers
+	VkExtent2D GetWindowExtents() const { return swapChain->swapChainExtents; }
+	uint32_t GetWindowsWidth() const { return swapChain->swapChainExtents.width; }
+	uint32_t GetWindowsHeight() const { return swapChain->swapChainExtents.height; }
+	VkRenderPass GetRenderPass() const { return swapChain->renderPass; }
+	VkFramebuffer GetFrameBuffer(size_t imageIndex) const { return swapChain->mSwapChainFrameBuffers[imageIndex]; }
+
+
 	DequeBuffer<float>& GetFpsHistory() { return fpsCircularBuffer; }
 
 private:
-	void InitializeImgui();
 
-	void ShutdownImgui() const;
+	// Vulkan
 	void ShutdownVulkan() const;
-	void ShutdownWindow() const;
-
-	void Update();
-	void Destroy();
 
 	void CreateInstance();
 	void DestroyInstance() const;
@@ -61,11 +62,19 @@ private:
 	void CreateLogicalDevice();
 	void DestroyLogicalDevice() const;
 
+	void CreateGraphicsPipeline();
+	void DestroyGraphicsPipeline();
+
 	void CreateSurface();
 	void DestroySurface() const;
 
-	void CreateGraphicsPipeline();
-	void DestroyGraphicsPipeline();
+	void InitializeImgui();
+	void ShutdownImgui() const;
+
+	void Update();
+	void Destroy();
+
+	void DestroyWindow() const;
 
 	void CreateScenes();
 	void DestroyScenes() const;
@@ -93,7 +102,6 @@ private:
 
 public:
 	// todo: evaluate these external usages, and make getters
-	eastl::unique_ptr<VulkanSwapChain> swapChain;
 	VkInstance vulcanInstance = VK_NULL_HANDLE;
 	VkDevice logicalDevice{};
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -109,6 +117,7 @@ public:
 	InputSystem inputManager;
 
 private:
+	eastl::unique_ptr<VulkanSwapChain> swapChain;
 	QueueFamilyIndices familyIndices;
 
 	// TODO: Move these to IApplication
@@ -150,6 +159,7 @@ private:
 	const bool enableValidationLayers = true;
 #endif
 };
+
 
 typedef VulkanGraphicsImpl VulkanGraphics;
 extern VulkanGraphics* gGraphics;

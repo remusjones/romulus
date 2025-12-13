@@ -200,7 +200,7 @@ void VulkanGraphicsImpl::Destroy()
 	DestroySurface();
 	DestroyInstance();
 
-	ShutdownWindow();
+	DestroyWindow();
 }
 
 VulkanGraphicsImpl::VulkanGraphicsImpl(const char* inWindowTitle,
@@ -264,7 +264,7 @@ void VulkanGraphicsImpl::InitializeWindow()
 	);
 }
 
-void VulkanGraphicsImpl::ShutdownWindow() const
+void VulkanGraphicsImpl::DestroyWindow() const
 {
 	if (window != nullptr)
 	{
@@ -561,55 +561,6 @@ bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) cons
 	return indices.IsComplete() && extensionsSupported && swapChainAdequate;
 }
 
-VkSurfaceFormatKHR VulkanGraphicsImpl::ChooseSwapSurfaceFormat(
-	const eastl::vector<VkSurfaceFormatKHR>& availableFormats)
-{
-	for (const auto& availableFormat : availableFormats)
-	{
-		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat
-		    .colorSpace ==
-		    VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-		{
-			return availableFormat;
-		}
-	}
-
-	return availableFormats[0];
-}
-
-VkPresentModeKHR VulkanGraphicsImpl::ChooseSwapPresentMode(
-	const eastl::vector<VkPresentModeKHR>& availablePresentModes)
-{
-	for (const auto& availablePresentMode : availablePresentModes)
-	{
-		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-		{
-			return availablePresentMode;
-		}
-	}
-
-	return VK_PRESENT_MODE_FIFO_KHR;
-}
-
-VkExtent2D VulkanGraphicsImpl::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const
-{
-	int width;
-	int height;
-	SDL_GetWindowSize(window, &width, &height);
-	VkExtent2D actualExtent = {
-		static_cast<uint32_t>(width),
-		static_cast<uint32_t>(height)
-	};
-
-	actualExtent.width = std::clamp(actualExtent.width,
-	                                capabilities.minImageExtent.width,
-	                                capabilities.maxImageExtent.width);
-	actualExtent.height = std::clamp(actualExtent.height,
-	                                 capabilities.minImageExtent.height,
-	                                 capabilities.maxImageExtent.height);
-
-	return actualExtent;
-}
 
 bool VulkanGraphicsImpl::CheckDeviceExtensionSupport(
 	VkPhysicalDevice aPhysicalDevice) const

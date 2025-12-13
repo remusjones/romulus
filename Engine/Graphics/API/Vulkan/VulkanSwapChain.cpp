@@ -38,12 +38,9 @@ void VulkanSwapChain::CreateSwapChain()
 	const SwapChainSupportDetails swapChainSupport = application->
 			QuerySwapChainSupport(physicalDevice);
 
-	const VkSurfaceFormatKHR surfaceFormat = application->ChooseSwapSurfaceFormat(
-		swapChainSupport.mFormats);
-	const VkPresentModeKHR presentMode = application->ChooseSwapPresentMode(
-		swapChainSupport.mPresentModes);
-	const VkExtent2D extent = application->ChooseSwapExtent(
-		swapChainSupport.mCapabilities);
+	const VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.mFormats);
+	const VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.mPresentModes);
+	const VkExtent2D extent = ChooseSwapExtent(swapChainSupport.mCapabilities);
 
 	uint32_t imageCount = swapChainSupport.mCapabilities.minImageCount + 1;
 
@@ -315,3 +312,53 @@ void VulkanSwapChain::Initialize(const VkDevice& inLogicalDevice,
 	SPDLOG_DEBUG("Creating RenderPass");
 	CreateRenderPass();
 }
+
+VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const eastl::vector<VkSurfaceFormatKHR>& availableFormats)
+{
+	for (const auto& availableFormat : availableFormats)
+	{
+		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat
+			.colorSpace ==
+			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+		{
+			return availableFormat;
+		}
+	}
+
+	return availableFormats[0];
+}
+
+VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(
+	const eastl::vector<VkPresentModeKHR>& availablePresentModes)
+{
+	for (const auto& availablePresentMode : availablePresentModes)
+	{
+		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+		{
+			return availablePresentMode;
+		}
+	}
+
+	return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const
+{
+	int width;
+	int height;
+	SDL_GetWindowSize(application->window, &width, &height);
+	VkExtent2D actualExtent = {
+		static_cast<uint32_t>(width),
+		static_cast<uint32_t>(height)
+	};
+
+	actualExtent.width = std::clamp(actualExtent.width,
+									capabilities.minImageExtent.width,
+									capabilities.maxImageExtent.width);
+	actualExtent.height = std::clamp(actualExtent.height,
+									 capabilities.minImageExtent.height,
+									 capabilities.maxImageExtent.height);
+
+	return actualExtent;
+}
+

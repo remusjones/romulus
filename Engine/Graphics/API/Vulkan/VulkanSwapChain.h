@@ -6,6 +6,8 @@
 #include <Base/Common/Buffers/AllocatedImage.h>
 #include <vulkan/vulkan_core.h>
 
+#include "EASTL/vector.h"
+
 class VulkanGraphicsImpl;
 
 class VulkanSwapChain {
@@ -16,12 +18,14 @@ public:
                     const VkRenderPass &inRenderPass,
                     VulkanGraphicsImpl& inWindow);
 
+	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const eastl::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR ChooseSwapPresentMode(const eastl::vector<VkPresentModeKHR>& availablePresentModes);
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
+
     void RecreateSwapChain();
 
     void CreateSwapChain();
-
     void CreateFrameBuffers();
-
     void CreateImageViews();
     void CreateDepthBufferView();
     void CreateRenderPass();
