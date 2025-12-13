@@ -64,5 +64,7 @@ public:
 
 	Transform transform;
 	eastl::string_view name;
+
+	// todo: components here isn't very cache coherent, store in a component pool
 	eastl::hash_map<eastl::string_view, eastl::unique_ptr<Component>> components;
 };

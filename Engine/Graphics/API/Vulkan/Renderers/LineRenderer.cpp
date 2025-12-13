@@ -12,7 +12,7 @@
 
 void LineRenderer::SetLinePositions(const eastl::vector<glm::vec3>& aPositions, LineRenderMode aMode)
 {
-    const glm::vec3 color = Color::White().RGB();
+    const glm::vec3 color = Color::White();
 
     mLineRenderMode = aMode;
 
@@ -51,7 +51,7 @@ void LineRenderer::SetLinePositions(const eastl::vector<glm::vec3>& aPositions, 
     {
         for (int i = 0; i < aPositions.size(); i++)
         {
-            mLinePositions[i] = {aPositions[i], {}, aColors[i].RGB()};
+            mLinePositions[i] = {aPositions[i], {}, aColors[i]};
         }
         return;
     }
@@ -59,7 +59,7 @@ void LineRenderer::SetLinePositions(const eastl::vector<glm::vec3>& aPositions, 
     mLinePositions = eastl::vector<Vertex>(aPositions.size());
     for (int i = 0; i < aPositions.size(); i++)
     {
-        mLinePositions[i] = {aPositions[i], {}, aColors[i].RGB()};
+        mLinePositions[i] = {aPositions[i], {}, aColors[i]};
     }
 
     if (mAllocatedPositions)
@@ -78,13 +78,13 @@ void LineRenderer::DrawLine(const glm::vec3& aStart, const glm::vec3& aEnd, cons
 {
     mTemporaryLines.reserve(2);
 
-    Vertex start = {aStart, {}, aColor.RGB()};
-    Vertex end = {aEnd, {}, aColor.RGB()};
+    Vertex start = {aStart, {}, aColor};
+    Vertex end = {aEnd, {}, aColor};
 
     mTemporaryLines.emplace_back(start);
     mTemporaryLines.emplace_back(end);
 
-    // Permanantly reallocate size of buffer
+    // Permanently reallocate size of buffer
     if (mTemporaryLines.size() > currentAllocationCount)
     {
         currentAllocationCount = mTemporaryLines.size();
@@ -109,14 +109,18 @@ void LineRenderer::DestroyRenderer()
     if (mAllocatedPositions)
     {
         mAllocatedPositions->Destroy();
+
         delete mAllocatedPositions;
     }
+
     if (mTemporaryAllocatedPositions)
     {
         if (mTemporaryAllocatedPositions)
             mTemporaryAllocatedPositions->Destroy();
+
         delete mTemporaryAllocatedPositions;
     }
+
 }
 
 void LineRenderer::BindRenderer(GraphicsPipeline& aBoundGraphicsPipeline)

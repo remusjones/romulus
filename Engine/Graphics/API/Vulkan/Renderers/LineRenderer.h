@@ -9,7 +9,7 @@
 #include "EASTL/vector.h"
 
 class Transform;
-class Color;
+struct Color;
 /*
  * Draws line(s) between "positions"
  */

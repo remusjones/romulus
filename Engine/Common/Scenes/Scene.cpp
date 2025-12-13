@@ -439,7 +439,7 @@ Texture* Scene::CreateTexture(const eastl::string_view& aName, const eastl::vect
 #define DEBUG_RENDER 1
 SceneObject& Scene::MakeEntity()
 {
-	auto& newObject = *sceneObjects.emplace_back(eastl::make_unique<SceneObject>());
+	SceneObject& newObject = *sceneObjects.emplace_back(eastl::make_unique<SceneObject>());
 #if DEBUG_RENDER
 	debugRegistry->Register(&newObject);
 #endif
