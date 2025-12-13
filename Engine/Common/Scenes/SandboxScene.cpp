@@ -138,7 +138,7 @@ void SandboxScene::Construct()
 	//
 	// Scene Camera
 	//
-	activeCamera = new FlyCamera();
+	activeCamera = eastl::make_unique<FlyCamera>();
 	activeCamera->Construct();
 	activeCamera->transform.SetLocalPosition({0, 0, -5.0f});
 
@@ -178,6 +178,7 @@ float deltaAccumulated;
 
 void SandboxScene::Tick(float deltaTime)
 {
+
 	deltaAccumulated += deltaTime / 5;
 	light->GetRenderer().GetMaterial(0)->materialProperties.color =
 			glm::vec4(sceneData.color.x, sceneData.color.y, sceneData.color.z, 1);
@@ -188,7 +189,6 @@ void SandboxScene::Tick(float deltaTime)
 	sceneData.viewProjectionMatrix = activeCamera->GetPerspectiveMatrix();
 
 	monkey->transform.RotateLocal(glm::vec3(0.0f, 1, 0), deltaTime / 5);
-	Scene::Tick(deltaTime);
 
 
 	lineRenderer->SetLinePositions({
@@ -203,12 +203,10 @@ void SandboxScene::Tick(float deltaTime)
 		                               Color::Yellow()
 	                               });
 
-	//lineRenderer->DrawLine(
-	//	floor->transform.GetWorldPosition(),
-	//	monkey->transform.GetWorldPosition(),
-	//	Color::Magenta());
 
 	activeCamera->Tick(deltaTime);
+
+	Scene::Tick(deltaTime);
 }
 
 void SandboxScene::Destroy()

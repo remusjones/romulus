@@ -6,9 +6,9 @@
 #pragma once
 #include "Data/Mesh.h"
 #include "EASTL/hash_map.h"
+#include "EASTL/string.h"
 #include "EASTL/string_view.h"
 #include "EASTL/unique_ptr.h"
-
 
 class MeshAllocator
 {
@@ -19,5 +19,6 @@ public:
     void Destroy();
 
 private:
-    eastl::hash_map<eastl::string_view, eastl::unique_ptr<Mesh>> allocatedMeshMap;
+    // todo should probably ref count these to know when its safe to dealloc
+    eastl::hash_map<size_t, eastl::unique_ptr<Mesh>> allocatedMeshMap;
 };

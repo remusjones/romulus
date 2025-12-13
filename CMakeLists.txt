@@ -30,6 +30,8 @@ add_subdirectory(Assets)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         GLM_ENABLE_EXPERIMENTAL
+        TRACY_ENABLE=1
+        TRACY_MEMORY_ENABLE=1
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -59,7 +61,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 
-# Add static libc++ options only for GNU toolchains (e.g., MinGW)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_options(${PROJECT_NAME} PRIVATE
             "-static-libgcc"

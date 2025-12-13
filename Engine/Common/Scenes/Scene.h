@@ -48,9 +48,9 @@ public:
 	                         const eastl::string_view& inPath,
 	                         Material& inMaterial,
 	                         GraphicsPipeline& inPipeline,
-	                         const glm::vec3& aPos = glm::vec3(0),
-	                         const glm::vec3& aRot = glm::vec3(0),
-	                         const glm::vec3& aScale = glm::vec3(1)
+	                         const glm::vec3& inPos = glm::vec3(0),
+	                         const glm::vec3& inRot = glm::vec3(0),
+	                         const glm::vec3& inScale = glm::vec3(1)
 	);
 
 	// todo: inconsistent pointer semantics here with & or *
@@ -88,8 +88,8 @@ public:
 	eastl::vector<GraphicsPipelineFactory*> renderPipelines;
 	GPUSceneData sceneData;
 
-	PhysicsSystem* physicsSystem;
-	FlyCamera* activeCamera;
+	eastl::unique_ptr<PhysicsSystem> physicsSystem;
+	eastl::unique_ptr<FlyCamera> activeCamera;
 
 	// TODO: Make unique ptr
 	eastl::string_view m_sceneName;
@@ -105,7 +105,7 @@ private:
 	IDebugRegistry* debugRegistry;
 	// TODO: Make unique ptr
 	// todo: we don't really have a need for this!
-	PhysicsSystem* sceneInteractionPhysicsSystem = nullptr;
+	eastl::unique_ptr<PhysicsSystem> sceneInteractionPhysicsSystem;
 	SceneObject* pickedEntity{nullptr};
 	int mouseX{0}, mouseY{0};
 };

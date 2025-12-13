@@ -82,7 +82,7 @@ private:
 	VkPhysicalDevice physicalDevice             = nullptr;
 	VkPhysicalDeviceProperties deviceProperties = {};
 
-	std::vector<FrameData> frameData;
+	eastl::vector<FrameData> frameData;
 	tracy::VkCtx* tracyContext;
 
 	eastl::vector<VkFence> inFlightFencesToDestroy;

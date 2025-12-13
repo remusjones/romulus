@@ -13,7 +13,6 @@
 #include <FileManagement.h>
 #include <VulkanGraphicsImpl.h>
 
-#include <Profiler.h>
 #include <Base/Common/Buffers/Texture.h>
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
@@ -21,7 +20,6 @@
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <Components/Component.h>
 #include <Components/Collision/ColliderComponent.h>
 #include <Components/Collision/CollisionHelper.h>
 #include <glm/gtx/string_cast.hpp>
@@ -49,11 +47,10 @@ Scene::Scene(IDebugRegistry* inDebugRegistry)
 
 void Scene::PreConstruct(const char* aSceneName)
 {
-	PROFILE_BEGIN("SCENE CONSTRUCT");
 	m_sceneName = aSceneName;
 
-	physicsSystem = new PhysicsSystem();
-	sceneInteractionPhysicsSystem = new PhysicsSystem();
+	physicsSystem = eastl::make_unique<PhysicsSystem>();
+	sceneInteractionPhysicsSystem = eastl::make_unique<PhysicsSystem>();
 	meshAllocator = eastl::make_unique<MeshAllocator>();
 
 	physicsSystem->Create();
@@ -82,7 +79,6 @@ void Scene::PreConstruct(const char* aSceneName)
 		                                   if (!activeCamera->IsCameraConsumingInput())
 			                                   ChangeImGuizmoOperation(ImGuizmo::SCALE);
 	                                   }, "Scene Gizmo Scale");
-	PROFILE_END();
 }
 
 
@@ -307,7 +303,7 @@ void Scene::OnDebugGui()
 					ImGui::Indent();
 					ImGui::Text("Material Count: ");
 					ImGui::SameLine();
-					ImGui::Text(std::to_string(system->graphicsPipeline->renderers.size()).c_str());
+					//ImGui::Text(eastl::to_string(system->graphicsPipeline->renderers.size()).c_str());
 					for (const auto& renderer : system->graphicsPipeline->renderers)
 					{
 						ImGui::Text(renderer->GetMaterial(0)->materialName.data());
@@ -325,13 +321,11 @@ void Scene::OnDebugGui()
 
 void Scene::Tick(const float deltaTime)
 {
-	PROFILE_BEGIN("Scene Tick");
 	sceneInteractionPhysicsSystem->Tick(deltaTime);
 	for (const auto& obj : sceneObjects)
 	{
 		obj->Tick(deltaTime);
 	}
-	PROFILE_END();
 }
 
 void Scene::Destroy()
@@ -341,21 +335,20 @@ void Scene::Destroy()
 	{
 		obj->Destroy();
 	}
+	activeCamera.reset();
 
-	delete activeCamera;
 	for (const auto& system : renderPipelines)
 	{
 		system->graphicsPipeline->Destroy();
 	}
 	physicsSystem->Destroy();
-	delete physicsSystem;
-	physicsSystem = nullptr;
+	physicsSystem.reset();
 
 	sceneInteractionPhysicsSystem->Destroy();
-	delete sceneInteractionPhysicsSystem;
-	sceneInteractionPhysicsSystem = nullptr;
+	sceneInteractionPhysicsSystem.reset();
 
 	meshAllocator->Destroy();
+	meshAllocator.reset();
 }
 
 void Scene::AddRenderPipeline(GraphicsPipelineFactory* inPipelineFactory)
@@ -390,7 +383,7 @@ void Scene::AttachSphereCollider(SceneObject& aEntity, const float radius, const
 	sphereColliderInfo.collisionShape = new btSphereShape(radius);
 	sphereColliderInfo.mass = mass;
 	sphereColliderInfo.friction = friction;
-	sphereCollider->Create(physicsSystem, sphereColliderInfo);
+	sphereCollider->Create(physicsSystem.get(), sphereColliderInfo);
 	aEntity.AddComponent(eastl::move(sphereCollider));
 }
 
@@ -402,7 +395,7 @@ void Scene::AttachBoxCollider(SceneObject& inEntity, const glm::vec3 halfExtents
 	boxColliderInfo.collisionShape = new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z));
 	boxColliderInfo.mass = mass;
 	boxColliderInfo.friction = friction;
-	boxCollider->Create(physicsSystem, boxColliderInfo);
+	boxCollider->Create(physicsSystem.get(), boxColliderInfo);
 	inEntity.AddComponent(eastl::move(boxCollider));
 }
 

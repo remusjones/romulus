@@ -8,12 +8,16 @@
 Mesh* MeshAllocator::LoadMesh(const eastl::string_view& inPath)
 {
     // Lazy Init the mesh if it doesn't exist
-    if (allocatedMeshMap.contains(inPath))
+    eastl::hash<eastl::string_view> hasher = eastl::hash<eastl::string_view>();
+    size_t hashedPath = hasher(inPath);
+
+    if (allocatedMeshMap.contains(hashedPath))
     {
-        return allocatedMeshMap.at(inPath).get();
+        return allocatedMeshMap.at(hashedPath).get();
     }
 
-    auto addedResult = allocatedMeshMap.emplace(inPath, eastl::make_unique<Mesh>());
+    auto addedResult = allocatedMeshMap.emplace(hashedPath, eastl::make_unique<Mesh>());
+    SPDLOG_INFO("Allocating new mesh {}", inPath.data());
 
     if (!addedResult.second)
     {
@@ -29,10 +33,13 @@ Mesh* MeshAllocator::LoadMesh(const eastl::string_view& inPath)
 
 void MeshAllocator::ReleaseMesh(const eastl::string_view& inPath)
 {
-    if (allocatedMeshMap.contains(inPath))
+    eastl::hash<eastl::string_view> hasher = eastl::hash<eastl::string_view>();
+    size_t hashedPath = hasher(inPath);
+
+    if (allocatedMeshMap.contains(hashedPath))
     {
-        allocatedMeshMap.at(inPath)->Destroy();
-        allocatedMeshMap.erase(inPath);
+        allocatedMeshMap.at(hashedPath)->Destroy();
+        allocatedMeshMap.erase(hashedPath);
     }
 }
 

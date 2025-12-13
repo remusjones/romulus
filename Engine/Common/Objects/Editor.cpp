@@ -4,14 +4,12 @@
 
 #include "Editor.h"
 #include "FileManagement.h"
-#include "Profiler.h"
 #include "VulkanGraphicsImpl.h"
 #include "Scenes/Scene.h"
 
 void Editor::OnDebugGui()
 {
 	gGraphics->activeScene->OnDebugGui();
-	Profiler::GetInstance().OnDebugGui();
 }
 
 void DebugManager::Register(IDebuggable* object)

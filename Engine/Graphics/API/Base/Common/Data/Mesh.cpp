@@ -14,7 +14,7 @@ Mesh::Mesh() : vertexBuffer(nullptr)
 
 void Mesh::Bind(VkCommandBuffer commandBuffer) const
 {
-	const VkBuffer vertexBuffers[] = {vertexBuffer->verticesBuffer->GetBuffer()};
+	const VkBuffer vertexBuffers[] = { vertexBuffer->verticesBuffer->GetBuffer()};
 	const VkDeviceSize offsets[]   = {0};
 
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -24,7 +24,7 @@ void Mesh::Bind(VkCommandBuffer commandBuffer) const
 
 void Mesh::Destroy()
 {
-	delete vertexBuffer;
+	vertexBuffer->Destroy();
 }
 
 bool Mesh::LoadFromObject(const char* fileName)
@@ -33,7 +33,7 @@ bool Mesh::LoadFromObject(const char* fileName)
 	{
 		CalculateTangents(vertices, indices);
 
-		vertexBuffer = new AllocatedVertexBuffer(vertices, indices);
+		vertexBuffer = eastl::make_unique<AllocatedVertexBuffer>(vertices, indices);
 
 		eastl::string bufferName;
 		bufferName.append(fileName);
@@ -47,7 +47,7 @@ bool Mesh::LoadFromObject(const char* fileName)
 	return false;
 }
 
-void Mesh::CalculateTangents(std::vector<Vertex>& vertices, const std::vector<int32_t>& indices)
+void Mesh::CalculateTangents(const eastl::vector<Vertex>& inVertices, const eastl::vector<int32_t>& indices)
 {
 	for (size_t i = 0; i < indices.size(); i += 3)
 	{
@@ -55,13 +55,13 @@ void Mesh::CalculateTangents(std::vector<Vertex>& vertices, const std::vector<in
 		const int index1 = indices[i + 1];
 		const int index2 = indices[i + 2];
 
-		glm::vec3& v0 = vertices[index0].position;
-		glm::vec3& v1 = vertices[index1].position;
-		glm::vec3& v2 = vertices[index2].position;
+		const glm::vec3& v0 = inVertices[index0].position;
+		const glm::vec3& v1 = inVertices[index1].position;
+		const glm::vec3& v2 = inVertices[index2].position;
 
-		glm::vec2& uv0 = vertices[index0].uv;
-		glm::vec2& uv1 = vertices[index1].uv;
-		glm::vec2& uv2 = vertices[index2].uv;
+		const glm::vec2& uv0 = inVertices[index0].uv;
+		const glm::vec2& uv1 = inVertices[index1].uv;
+		const glm::vec2& uv2 = inVertices[index2].uv;
 
 		glm::vec3 deltaPos1 = v1 - v0;
 		glm::vec3 deltaPos2 = v2 - v0;

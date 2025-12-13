@@ -22,7 +22,6 @@
 #include <Scenes/SandboxScene.h>
 #include <Vulkan/Common/MeshObject.h>
 
-#include "Profiler.h"
 #include "spdlog/spdlog.h"
 #include "tracy/Tracy.hpp"
 #include "tracy/TracyVulkan.hpp"
@@ -85,6 +84,7 @@ void VulkanGraphicsImpl::ShutdownImgui() const
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplSDL3_Shutdown();
 	vkDestroyDescriptorPool(logicalDevice, imguiDescriptionPool, nullptr);
+	ImGui::DestroyContext();
 }
 
 void VulkanGraphicsImpl::ShutdownVulkan() const
@@ -94,8 +94,6 @@ void VulkanGraphicsImpl::ShutdownVulkan() const
 
 void VulkanGraphicsImpl::Update()
 {
-	//ZoneScopedN("MainApplicationLoop");
-
 	// Start Clock for FPS Monitoring
 	auto startTime = std::chrono::high_resolution_clock::now();
 	auto fpsStartTime = std::chrono::high_resolution_clock::now();
@@ -112,7 +110,7 @@ void VulkanGraphicsImpl::Update()
 	// main loop
 	while (!bQuitting)
 	{
-		FrameMark;
+		ZoneScopedN("MainApplicationLoop");
 		while (SDL_PollEvent(&event))
 		{
 			ImGui_ImplSDL3_ProcessEvent(&event);
@@ -128,6 +126,7 @@ void VulkanGraphicsImpl::Update()
 				gGraphics->vulkanRenderer->QueueFrameBufferRebuild();
 			}
 		}
+
 		if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED))
 		{
 			ImGui_ImplVulkan_NewFrame();
@@ -137,32 +136,38 @@ void VulkanGraphicsImpl::Update()
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGui::GetMainViewport(),
 			                             ImGuiDockNodeFlags_PassthruCentralNode);
 
+			{
+				ZoneScopedN("InputSystem::Update");
+				gInputSystem->Update();
+			}
 
-			PROFILE_BEGIN("Input Manager Update");
-			gInputSystem->Update();
-			PROFILE_END();
 
-			PROFILE_BEGIN("Scene Physics");
-			activeScene->TickPhysics(deltaTime);
-			PROFILE_END();
+			{
+				ZoneScopedN("Scene::TickPhysics");
+				activeScene->TickPhysics(deltaTime);
+			}
 
-			PROFILE_BEGIN("Scene Tick");
-			activeScene->Tick(deltaTime);
-			PROFILE_END();
+			{
+				ZoneScopedN("Scene::Tick()");
+				activeScene->Tick(deltaTime);
+			}
 
 #if DEBUG_RENDER
-			PROFILE_BEGIN("Debug Render");
-			debugManager->DrawImGui();
-			PROFILE_END();
+			{
+				ZoneScopedN("DebugManager::DrawImGui");
+				debugManager->DrawImGui();
+			}
 #endif
 
-			PROFILE_BEGIN("ImGui Render");
-			ImGui::Render();
-			PROFILE_END();
+			{
+				ZoneScopedN("ImGui::Render");
+				ImGui::Render();
+			}
 
-			PROFILE_BEGIN("Scene Draw");
-			vulkanRenderer->DrawFrame(*activeScene);
-			PROFILE_END();
+			{
+				ZoneScopedN("RomulasVulkanRenderer::DrawFrame");
+				vulkanRenderer->DrawFrame(*activeScene);
+			}
 
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
@@ -184,13 +189,19 @@ void VulkanGraphicsImpl::Update()
 			fpsStartTime = currentTime;
 		}
 		startTime = currentTime;
+		FrameMark;
 	}
 }
 
 void VulkanGraphicsImpl::Destroy()
 {
 	SPDLOG_INFO("Destroying VulkanGraphicsImpl");
-	vkDeviceWaitIdle(logicalDevice);
+
+	if (logicalDevice != nullptr)
+	{
+		vkDeviceWaitIdle(logicalDevice);
+	}
+
 	DestroyScenes();
 	ShutdownImgui();
 	DestroyGraphicsPipeline();
@@ -274,7 +285,7 @@ void VulkanGraphicsImpl::DestroyWindow() const
 
 void VulkanGraphicsImpl::CreateInstance()
 {
-	vulkanRenderer = new RomulusVulkanRenderer();
+	vulkanRenderer = eastl::make_unique<RomulusVulkanRenderer>();
 	SPDLOG_INFO("Creating Vulkan Instance");
 
 	if (enableValidationLayers && !CheckValidationLayerSupport())
@@ -326,10 +337,9 @@ void VulkanGraphicsImpl::CreateInstance()
 	}
 }
 
-void VulkanGraphicsImpl::DestroyInstance() const
+void VulkanGraphicsImpl::DestroyInstance()
 {
 	vkDestroyInstance(vulcanInstance, nullptr);
-	delete vulkanRenderer;
 }
 
 void VulkanGraphicsImpl::CreateSurface()
@@ -347,14 +357,25 @@ void VulkanGraphicsImpl::DestroySurface() const
 
 void VulkanGraphicsImpl::CreateScenes()
 {
+
+	ZoneScopedN("VulkanGraphicsImpl::CreateScenes");
+
 	activeScene = eastl::make_unique<SandboxScene>(debugManager.get());
-	activeScene->PreConstruct("Sandbox Scene");
-	activeScene->Construct();
+
+	{
+		ZoneScopedN("Scene::PreConstruct");
+		activeScene->PreConstruct("Sandbox Scene");
+	}
+	{
+		ZoneScopedN("Scene::Construct");
+		activeScene->Construct();
+	}
 }
 
-void VulkanGraphicsImpl::DestroyScenes() const
+void VulkanGraphicsImpl::DestroyScenes()
 {
 	activeScene->Destroy();
+	activeScene.reset();
 }
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline()
@@ -373,6 +394,9 @@ void VulkanGraphicsImpl::DestroyGraphicsPipeline()
 {
 	vulkanRenderer->Destroy();
 	swapChain->Destroy();
+
+	swapChain.reset();
+	vulkanRenderer.reset();
 }
 
 bool VulkanGraphicsImpl::CheckValidationLayerSupport() const
@@ -500,9 +524,6 @@ VkBool32 VulkanGraphicsImpl::DebugCallback(
 {
 	if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 	{
-		//LOG(ERROR) << aMessageType << " | Validation layer: " <<
-		//    aCallbackData->pMessage;
-
 		SPDLOG_ERROR("Validation Layer Error {}", callbackData->pMessage);
 	}
 	return VK_FALSE;
@@ -546,19 +567,21 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
 
 bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const
 {
-	const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
-	const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
-	bool swapChainAdequate = false;
+	//const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
+	//const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
+	//bool swapChainAdequate = false;
+//
+	//if (extensionsSupported)
+	//{
+	//	const SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
+	//		aPhysicalDevice);
+	//	swapChainAdequate = !swapChainSupport.mFormats.empty() && !
+	//	                    swapChainSupport.mPresentModes.empty();
+	//}
+//
+	//return indices.IsComplete() && extensionsSupported && swapChainAdequate;
 
-	if (extensionsSupported)
-	{
-		const SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
-			aPhysicalDevice);
-		swapChainAdequate = !swapChainSupport.mFormats.empty() && !
-		                    swapChainSupport.mPresentModes.empty();
-	}
-
-	return indices.IsComplete() && extensionsSupported && swapChainAdequate;
+	return true;
 }
 
 
@@ -569,7 +592,7 @@ bool VulkanGraphicsImpl::CheckDeviceExtensionSupport(
 	vkEnumerateDeviceExtensionProperties(aPhysicalDevice, nullptr,
 	                                     &extensionCount, nullptr);
 
-	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	eastl::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(aPhysicalDevice, nullptr,
 	                                     &extensionCount,
 	                                     availableExtensions.data());

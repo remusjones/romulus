@@ -199,7 +199,7 @@ void RomulusVulkanRenderer::CreateDescriptorPool()
 
 void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 {
-    FrameData currentFrameData = frameData[currentFrame];
+    FrameData& currentFrameData = frameData[currentFrame];
     VkCommandBuffer currentCommandBuffer = currentFrameData.commandBuffer;
 
     vkWaitForFences(logicalDevice, 1, &currentFrameData.renderFence, VK_TRUE,
@@ -262,10 +262,10 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
         VkViewport viewport{};
         viewport.x = 0.0f;
-        viewport.width = renderPassInfo.renderArea.extent.width;
+        viewport.width = static_cast<float>(renderPassInfo.renderArea.extent.width);
 
-        viewport.y = renderPassInfo.renderArea.extent.height;
-        viewport.height = -renderPassInfo.renderArea.extent.height;
+        viewport.y = static_cast<float>(renderPassInfo.renderArea.extent.height);
+        viewport.height = -static_cast<float>(renderPassInfo.renderArea.extent.height);
 
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;

@@ -11,7 +11,6 @@ AllocatedBuffer::AllocatedBuffer(const void* inData, const VkDeviceSize inBuffer
 {
 	void* data;
 	Create(inBufferSize, inUsageFlags);
-	//copy vertex data
 	vmaMapMemory(gGraphics->allocator, allocation, &data);
 	memcpy(data, inData, inBufferSize);
 	vmaUnmapMemory(gGraphics->allocator, allocation);
@@ -50,14 +49,14 @@ bool AllocatedBuffer::IsAllocated() const
 void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags aUsage)
 {
 	VkBufferCreateInfo bufferInfo = {};
-	bufferInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size               = aSize;
-	bufferInfo.usage              = aUsage;
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = aSize;
+	bufferInfo.usage = aUsage;
 
 	VmaAllocationCreateInfo vmaallocInfo = {};
-	vmaallocInfo.usage                   = VMA_MEMORY_USAGE_AUTO;
-	vmaallocInfo.flags                   = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-		VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	vmaallocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+	vmaallocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+	                     VMA_ALLOCATION_CREATE_MAPPED_BIT;
 	if (const VkResult result = vmaCreateBuffer(gGraphics->allocator, &bufferInfo, &vmaallocInfo,
 	                                            &mBuffer,
 	                                            &allocation, nullptr); result != VK_SUCCESS)
@@ -69,7 +68,20 @@ void AllocatedBuffer::Create(const VkDeviceSize aSize, const VkBufferUsageFlags 
 
 void AllocatedBuffer::Destroy()
 {
-	vmaDestroyBuffer(gGraphics->allocator, mBuffer, allocation);
-	mBuffer     = nullptr;
-	allocation = nullptr;
+    if (mBuffer == VK_NULL_HANDLE && allocation == nullptr)
+    {
+        return;
+    }
+
+    if (gGraphics->allocator)
+    {
+        vmaDestroyBuffer(gGraphics->allocator, mBuffer, allocation);
+    }
+    else
+    {
+        SPDLOG_ERROR("AllocatedBuffer::Destroy skipped vmaDestroyBuffer because gGraphics->allocator is null");
+    }
+
+    mBuffer = VK_NULL_HANDLE;
+    allocation = nullptr;
 }

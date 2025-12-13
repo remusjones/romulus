@@ -4,20 +4,20 @@
 //
 #pragma once
 #include <memory>
-#include <vector>
 #include <SDL3/SDL_video.h>
 
 #include <Types/DequeBuffer.h>
 #include "IApplication.h"
+
 #include "InputSystem.h"
 #include "EASTL/unique_ptr.h"
 #include "EASTL/vector.h"
 #include "Objects/Editor.h"
 #include "Vulkan/RomulusVulkanRenderer.h"
 #include "Vulkan/VulkanSystemStructs.h"
+#include "Scenes/Scene.h"
 
 class Editor;
-class Scene;
 class VulkanSwapChain;
 class MeshObject;
 
@@ -54,7 +54,7 @@ private:
 	void ShutdownVulkan() const;
 
 	void CreateInstance();
-	void DestroyInstance() const;
+	void DestroyInstance();
 
 	void CreateDebugMessenger();
 	void DestroyDebugMessenger();
@@ -77,7 +77,7 @@ private:
 	void DestroyWindow() const;
 
 	void CreateScenes();
-	void DestroyScenes() const;
+	void DestroyScenes();
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -111,9 +111,10 @@ public:
 	eastl::unique_ptr<Editor> romulusEditor;
 	eastl::unique_ptr<Scene> activeScene;
 	eastl::unique_ptr<DebugManager> debugManager;
+	eastl::unique_ptr<RomulusVulkanRenderer> vulkanRenderer;
+
 
 	SDL_Window* window = nullptr; // TODO: Move to interface
-	RomulusVulkanRenderer* vulkanRenderer = nullptr;
 	InputSystem inputManager;
 
 private:

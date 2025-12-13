@@ -1,6 +1,8 @@
 #include "InputSystem.h"
 #include <imgui_impl_sdl3.h>
 
+#include "tracy/Tracy.hpp"
+
 InputSystem* gInputSystem = nullptr;
 
 InputSystem::InputSystem()
@@ -64,6 +66,7 @@ void InputSystem::ProcessInput(const SDL_Event* inputEvent)
 // todo: Filter out duplicate events, and queue only uniques so we can consume during Update
 void InputSystem::Update()
 {
+
 	while (!queuedEvents.empty())
 	{
 		ProcessInput(&queuedEvents.front());
