@@ -37,10 +37,14 @@ void* __cdecl operator new[](unsigned __int64 size, unsigned __int64 alignment,
 int main()
 {
     SPDLOG_INFO("Initializing Application");
+    Memory::TraceStart();
     eastl::unique_ptr<IApplication> app = eastl::make_unique<VulkanGraphicsImpl>("Engine", 1200, 800);
     try
     {
         app->Run();
+        Memory::TraceEnd();
+
+        app.reset();
     }
     catch (const std::exception& error)
     {

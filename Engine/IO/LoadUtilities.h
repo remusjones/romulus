@@ -37,7 +37,7 @@ public:
 	                               AllocatedImage& aResult, VkImageCreateFlags
 	                               aImageCreateFlags = 0);
 
-	static bool CreateImage(int aWidth, int aHeight, VulkanGraphics* aEngine, AllocatedImage& aResult,
+	static bool CreateImage(int aWidth, int aHeight, VulkanGraphics* graphics, AllocatedImage& aResult,
 	                        Color_RGBA aColor);
 	static bool LoadMeshFromDisk(const char* filePath,
 	                             eastl::vector<Vertex>& resultVertices,

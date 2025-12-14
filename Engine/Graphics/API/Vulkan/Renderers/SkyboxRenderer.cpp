@@ -4,7 +4,7 @@
 
 #include "SkyboxRenderer.h"
 
-#include "Base/Common/Data/PrimitiveMesh.h"
+#include "Base/Common/MeshAllocator.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SkyboxRenderer::Render(const VkCommandBuffer commandBuffer)
@@ -26,12 +26,10 @@ void SkyboxRenderer::BindRenderer(GraphicsPipeline& boundGraphicsPipeline)
 
 void SkyboxRenderer::DestroyRenderer()
 {
-	delete mesh;
 	Renderer::DestroyRenderer();
 }
 
-void SkyboxRenderer::LoadMesh(const char* path)
+void SkyboxRenderer::LoadMesh(MeshAllocator& allocator, const char* path)
 {
-	mesh = new PrimitiveMesh();
-	mesh->LoadFromObject(path);
+	mesh = allocator.LoadMesh(path);
 }

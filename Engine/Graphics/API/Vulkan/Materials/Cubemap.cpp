@@ -99,6 +99,6 @@ void Cubemap::Destroy()
 {
 	vkDestroyImageView(gGraphics->logicalDevice, imageView, nullptr);
 	vkDestroySampler(gGraphics->logicalDevice, sampler, nullptr);
-	vmaDestroyImage(gGraphics->allocator, allocatedImage.mImage, allocatedImage.mAllocation);
+	vmaDestroyImage(gGraphics->GetAllocator(), allocatedImage.mImage, allocatedImage.mAllocation);
 	Material::Destroy();
 }

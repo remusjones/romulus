@@ -22,6 +22,7 @@
 #include <Scenes/SandboxScene.h>
 #include <Vulkan/Common/MeshObject.h>
 
+#include "EASTL/set.h"
 #include "spdlog/spdlog.h"
 #include "tracy/Tracy.hpp"
 #include "tracy/TracyVulkan.hpp"
@@ -567,21 +568,19 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
 
 bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const
 {
-	//const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
-	//const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
-	//bool swapChainAdequate = false;
-//
-	//if (extensionsSupported)
-	//{
-	//	const SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
-	//		aPhysicalDevice);
-	//	swapChainAdequate = !swapChainSupport.mFormats.empty() && !
-	//	                    swapChainSupport.mPresentModes.empty();
-	//}
-//
-	//return indices.IsComplete() && extensionsSupported && swapChainAdequate;
+	const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
+	const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
+	bool swapChainAdequate = false;
 
-	return true;
+	if (extensionsSupported)
+	{
+		const SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(
+			aPhysicalDevice);
+		swapChainAdequate = !swapChainSupport.mFormats.empty() && !
+		                    swapChainSupport.mPresentModes.empty();
+	}
+
+	return indices.IsComplete() && extensionsSupported && swapChainAdequate;
 }
 
 
@@ -617,7 +616,7 @@ QueueFamilyIndices VulkanGraphicsImpl::FindQueueFamilies(
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
 	                                         nullptr);
 
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+	eastl::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
 	                                         queueFamilies.data());
 
@@ -686,8 +685,8 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
 	SPDLOG_DEBUG("Creating Logical Device");
 	familyIndices = FindQueueFamilies(physicalDevice);
 
-	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	const std::set uniqueQueueFamilies = {
+	eastl::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	const eastl::set<uint32_t> uniqueQueueFamilies = {
 		familyIndices.mGraphicsFamily.value(),
 		familyIndices.mPresentFamily.value()
 	};

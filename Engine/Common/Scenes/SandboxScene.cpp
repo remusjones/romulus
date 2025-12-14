@@ -132,8 +132,8 @@ void SandboxScene::Construct()
 	mSkyboxRenderer->SetMaterial(0, cubemap);
 	mSkyboxRenderer->transform = &cubeMapMesh->transform;
 	mSkyboxRenderer->BindRenderer(*cubemapRenderPipeline->graphicsPipeline);
-	mSkyboxRenderer->LoadMesh((FileManagement::GetWorkingDirectory() +
-	                           eastl::string("/Assets/Models/cube.obj")).c_str());
+	mSkyboxRenderer->LoadMesh(*meshAllocator, (FileManagement::GetWorkingDirectory() +
+	                                 eastl::string("/Assets/Models/cube.obj")).c_str());
 
 	//
 	// Scene Camera

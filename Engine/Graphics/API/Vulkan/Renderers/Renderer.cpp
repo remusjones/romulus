@@ -12,7 +12,7 @@ void Renderer::Render(VkCommandBuffer commandBuffer)
     if (material->propertiesBuffer.IsAllocated())
     {
         AllocatedBuffer::MapMemory(
-            gGraphics->allocator, &material->materialProperties, material->propertiesBuffer.GetAllocation(),
+            gGraphics->GetAllocator(), &material->materialProperties, material->propertiesBuffer.GetAllocation(),
             sizeof(MaterialProperties));
     }
 }

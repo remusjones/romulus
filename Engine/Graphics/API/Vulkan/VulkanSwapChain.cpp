@@ -172,7 +172,7 @@ void VulkanSwapChain::CreateDepthBufferView()
 	dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 	dimg_allocinfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-	vmaCreateImage(gGraphics->allocator, &imageInfo, &dimg_allocinfo,
+	vmaCreateImage(gGraphics->GetAllocator(), &imageInfo, &dimg_allocinfo,
 	               &mAllocatedDepthImage.mImage,
 	               &mAllocatedDepthImage.mAllocation, nullptr);
 
@@ -195,7 +195,7 @@ void VulkanSwapChain::Destroy()
 		vkDestroyFramebuffer(logicalDevice, swapChainFrameBuffer, nullptr);
 	}
 
-	vmaDestroyImage(gGraphics->allocator, mAllocatedDepthImage.mImage,
+	vmaDestroyImage(gGraphics->GetAllocator(), mAllocatedDepthImage.mImage,
 	                mAllocatedDepthImage.mAllocation);
 	vkDestroyImageView(logicalDevice, mDepthImageView, nullptr);
 

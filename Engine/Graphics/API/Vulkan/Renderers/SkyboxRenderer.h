@@ -4,11 +4,12 @@
 
 #pragma once
 #include "Renderer.h"
+#include "Base/Common/MeshAllocator.h"
+#include "Base/Common/Data/Mesh.h"
 #include "Math/Transform.h"
 
 
 class PrimitiveMesh;
-class Mesh;
 
 class SkyboxRenderer final : public Renderer
 {
@@ -17,8 +18,8 @@ public:
 	void BindRenderer(GraphicsPipeline& boundGraphicsPipeline) override;
 	void DestroyRenderer() override;
 
-	void LoadMesh(const char* path);
+	void LoadMesh(MeshAllocator& allocator, const char* path);
 
 	Transform* transform;
-	PrimitiveMesh* mesh;
+	Mesh* mesh;
 };

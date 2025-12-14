@@ -265,7 +265,7 @@ void GraphicsPipeline::Draw(VkCommandBuffer commandBuffer, const Scene& scene) c
     const FrameData& currentFrame = gGraphics->vulkanRenderer->GetCurrentFrame();
 
     AllocatedBuffer::MapMemory(
-        gGraphics->allocator, &scene.sceneData, currentFrame.sceneBuffer.GetAllocation(),
+        gGraphics->GetAllocator(), &scene.sceneData, currentFrame.sceneBuffer.GetAllocation(),
         sizeof(GPUSceneData));
 
     for (Renderer* const& renderer : renderers)

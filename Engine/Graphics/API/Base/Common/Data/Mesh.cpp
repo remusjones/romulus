@@ -24,7 +24,10 @@ void Mesh::Bind(VkCommandBuffer commandBuffer) const
 
 void Mesh::Destroy()
 {
-	vertexBuffer->Destroy();
+	if (vertexBuffer)
+	{
+		vertexBuffer->Destroy();
+	}
 }
 
 bool Mesh::LoadFromObject(const char* fileName)
@@ -37,10 +40,10 @@ bool Mesh::LoadFromObject(const char* fileName)
 
 		eastl::string bufferName;
 		bufferName.append(fileName);
-		vmaSetAllocationName(gGraphics->allocator, vertexBuffer->verticesBuffer->GetAllocation(),
+		vmaSetAllocationName(gGraphics->GetAllocator(), vertexBuffer->verticesBuffer->GetAllocation(),
 		                     (bufferName + " mVerticesBuffer").c_str());
 
-		vmaSetAllocationName(gGraphics->allocator, vertexBuffer->indicesBuffer->GetAllocation(),
+		vmaSetAllocationName(gGraphics->GetAllocator(), vertexBuffer->indicesBuffer->GetAllocation(),
 		                     (bufferName + " mIndicesBuffer").c_str());
 		return true;
 	}

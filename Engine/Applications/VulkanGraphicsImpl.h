@@ -45,6 +45,8 @@ public:
 	VkRenderPass GetRenderPass() const { return swapChain->renderPass; }
 	VkFramebuffer GetFrameBuffer(size_t imageIndex) const { return swapChain->mSwapChainFrameBuffers[imageIndex]; }
 
+	VmaAllocator GetAllocator() const {return allocator; }
+
 
 	DequeBuffer<float>& GetFpsHistory() { return fpsCircularBuffer; }
 
@@ -106,7 +108,6 @@ public:
 	VkDevice logicalDevice{};
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkSurfaceKHR surface            = VK_NULL_HANDLE;
-	VmaAllocator allocator          = VK_NULL_HANDLE;
 
 	eastl::unique_ptr<Editor> romulusEditor;
 	eastl::unique_ptr<Scene> activeScene;
@@ -116,10 +117,13 @@ public:
 
 	SDL_Window* window = nullptr; // TODO: Move to interface
 	InputSystem inputManager;
-
 private:
+	VmaAllocator allocator          = VK_NULL_HANDLE;
 	eastl::unique_ptr<VulkanSwapChain> swapChain;
 	QueueFamilyIndices familyIndices;
+
+private:
+
 
 	// TODO: Move these to IApplication
 	int windowWidth;

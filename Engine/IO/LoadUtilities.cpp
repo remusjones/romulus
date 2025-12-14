@@ -76,7 +76,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* inGraphics, const ch
 	dimg_allocinfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
 	//allocate and create the image
-	vmaCreateImage(inGraphics->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
+	vmaCreateImage(inGraphics->GetAllocator(), &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
 	inGraphics->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
 	{
@@ -127,7 +127,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics* inGraphics, const ch
 		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
 		                     0, nullptr, 1, &imageBarrier_toReadable);
 	});
-	vmaDestroyBuffer(inGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+	vmaDestroyBuffer(inGraphics->GetAllocator(), stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 	outResult = newImage;
 	return true;
 }
@@ -166,11 +166,11 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const eastl
 
 	eastl::string bufferName;
 	bufferName.append(inPaths[0]);
-	vmaSetAllocationName(gGraphics->allocator, stagingBuffer.GetAllocation(), (bufferName + " staging buffer").c_str());
+	vmaSetAllocationName(gGraphics->GetAllocator(), stagingBuffer.GetAllocation(), (bufferName + " staging buffer").c_str());
 
 	// Map the memory
 	void* data;
-	vmaMapMemory(gGraphics->allocator, stagingBuffer.GetAllocation(), &data);
+	vmaMapMemory(gGraphics->GetAllocator(), stagingBuffer.GetAllocation(), &data);
 	uint64_t memAddress = reinterpret_cast<uint64_t>(data);
 
 	for (int i = 0; i < imageCount; i++)
@@ -236,7 +236,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const eastl
 		}
 	}
 
-	vmaUnmapMemory(gGraphics->allocator, stagingBuffer.GetAllocation());
+	vmaUnmapMemory(gGraphics->GetAllocator(), stagingBuffer.GetAllocation());
 
 
 	VkExtent3D imageExtent;
@@ -264,23 +264,23 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const eastl
 	VmaAllocationCreateInfo dimg_allocinfo = {};
 	dimg_allocinfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
-	const VkResult result = vmaCreateImage(engine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
+	const VkResult result = vmaCreateImage(engine->GetAllocator(), &dimg_info, &dimg_allocinfo, &newImage.mImage,
 	                                       &newImage.mAllocation, nullptr);
 
 
-	vmaSetAllocationName(gGraphics->allocator, newImage.mAllocation,
+	vmaSetAllocationName(gGraphics->GetAllocator(), newImage.mAllocation,
 	                     (bufferName + "  VkImage").c_str());
 
 	if (result != VK_SUCCESS)
 	{
 		SPDLOG_ERROR("VmaCreatImage failed");
-		vmaDestroyBuffer(gGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+		vmaDestroyBuffer(gGraphics->GetAllocator(), stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 		return false;
 	}
 	if (!newImage.mImage || !newImage.mAllocation)
 	{
 		SPDLOG_ERROR("Image or allocation from vmaCreateImage is null");
-		vmaDestroyBuffer(gGraphics->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+		vmaDestroyBuffer(gGraphics->GetAllocator(), stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 		return false;
 	}
 	engine->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
@@ -333,13 +333,13 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics* engine, const eastl
 		                     0, nullptr, 1, &imageBarrier_toReadable);
 	});
 	// Cleanup staging buffer
-	vmaDestroyBuffer(engine->allocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
+	vmaDestroyBuffer(engine->GetAllocator(), stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
 	aResult = newImage;
 	return true;
 }
 
 bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
-                                VulkanGraphics* aEngine,
+                                VulkanGraphics* graphics,
                                 AllocatedImage& aResult,
                                 Color_RGBA aColor = Color_RGBA(1, 1, 1, 1))
 {
@@ -377,9 +377,9 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
 	dimg_allocinfo.usage                   = VMA_MEMORY_USAGE_GPU_ONLY;
 
 	//allocate and create the image
-	vmaCreateImage(aEngine->allocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
+	vmaCreateImage(graphics->GetAllocator(), &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-	aEngine->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
+	graphics->vulkanRenderer->SubmitBufferCommand([&](VkCommandBuffer cmd)
 	{
 		VkImageSubresourceRange range;
 		range.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;

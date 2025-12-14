@@ -23,15 +23,6 @@ AllocatedVertexBuffer::AllocatedVertexBuffer(const eastl::vector<Vertex>& vertic
 
 void AllocatedVertexBuffer::Destroy()
 {
-    if (verticesBuffer)
-    {
-        verticesBuffer->Destroy();
-        verticesBuffer.reset();
-    }
-
-    if (indicesBuffer)
-    {
-        indicesBuffer->Destroy();
-        indicesBuffer.reset();
-    }
+	verticesBuffer->Destroy();
+	indicesBuffer->Destroy();
 }

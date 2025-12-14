@@ -16,14 +16,16 @@
     }
 
 #if TRACY_MEMORY_ENABLE
-
-    if (name)
+    if (isTracing)
     {
-        TracyAllocN(ptr, size, name);
-    }
-    else
-    {
-        TracyAlloc(ptr, size);
+        if (name)
+        {
+            TracyAllocN(ptr, size, name);
+        }
+        else
+        {
+            TracyAlloc(ptr, size);
+        }
     }
 #endif
 
@@ -38,7 +40,10 @@
     }
 
 #if TRACY_MEMORY_ENABLE
-    TracyFree(ptr);
+    if (isTracing)
+    {
+        TracyFree(ptr);
+    }
 #endif
 
     std::free(ptr);

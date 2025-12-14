@@ -134,13 +134,13 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer)
     if (mAllocatedPositions)
     {
         AllocatedBuffer::MapMemory(
-            gGraphics->allocator,
+            gGraphics->GetAllocator(),
             mLinePositions.data(),
             mAllocatedPositions->GetAllocation(),
             sizeof(Vertex) * mLinePositions.size());
 
         const VkBuffer vertexBuffers[] = {mAllocatedPositions->GetBuffer()};
-        const VkDeviceSize offsets[] = {0};
+        constexpr VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
 
         pushConstants.model = mTransform->GetWorldMatrix();
@@ -167,7 +167,7 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer)
     if (!mTemporaryLines.empty())
     {
         AllocatedBuffer::MapMemory(
-            gGraphics->allocator,
+            gGraphics->GetAllocator(),
             mTemporaryLines.data(),
             mTemporaryAllocatedPositions->GetAllocation(),
             sizeof(Vertex) * mLinePositions.size());
