@@ -13,16 +13,35 @@
 #include "Helpers/VulkanInitialization.h"
 #include "spdlog/spdlog.h"
 
-void VulkanSwapChain::RecreateSwapChain()
+VkPresentInfoKHR VulkanSwapChain::GetPresentInfo(uint32_t& imageIndex, const eastl::vector<VkSemaphore>& semaphores)
 {
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+	presentInfo.waitSemaphoreCount = semaphores.size();
+	presentInfo.pWaitSemaphores = semaphores.data();
+
+	presentInfo.swapchainCount = swapchains.size();
+	presentInfo.pSwapchains = swapchains.data();
+	presentInfo.pImageIndices = &imageIndex;
+
+	return presentInfo;
+}
+
+VkResult VulkanSwapChain::AcquireNextImage(VkSemaphore presentSemaphore, uint32_t& outImageIndex)
+{
+	return vkAcquireNextImageKHR(logicalDevice, GetSwapchain(), 0, presentSemaphore, VK_NULL_HANDLE, &outImageIndex);
+}
+
+void VulkanSwapChain::Recreate()
+{
+
 	int width = 0;
 	int height = 0;
 	SDL_GetWindowSize(application->window, &width, &height);
 	while (width == 0 || height == 0)
 	{
 		SDL_GetWindowSize(application->window, &width, &height);
-		//SDL_Event event;
-		//SDL_WaitEvent(&event);
 		SPDLOG_INFO("Window Minimized");
 	}
 
@@ -83,16 +102,22 @@ void VulkanSwapChain::CreateSwapChain()
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &mSwapChain)
+	VkSwapchainKHR newSwapchain;
+
+	if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &newSwapchain)
 	    != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create swap chain!");
 	}
-	mSwapChainImageFormat = surfaceFormat.format;
+
+	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtents = extent;
-	mSwapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(logicalDevice, mSwapChain, &imageCount,
-	                        mSwapChainImages.data());
+	swapChainImages.resize(imageCount);
+
+	vkGetSwapchainImagesKHR(logicalDevice, newSwapchain, &imageCount,
+	                        swapChainImages.data());
+
+	swapchains.push_back(newSwapchain);
 }
 
 void VulkanSwapChain::CreateFrameBuffers()
@@ -125,14 +150,14 @@ void VulkanSwapChain::CreateFrameBuffers()
 
 void VulkanSwapChain::CreateImageViews()
 {
-	mSwapChainImageViews.resize(mSwapChainImages.size());
-	for (size_t i = 0; i < mSwapChainImages.size(); i++)
+	mSwapChainImageViews.resize(swapChainImages.size());
+	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
 		VkImageViewCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.image = mSwapChainImages[i];
+		createInfo.image = swapChainImages[i];
 		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = mSwapChainImageFormat;
+		createInfo.format = swapChainImageFormat;
 		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -162,10 +187,10 @@ void VulkanSwapChain::CreateDepthBufferView()
 		1
 	};
 
-	_depthFormat = VK_FORMAT_D32_SFLOAT;
+	depthFormat = VK_FORMAT_D32_SFLOAT;
 
 	const VkImageCreateInfo imageInfo = VulkanInitialization::CreateImageInfo(
-		_depthFormat,
+		depthFormat,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
 
 	VmaAllocationCreateInfo dimg_allocinfo = {};
@@ -177,7 +202,7 @@ void VulkanSwapChain::CreateDepthBufferView()
 	               &mAllocatedDepthImage.mAllocation, nullptr);
 
 	const VkImageViewCreateInfo createInfo =
-			VulkanInitialization::ImageViewCreateInfo(_depthFormat,
+			VulkanInitialization::ImageViewCreateInfo(depthFormat,
 			                                          mAllocatedDepthImage.mImage, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 	if (vkCreateImageView(logicalDevice, &createInfo, nullptr,
@@ -197,6 +222,7 @@ void VulkanSwapChain::Destroy()
 
 	vmaDestroyImage(gGraphics->GetAllocator(), mAllocatedDepthImage.mImage,
 	                mAllocatedDepthImage.mAllocation);
+
 	vkDestroyImageView(logicalDevice, mDepthImageView, nullptr);
 
 	for (const auto& swapChainImageView : mSwapChainImageViews)
@@ -204,7 +230,11 @@ void VulkanSwapChain::Destroy()
 		vkDestroyImageView(logicalDevice, swapChainImageView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(logicalDevice, mSwapChain, nullptr);
+	for (auto iterSwapchain : swapchains)
+	{
+		vkDestroySwapchainKHR(logicalDevice, iterSwapchain, nullptr);
+	}
+	swapchains.clear();
 }
 
 
@@ -214,7 +244,7 @@ void VulkanSwapChain::CreateRenderPass()
 
 	// Depth attachment
 	depthAttachment.flags = 0;
-	depthAttachment.format = _depthFormat;
+	depthAttachment.format = depthFormat;
 	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -250,9 +280,8 @@ void VulkanSwapChain::CreateRenderPass()
 	depthDependency.dstAccessMask =
 			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = mSwapChainImageFormat;
+	colorAttachment.format = swapChainImageFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -282,7 +311,6 @@ void VulkanSwapChain::CreateRenderPass()
 	renderPassInfo.pDependencies = &dependencies[0];
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
-
 
 	if (vkCreateRenderPass(logicalDevice, &renderPassInfo, nullptr,
 	                       &renderPass) != VK_SUCCESS)

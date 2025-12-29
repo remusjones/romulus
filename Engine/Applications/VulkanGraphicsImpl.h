@@ -39,11 +39,11 @@ public:
 
 
 	// swapchain helpers
-	VkExtent2D GetWindowExtents() const { return swapChain->swapChainExtents; }
-	uint32_t GetWindowsWidth() const { return swapChain->swapChainExtents.width; }
-	uint32_t GetWindowsHeight() const { return swapChain->swapChainExtents.height; }
-	VkRenderPass GetRenderPass() const { return swapChain->renderPass; }
-	VkFramebuffer GetFrameBuffer(size_t imageIndex) const { return swapChain->mSwapChainFrameBuffers[imageIndex]; }
+	VkExtent2D GetWindowExtents() const { return swapChain->GetExtents(); }
+	uint32_t GetWindowsWidth() const { return swapChain->GetExtents().width; }
+	uint32_t GetWindowsHeight() const { return swapChain->GetExtents().height; }
+	VkRenderPass GetRenderPass() const { return swapChain->GetRenderPass(); }
+	VkFramebuffer GetFrameBuffer(size_t imageIndex) const { return swapChain->GetFrameBuffer(imageIndex); }
 
 	VmaAllocator GetAllocator() const {return allocator; }
 
@@ -116,8 +116,10 @@ public:
 
 
 	SDL_Window* window = nullptr; // TODO: Move to interface
-	InputSystem inputManager;
+
 private:
+
+	InputSystem inputManager;
 	VmaAllocator allocator          = VK_NULL_HANDLE;
 	eastl::unique_ptr<VulkanSwapChain> swapChain;
 	QueueFamilyIndices familyIndices;

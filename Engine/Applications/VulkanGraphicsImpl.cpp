@@ -76,7 +76,7 @@ void VulkanGraphicsImpl::InitializeImgui()
 	init_info.MinImageCount = 3; // Use swap chain's min image count
 	init_info.ImageCount = 3;    // Use swap chain's actual image count
 	//init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT; // Only if you use MSAA
-	init_info.PipelineInfoMain.RenderPass = swapChain->renderPass;
+	init_info.PipelineInfoMain.RenderPass = swapChain->GetRenderPass();
 	ImGui_ImplVulkan_Init(&init_info);
 }
 

@@ -64,7 +64,7 @@ void RomulusVulkanRenderer::Destroy()
         vkDestroySemaphore(logicalDevice, semaphore, nullptr);
     }
     vkDestroyDescriptorPool(logicalDevice, descriptorPool, nullptr);
-    vkDestroyRenderPass(logicalDevice, swapChain->renderPass, nullptr);
+    vkDestroyRenderPass(logicalDevice, swapChain->GetRenderPass(), nullptr);
 }
 
 void RomulusVulkanRenderer::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const
@@ -225,17 +225,11 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
     {
         TracyVkZone(tracyContext, currentCommandBuffer, "DrawFrame");
 
-        result = vkAcquireNextImageKHR(logicalDevice,
-                                       swapChain->mSwapChain,
-                                       0,
-                                       currentFrameData.presentSemaphore,
-                                       VK_NULL_HANDLE,
-                                       &imageIndex);
-
+        result = swapChain->AcquireNextImage(currentFrameData.presentSemaphore, imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
-            swapChain->RecreateSwapChain();
+            swapChain->Recreate();
             flags[c_semaphoresNeedToBeRecreatedFlag] = true;
         }
         else if (result != VK_SUCCESS)
@@ -314,9 +308,9 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &currentFrameData.commandBuffer;
 
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[imageIndex]};
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    eastl::vector<VkSemaphore> signalSemaphores = { renderFinishedSemaphores[imageIndex] };
+    submitInfo.signalSemaphoreCount = signalSemaphores.size();
+    submitInfo.pSignalSemaphores = signalSemaphores.data();
 
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo,
                       currentFrameData.renderFence) != VK_SUCCESS)
@@ -325,22 +319,12 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
     }
 
 
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
-    VkSwapchainKHR swapChains[] = {swapChain->mSwapChain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
-
+    VkPresentInfoKHR presentInfo = swapChain->GetPresentInfo(imageIndex, signalSemaphores);
     result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
     if (flags[c_rebuildBufferFlag])
     {
-        swapChain->RecreateSwapChain();
+        swapChain->Recreate();
 
         DestroyCommandPool();
         CreateCommandPool();
@@ -350,7 +334,7 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
-        swapChain->RecreateSwapChain();
+        swapChain->Recreate();
     }
     else if (result != VK_SUCCESS)
     {
@@ -372,7 +356,6 @@ void RomulusVulkanRenderer::DrawFrame(Scene& activeScene)
     }
 
     FrameMark;
-
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
@@ -405,14 +388,15 @@ void RomulusVulkanRenderer::CreateSyncObjects()
         imageAvailableSemaphoresToDestroy.push_back(frameData.renderSemaphore);
         mRenderFinishedSemaphoresToDestroy.push_back(frameData.presentSemaphore);
     }
+
     SPDLOG_DEBUG("Creating Semaphores and Fences");
-    imagesInFlight.resize(swapChain->mSwapChainImages.size(), VK_NULL_HANDLE);
-    renderFinishedSemaphores.resize(swapChain->mSwapChainImages.size());
+    imagesInFlight.resize(swapChain->GetSwapchainImageCount(), VK_NULL_HANDLE);
+    renderFinishedSemaphores.resize(swapChain->GetSwapchainImageCount());
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    for (size_t i = 0; i < swapChain->mSwapChainImages.size(); i++)
+    for (size_t i = 0; i < swapChain->GetSwapchainImageCount(); i++)
     {
         if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr,
                               &renderFinishedSemaphores[i]) != VK_SUCCESS)

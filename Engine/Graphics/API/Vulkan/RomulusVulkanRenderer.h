@@ -4,8 +4,6 @@
 #pragma once
 
 #include <functional>
-#include <queue>
-#include <vector>
 #include "VulkanSwapChain.h"
 #include "Base/Common/Data/Vertex.h"
 #include "Base/Common/Data/FrameData.h"
