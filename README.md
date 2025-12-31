@@ -1,7 +1,6 @@
-﻿# Artemis Engine
-> Artemis Engine was used as launchpad for learning the Vulkan Rendering API and getting more familiar with rendering pipelines for modern game engines.
+﻿# Romulus Engine
+> Romulus Engine was used as launchpad for learning the Vulkan Rendering API and getting more familiar with rendering pipelines for modern game engines.
 > The project intended to become similar to a game engine sandbox where I implemented ideas and features from the book [Game Engine Architecture](https://www.gameenginebook.com/).
-> Features such as Transforms, Semantic Input System, Profiling, and a File System.
 
 <img width="2267" height="1284" alt="Screenshot 2024-01-10 213909" src="https://github.com/user-attachments/assets/6696338f-a22a-40f1-b0d1-435e6f8226d2" />
 
