@@ -49,7 +49,7 @@ void LineRenderSystem::CreatePipeline()
     bindingDescriptions[0] = Vertex::GetBindingDescription();
     pipelineConfig.mBindingDescriptions = bindingDescriptions;
 
-    const std::bitset<5> vertexMask = Vertex::GetBindingMask(true, false, true, false, false);
+    const eastl::bitset<5> vertexMask = Vertex::GetBindingMask(true, false, true, false, false);
     pipelineConfig.mAttributeDescriptions = Vertex::GetAttributeDescriptions(vertexMask);
 
     // create a pipeline

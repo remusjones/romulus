@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <bitset>
 #include <EASTL/vector.h>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_core.h>
+#include "EASTL/bitset.h"
 
 enum class VertexAttributeBinding : uint32_t
 {
@@ -70,7 +70,7 @@ public:
 	}
 
 	static eastl::vector<VkVertexInputAttributeDescription>
-	GetAttributeDescriptions(std::bitset<5> bindingMask)
+	GetAttributeDescriptions(eastl::bitset<5> bindingMask)
 	{
 		eastl::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 		attributeDescriptions.reserve(bindingMask.count());
@@ -101,14 +101,14 @@ public:
 		return attributeDescriptions;
 	}
 
-	[[nodiscard]] static std::bitset<5> GetBindingMask(
+	[[nodiscard]] static eastl::bitset<5> GetBindingMask(
 		const bool position = true,
 		const bool normal   = true,
 		const bool color    = true,
 		const bool uv       = true,
 		const bool tangent  = true)
 	{
-		std::bitset<5> bindingMask;
+		eastl::bitset<5> bindingMask;
 
 		if (position)
 		{
