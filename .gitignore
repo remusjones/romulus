@@ -1,9 +1,6 @@
 ﻿Vulkan-Tools
 cmake-build-debug
-
 cmake-build-debug-event-trace/
-
 build/
-
 .idea/
-amulius
+projects/amulius

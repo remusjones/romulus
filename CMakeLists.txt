@@ -14,8 +14,8 @@ endif()
 find_package(Vulkan REQUIRED)
 
 file(GLOB_RECURSE PROJECT_SOURCE_FILES CONFIGURE_DEPENDS
-        "Engine/*.cpp"
-        "Engine/*.h"
+        "src/*.cpp"
+        "src/*.h"
 )
 
 # Define the executable target
@@ -35,11 +35,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-        Engine/Graphics/API
-        Engine/Applications
-        Engine/IO
-        Engine/Common
-        Engine/System
+        src/Graphics/API
+        src/Applications
+        src/IO
+        src/Common
+        src/System
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb
 )
 
