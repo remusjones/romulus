@@ -6,7 +6,8 @@
 #include "GraphicsPipelineFactory.h"
 
 
-class LineRenderSystem : public GraphicsPipelineFactory{
+class LineRenderSystem : public GraphicsPipelineFactory
+{
     void CreatePipelineLayout() override;
     void CreatePipeline() override;
 };

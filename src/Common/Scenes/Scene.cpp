@@ -269,8 +269,13 @@ void Scene::OnDebugGui()
 		ImGui::SameLine();
 		ImGui::Text(std::to_string(static_cast<int32_t>(gGraphics->GetFps())).c_str());
 		ImGui::SameLine();
-		ImGui::PlotLines("##fpsHistory", &gGraphics->GetFpsHistory().buffer.front(),
-		                 gGraphics->GetFpsHistory().buffer.size());
+
+
+		// Plot line crashes in msvc with address san on
+		//ImGui::PlotLines("##fpsHistory", &gGraphics->GetFpsHistory().buffer.front(),
+		//                 gGraphics->GetFpsHistory().buffer.size());
+
+
 		ImGui::Text("Delta Time: ");
 		ImGui::SameLine();
 		ImGui::Text(std::to_string(gGraphics->DeltaTimeUnscaled()).c_str());

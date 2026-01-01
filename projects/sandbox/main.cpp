@@ -42,9 +42,8 @@ int main()
     try
     {
         app->Run();
-        Memory::TraceEnd();
-
         app.reset();
+        Memory::TraceEnd();
     }
     catch (const std::exception& error)
     {
