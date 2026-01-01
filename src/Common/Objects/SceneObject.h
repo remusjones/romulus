@@ -8,11 +8,17 @@
 #include "EASTL/unique_ptr.h"
 #include "Math/Transform.h"
 
+typedef size_t SceneObjectId;
+
+
 // todo: Should this be called an entity?
 // Ideally we use an actual entity system and this will get confusing!
 class SceneObject : public IDebuggable
 {
 public:
+	void SetId(const SceneObjectId inObjectId) { objectId = inObjectId; }
+	SceneObjectId GetId() const { return objectId; }
+
 	virtual void Construct();
 
 	virtual void Tick(float aDeltaTime);
@@ -67,4 +73,7 @@ public:
 
 	// todo: components here isn't very cache coherent, store in a component pool
 	eastl::hash_map<eastl::string_view, eastl::unique_ptr<Component>> components;
+
+private:
+	SceneObjectId objectId = 0;
 };

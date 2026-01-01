@@ -53,16 +53,23 @@ public:
 	                         const glm::vec3& inScale = glm::vec3(1)
 	);
 
-	// todo: inconsistent pointer semantics here with & or *
-
 	template<typename T, typename ...Args>
 	T* MakeEntity(Args&&... args)
 	{
-		T* object = static_cast<T*>(sceneObjects.emplace_back(eastl::make_unique<T>(eastl::forward<Args>(args)...)).get());
+		SceneObjectId newId = ++currentObjectId;
+
+		auto newObjectPtr = eastl::make_unique<T>(eastl::forward<Args>(args)...);
+		T* object = newObjectPtr.get();
+		object->SetId(newId);
+
+		idToIndexMap.insert_or_assign(newId, sceneObjects.size());
+		sceneObjects.push_back(eastl::move(newObjectPtr));
 		sceneTransformRelationships.insert_or_assign(&object->transform, object);
+
 		return object;
 	}
 
+	SceneObject* GetSceneObject(const SceneObjectId id) { return sceneObjects[idToIndexMap.at(id)].get();}
 
 	void AttachSphereCollider(SceneObject& aEntity, const float radius, const float mass, float friction = 0.5f) const;
 	void AttachBoxCollider(SceneObject& inEntity, glm::vec3 halfExtents, float mass, float friction = 0.5f) const;
@@ -75,9 +82,6 @@ public:
 	const btRigidBody* PickRigidBody(int x, int y) const;
 
 	Texture* CreateTexture(const eastl::string_view& aName, const eastl::vector<eastl::string>& aPathsSet);
-
-protected:
-	virtual SceneObject& MakeEntity(); // todo: move to factory
 
 private:
 	void DrawObjectsRecursive(SceneObject& entityToDraw);
@@ -95,8 +99,9 @@ public:
 	eastl::string_view m_sceneName;
 
 protected:
-	// todo: feels like these probably shouldn't be here
 	eastl::vector<eastl::unique_ptr<SceneObject>> sceneObjects;
+	eastl::hash_map<SceneObjectId, size_t> idToIndexMap;
+
 	eastl::hash_map<Transform*, SceneObject*> sceneTransformRelationships;
 	eastl::hash_map<eastl::string_view, eastl::unique_ptr<Texture>> sceneTextures;
 	eastl::unique_ptr<MeshAllocator> meshAllocator;
@@ -108,4 +113,6 @@ private:
 	eastl::unique_ptr<PhysicsSystem> sceneInteractionPhysicsSystem;
 	SceneObject* pickedEntity{nullptr};
 	int mouseX{0}, mouseY{0};
+
+	SceneObjectId currentObjectId = 0;
 };

@@ -252,7 +252,7 @@ void Scene::OnDebugGui()
 			ImGui::Indent(); {
 				if (obj->transform.GetParent() == nullptr)
 				{
-					DrawObjectsRecursive(*obj);
+					DrawObjectsRecursive(*obj.get());
 				}
 			}
 			ImGui::Unindent();
@@ -369,6 +369,8 @@ MeshObject* Scene::CreateObject(const eastl::string_view& inName, const eastl::s
                                 const glm::vec3& inScale)
 {
 	auto* object = MakeEntity<MeshObject>();
+	SPDLOG_INFO("Creating Object {}:{}", inName, object->GetId());
+
 	object->CreateObject(inMaterial, inName);
 	object->GetRenderer().BindRenderer(inPipeline);
 	object->GetRenderer().LoadMesh(meshAllocator.get(), (FileManagement::GetWorkingDirectory() + inMeshPath.data()).c_str());
@@ -439,14 +441,4 @@ Texture* Scene::CreateTexture(const eastl::string_view& aName, const eastl::vect
 
 	SPDLOG_ERROR("Texture already exists {}", aName);
 	return nullptr;
-}
-
-#define DEBUG_RENDER 1
-SceneObject& Scene::MakeEntity()
-{
-	SceneObject& newObject = *sceneObjects.emplace_back(eastl::make_unique<SceneObject>());
-#if DEBUG_RENDER
-	debugRegistry->Register(&newObject);
-#endif
-	return newObject;
 }

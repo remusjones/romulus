@@ -28,8 +28,6 @@ void MeshObject::CreateObject(
 	const eastl::string_view& inName)
 {
 	name = inName;
-	SPDLOG_INFO("Creating Object {}", name);
-
 	meshRenderer.SetMaterial(0, &inMaterial);
 	meshRenderer.SetTransform(&transform);
 }
