@@ -15,51 +15,45 @@ InputSystem::InputSystem()
 void InputSystem::ConsumeInput(const SDL_Event* inputEvent)
 {
 	ImGui_ImplSDL3_ProcessEvent(inputEvent);
-	if (inputEvent->key.repeat == 0)
-	{
-		queuedEvents.push(*inputEvent);
-	}
+	queuedEvents.push(*inputEvent);
 }
 
 void InputSystem::ProcessInput(const SDL_Event* inputEvent)
 {
 	// todo: we are forwarding all input here, these callbacks aren't free
-	if (inputEvent->key.repeat == 0)
+	switch (inputEvent->type)
 	{
-		switch (inputEvent->type)
-		{
-			case SDL_EVENT_KEY_DOWN:
-				for (const auto& binding : keyboardBindings[inputEvent->key.key])
-				{
-					binding.callback(inputEvent->key);
-				}
-				break;
-			case SDL_EVENT_KEY_UP:
-				for (const auto& binding : keyboardBindings[inputEvent->key.key])
-				{
-					binding.callback(inputEvent->key);
-				}
-				break;
-			case SDL_EVENT_MOUSE_MOTION:
-				for (const auto& binding : mouseInputMotionBindings)
-				{
-					binding.callback(inputEvent->motion);
-				}
-				break;
-			case SDL_EVENT_MOUSE_BUTTON_UP:
-				for (const auto& binding : mouseInputBindings)
-				{
-					binding.callback(inputEvent->button);
-				}
-				break;
-			case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				for (const auto& binding : mouseInputBindings)
-				{
-					binding.callback(inputEvent->button);
-				}
-				break;
-			default: break;
-		}
+		case SDL_EVENT_KEY_DOWN:
+			for (const auto& binding : keyboardBindings[inputEvent->key.key])
+			{
+				binding.callback(inputEvent->key);
+			}
+			break;
+		case SDL_EVENT_KEY_UP:
+			for (const auto& binding : keyboardBindings[inputEvent->key.key])
+			{
+				binding.callback(inputEvent->key);
+			}
+			break;
+		case SDL_EVENT_MOUSE_MOTION:
+			for (const auto& binding : mouseInputMotionBindings)
+			{
+				binding.callback(inputEvent->motion);
+			}
+			break;
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+			for (const auto& binding : mouseInputBindings)
+			{
+				binding.callback(inputEvent->button);
+			}
+			break;
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			for (const auto& binding : mouseInputBindings)
+			{
+				binding.callback(inputEvent->button);
+			}
+			break;
+		default: break;
 	}
 }
 
