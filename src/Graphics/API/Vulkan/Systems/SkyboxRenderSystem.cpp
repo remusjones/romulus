@@ -50,6 +50,6 @@ void SkyboxRenderSystem::CreatePipeline()
     pipelineConfig.mBindingDescriptions = bindingDescriptions;
 
     CreatePipelineObject("SkyboxRenderSystem");
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Filtercube_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Skybox_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Filtercube.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

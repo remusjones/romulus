@@ -11,6 +11,7 @@
 
 #include "EASTL/string.h"
 #include "EASTL/vector.h"
+#include "spdlog/spdlog.h"
 
 
 eastl::vector<char> FileManagement::GetShaderFileData(const eastl::string& filename)
@@ -76,8 +77,9 @@ const FileManagementSettings& FileManagement::GetInfoSettings()
 eastl::vector<char> FileManagement::GetShaderFileDataPath(const char* directory)
 {
 	eastl::string finalDirectory = GetWorkingDirectory();
-	finalDirectory.append(directory);
 
+
+	finalDirectory.append(directory);
 	std::ifstream file(finalDirectory.data(), std::ios::ate | std::ios::binary);
 
 	if (!file.is_open())

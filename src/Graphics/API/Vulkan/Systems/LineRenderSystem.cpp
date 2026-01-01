@@ -55,6 +55,6 @@ void LineRenderSystem::CreatePipeline()
     // create a pipeline
     CreatePipelineObject("LineRenderSystem");
 
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Line_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Line_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Line.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Line.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

@@ -103,6 +103,8 @@ void GraphicsPipeline::CreateShaderModule(const char* path,
     createInfo.codeSize = file.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(file.data());
 
+    SPDLOG_INFO("Loading Shader Module {}", path);
+
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(gGraphics->logicalDevice, &createInfo, nullptr,
                              &shaderModule) != VK_SUCCESS)

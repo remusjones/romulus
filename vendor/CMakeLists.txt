@@ -74,7 +74,7 @@ add_subdirectory(EASTL EASTL)
 #https://github.com/wolfpld/tracy.git
 message("Adding tracy")
 add_subdirectory(tracy tracy)
-target_compile_definitions(Romulus PRIVATE TRACY_ENABLE)
+target_compile_definitions(Romulus_Lib PRIVATE TRACY_ENABLE)
 # ------------------------------------
 
 

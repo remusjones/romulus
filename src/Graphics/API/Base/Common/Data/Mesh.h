@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <vector>
 #include "Vertex.h"
 #include "Base/Common/Buffers/AllocatedVertexBuffer.h"
 #include "EASTL/unique_ptr.h"

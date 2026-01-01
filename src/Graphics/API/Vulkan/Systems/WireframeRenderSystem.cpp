@@ -40,6 +40,6 @@ void WireframeRenderSystem::CreatePipeline()
     // create a pipeline
     CreatePipelineObject("WireframeRenderSystem");
 
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Unlit_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Unlit_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Unlit.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/Unlit.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

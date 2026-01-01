@@ -19,7 +19,7 @@
 #include <ImGuizmo.h>
 #include <InputSystem.h>
 #include <Objects/Editor.h>
-#include <Scenes/SandboxScene.h>
+#include <Scenes/TemplateScene.h>
 #include <Vulkan/Common/MeshObject.h>
 
 #include "EASTL/set.h"
@@ -95,12 +95,10 @@ void VulkanGraphicsImpl::ShutdownVulkan() const
 
 void VulkanGraphicsImpl::Update()
 {
-	// Start Clock for FPS Monitoring
 	auto startTime = std::chrono::high_resolution_clock::now();
 	auto fpsStartTime = std::chrono::high_resolution_clock::now();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	// Create FPS Window Header
 
 	const eastl::string fpsHeader = windowTitle + eastl::string(" | FPS: ");
 
@@ -361,7 +359,7 @@ void VulkanGraphicsImpl::CreateScenes()
 
 	ZoneScopedN("VulkanGraphicsImpl::CreateScenes");
 
-	activeScene = eastl::make_unique<SandboxScene>(debugManager.get());
+	activeScene = eastl::make_unique<TemplateScene>(debugManager.get());
 
 	{
 		ZoneScopedN("Scene::PreConstruct");

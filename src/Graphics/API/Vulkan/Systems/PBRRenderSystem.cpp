@@ -39,6 +39,6 @@ void PBRRenderSystem::CreatePipeline()
 
     CreatePipelineObject("PBRRenderSystem");
 
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    graphicsPipeline->CreateShaderModule("/Assets/Shaders/TexturedLit_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/3DObject.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    graphicsPipeline->CreateShaderModule("/Assets/Shaders/TexturedLit.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

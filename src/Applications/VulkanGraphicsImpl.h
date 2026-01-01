@@ -24,7 +24,7 @@ class MeshObject;
 
 // TODO: This should really only contain window information, and initial vulkan creation. Everything else
 // TODO: should probably go within the Engine class
-class VulkanGraphicsImpl final : public IApplication
+class VulkanGraphicsImpl : public IApplication
 {
 public:
 	VulkanGraphicsImpl(const char* inWindowTitle, int inWindowWidth, int inWindowHeight);
@@ -70,16 +70,16 @@ private:
 	void CreateSurface();
 	void DestroySurface() const;
 
-	void InitializeImgui();
-	void ShutdownImgui() const;
+	virtual void InitializeImgui();
+	virtual void ShutdownImgui() const;
 
-	void Update();
-	void Destroy();
+	virtual void Update();
+	virtual void Destroy();
 
-	void DestroyWindow() const;
+	virtual void DestroyWindow() const;
 
-	void CreateScenes();
-	void DestroyScenes();
+	virtual void CreateScenes();
+	virtual void DestroyScenes();
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
