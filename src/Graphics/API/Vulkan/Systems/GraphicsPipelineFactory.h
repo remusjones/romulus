@@ -3,8 +3,6 @@
 //
 
 #pragma once
-#include <memory>
-#include <vector>
 #include <vulkan/vulkan_core.h>
 
 #include "GraphicsPipeline.h"

@@ -2,13 +2,15 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <glm/vec4.hpp>
-#include "VulkanGraphicsImpl.h"
 #include "spdlog/spdlog.h"
 
 #include <new>
 #include <cstdint>
 
+#include "IApplication.h"
 #include "Memory.h"
+#include "SandboxGraphicsImpl.h"
+#include "EASTL/unique_ptr.h"
 
 void* __cdecl operator new(size_t size) { return Memory::AllocImpl(size); }
 void* __cdecl operator new[](size_t size) { return Memory::AllocImpl(size); }
@@ -38,7 +40,7 @@ int main()
 {
     SPDLOG_INFO("Initializing Application");
     Memory::TraceStart();
-    eastl::unique_ptr<IApplication> app = eastl::make_unique<VulkanGraphicsImpl>("Engine", 1200, 800);
+    eastl::unique_ptr<IApplication> app = eastl::make_unique<SandboxGraphicsImpl>("Engine", 1200, 800);
     try
     {
         app->Run();

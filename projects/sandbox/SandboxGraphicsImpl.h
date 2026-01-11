@@ -7,7 +7,14 @@
 #include "VulkanGraphicsImpl.h"
 
 
-class SandboxGraphicsImpl final : VulkanGraphicsImpl
+class SandboxGraphicsImpl final : public VulkanGraphicsImpl
 {
+public:
+    SandboxGraphicsImpl(const char* inWindowTitle, int inWindowWidth, int inWindowHeight)
+        : VulkanGraphicsImpl(inWindowTitle, inWindowWidth, inWindowHeight)
+    {
+    }
+
+private:
     void CreateScenes() override;
 };
