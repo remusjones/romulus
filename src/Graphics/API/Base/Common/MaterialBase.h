@@ -6,6 +6,8 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
+
+#include "EASTL/vector.h"
 #include "Objects/IDebuggable.h"
 
 class MaterialBase : public IDebuggable
@@ -17,9 +19,7 @@ public:
 	virtual void AddBinding(uint32_t inBinding, uint32_t inCount, VkDescriptorType inDescriptorType,
 	                        VkShaderStageFlagBits inStageFlags);
 
-	void Create();
-
-	std::vector<VkDescriptorSetLayoutBinding> bindings;
+	eastl::vector<VkDescriptorSetLayoutBinding> bindings;
 
 	VkDescriptorSetLayout mLayout;
 };

@@ -13,22 +13,16 @@ class MaterialFactory
 public:
 	// todo: these material names are only here for debug
 	// - we should probably strip these
-	template <typename T>
-	T& Create(const char* materialName = "Default")
+	template<typename T>
+	T& Create(eastl::string_view materialName)
 	{
-		static_assert(std::is_base_of_v<Material, T>, "T must derive from Material");
-		std::unique_ptr<T> material = std::make_unique<T>(materialName);
+		static_assert(eastl::is_base_of_v<Material, T>, "T must derive from Material");
+		eastl::unique_ptr<T> material = eastl::make_unique<T>(materialName);
 		T* materialPtr = material.get();
-		materials.push_back(std::move(material)); // move into array
-		return *materialPtr;
-	}
+		materialPtr->Create();
+		materials.push_back(eastl::move(material));
 
-	void Make() const
-	{
-		for (const auto& material : materials)
-		{
-			material->Create(material.get());
-		}
+		return *materialPtr;
 	}
 
 	void Destroy()
@@ -40,15 +34,16 @@ public:
 		materials.clear();
 	}
 
-	[[nodiscard]] std::vector<VkDescriptorSetLayout> GetDescriptorLayouts() const
+	[[nodiscard]] eastl::vector<VkDescriptorSetLayout> GetDescriptorLayouts() const
 	{
-		std::vector<VkDescriptorSetLayout> descriptors(materials.size());
+		eastl::vector<VkDescriptorSetLayout> descriptors(materials.size());
 
 		for (int i = 0; i < materials.size(); i++)
+		{
 			descriptors[i] = materials[i]->GetDescriptorLayout();
-
+		}
 		return descriptors;
 	}
 
-	std::vector<std::unique_ptr<Material>> materials = {};
+	eastl::vector<eastl::unique_ptr<Material>> materials = {};
 };

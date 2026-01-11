@@ -29,11 +29,14 @@ struct MaterialProperties
 class Material : public MaterialBase
 {
 public:
-	Material(const eastl::string_view& materialName) : materialName(materialName)
+	Material(const eastl::string_view& materialName) :
+		materialProperties(),
+		materialName(materialName),
+		descriptorSet(nullptr)
 	{
 	}
 
-	virtual void Create(MaterialBase* baseMaterial);
+	virtual void Create();
 
 	virtual void CreateProperties(uint32_t inBinding, const MaterialProperties& inMaterialProperties);
 
@@ -41,8 +44,8 @@ public:
 
 	void BindTexture(const VkDescriptorImageInfo& imageInfo, uint8_t inBinding) const;
 
-	virtual void AddBinding(uint32_t inBinding, uint32_t inCount,
-	                        VkDescriptorType inType, VkShaderStageFlagBits inShaderStage);
+	void AddBinding(uint32_t inBinding, uint32_t inCount,
+	                VkDescriptorType inType, VkShaderStageFlagBits inShaderStage) override;
 
 	virtual void SetBuffers(const AllocatedBuffer& inBuffer, uint8_t inBinding, uint8_t inIndex) const;
 
@@ -56,9 +59,7 @@ public:
 	eastl::string_view materialName;
 
 protected:
-	MaterialBase* material;
 	VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 	VkDescriptorSet descriptorSet;
-
 	eastl::hash_map<uint8_t, VkWriteDescriptorSet> boundTextureMap;
 };

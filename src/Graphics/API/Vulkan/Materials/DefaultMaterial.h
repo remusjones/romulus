@@ -22,7 +22,7 @@ public:
     DefaultMaterial() = default;
 
 
-    void Create(MaterialBase *baseMaterial = nullptr) override;
+    void Create() override;
 
     void OnDebugGui() override;
 

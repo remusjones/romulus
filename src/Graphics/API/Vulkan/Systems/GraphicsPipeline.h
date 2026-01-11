@@ -23,7 +23,7 @@ public:
         NUMBER_OF_SUBPASSES
     };
 
-    GraphicsPipeline(const char* pipelineName, const PipelineConfigInfo& configInfo) : pipelineName(pipelineName),
+    GraphicsPipeline(const eastl::string_view pipelineName, const PipelineConfigInfo& configInfo) : pipelineName(pipelineName),
         romulusPipelineConfig(nullptr),
         depthStencilCreateInfo()
     {
@@ -37,7 +37,7 @@ public:
     void Destroy();
     static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
-    const char* pipelineName;
+    eastl::string_view pipelineName;
     PipelineConfigInfo pipelineConfig;
     VkPipeline romulusPipelineConfig;
     eastl::vector<VkPipelineShaderStageCreateInfo> shaders;

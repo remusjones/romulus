@@ -9,7 +9,7 @@
 
 #include "spdlog/spdlog.h"
 
-void Cubemap::Create(MaterialBase* inBaseMaterial)
+void Cubemap::Create()
 {
 	// TODO: make these configurable
 	constexpr int mipLevel    = 1;
@@ -82,7 +82,7 @@ void Cubemap::Create(MaterialBase* inBaseMaterial)
 	AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
 	AddBinding(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-	Material::Create(this);
+	Material::Create();
 
 	for (int i = 0; i < RomulusVulkanRenderer::MAX_FRAMES_IN_FLIGHT; i++)
 	{

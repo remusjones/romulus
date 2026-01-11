@@ -41,11 +41,6 @@ void TemplateScene::Construct()
 	Material& cubeMaterial = materialPBRFactory.Create<DefaultMaterial>("Cube PBR");
 	cubemap = &genericMaterialFactory.Create<Cubemap>("Skybox Cubemap");
 
-	// Make Materials
-	materialUnlitFactory.Make();
-	materialPBRFactory.Make();
-	genericMaterialFactory.Make();
-
 	//
 	// Bind Materials
 	//
@@ -54,7 +49,7 @@ void TemplateScene::Construct()
 	pbrRenderPipeline->Create(materialPBRFactory.GetDescriptorLayouts());
 	wireframeRenderPipeline->Create(materialUnlitFactory.GetDescriptorLayouts());
 
-	std::vector<VkDescriptorSetLayout> mCubemapLayouts;
+	eastl::vector<VkDescriptorSetLayout> mCubemapLayouts;
 	mCubemapLayouts.push_back(cubemap->GetDescriptorLayout());
 	cubemapRenderPipeline->Create(mCubemapLayouts);
 

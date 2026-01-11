@@ -5,14 +5,14 @@
 #include "GraphicsPipelineFactory.h"
 #include "VulkanGraphicsImpl.h"
 
-void GraphicsPipelineFactory::Create(const std::vector<VkDescriptorSetLayout>& descriptorLayouts)
+void GraphicsPipelineFactory::Create(const eastl::vector<VkDescriptorSetLayout>& descriptorLayouts)
 {
 	boundDescriptorLayouts = descriptorLayouts;
 	CreatePipelineLayout();
 	CreatePipeline();
 }
 
-void GraphicsPipelineFactory::CreatePipelineObject(const char* pipelineName)
+void GraphicsPipelineFactory::CreatePipelineObject(const eastl::string_view pipelineName)
 {
-	graphicsPipeline = std::make_unique<GraphicsPipeline>(pipelineName, pipelineConfig);
+	graphicsPipeline = eastl::make_unique<GraphicsPipeline>(pipelineName, pipelineConfig);
 }

@@ -8,25 +8,26 @@
 #include <vulkan/vulkan_core.h>
 
 #include "GraphicsPipeline.h"
+#include "EASTL/unique_ptr.h"
 
 
 class GraphicsPipelineFactory
 {
 public:
 	virtual ~GraphicsPipelineFactory() = default;
-	virtual void Create(const std::vector<VkDescriptorSetLayout>& descriptorLayouts);
+	virtual void Create(const eastl::vector<VkDescriptorSetLayout>& descriptorLayouts);
 
 protected:
 	virtual void CreatePipelineLayout() = 0;
 	virtual void CreatePipeline() = 0;
-	void CreatePipelineObject(const char* pipelineName);
+	void CreatePipelineObject(const eastl::string_view pipelineName);
 
 public:
-	std::unique_ptr<GraphicsPipeline> graphicsPipeline;
-	std::vector<VkDescriptorSetLayout> GetBoundDescriptors() { return boundDescriptorLayouts; }
+	eastl::unique_ptr<GraphicsPipeline> graphicsPipeline;
+	eastl::vector<VkDescriptorSetLayout> GetBoundDescriptors() { return boundDescriptorLayouts; }
 
 protected:
 	VkPipelineLayout pipelineLayout = nullptr;
-	std::vector<VkDescriptorSetLayout> boundDescriptorLayouts;
+	eastl::vector<VkDescriptorSetLayout> boundDescriptorLayouts;
 	PipelineConfigInfo pipelineConfig{};
 };

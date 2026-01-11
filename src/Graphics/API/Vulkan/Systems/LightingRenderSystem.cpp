@@ -8,7 +8,7 @@
 #include "Base/Common/Buffers/PushConstants.h"
 #include "spdlog/spdlog.h"
 
-LightingRenderSystem::LightingRenderSystem(const std::vector<VkDescriptorSetLayout>& aDescriptorLayouts)
+LightingRenderSystem::LightingRenderSystem(const eastl::vector<VkDescriptorSetLayout>& aDescriptorLayouts)
 {
     boundDescriptorLayouts = aDescriptorLayouts;
 }

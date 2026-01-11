@@ -11,13 +11,13 @@ DefaultMaterial::DefaultMaterial(const eastl::string_view& inMaterialName) : Mat
 {
 }
 
-void DefaultMaterial::Create(MaterialBase* baseMaterial)
+void DefaultMaterial::Create()
 {
 	AddBinding(SCENE_INFORMATION, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
 	AddBinding(PROPERTIES, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
 	AddBinding(TEXTURE, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-	Material::Create(this);
+	Material::Create();
 
 	for (int i = 0; i < RomulusVulkanRenderer::MAX_FRAMES_IN_FLIGHT; i++)
 	{

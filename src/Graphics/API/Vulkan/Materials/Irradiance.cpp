@@ -4,10 +4,11 @@
 
 #include "Irradiance.h"
 
-void Irradiance::Create(MaterialBase *aBaseMaterial) {
-    Material::Create(aBaseMaterial);
+void Irradiance::Create()
+{
 }
 
-void Irradiance::Destroy() {
+void Irradiance::Destroy()
+{
     Material::Destroy();
 }

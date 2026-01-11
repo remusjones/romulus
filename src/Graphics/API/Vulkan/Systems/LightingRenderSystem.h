@@ -13,7 +13,7 @@ class Cubemap;
 
 class LightingRenderSystem : public GraphicsPipelineFactory {
 public:
-    LightingRenderSystem(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts);
+    LightingRenderSystem(const eastl::vector<VkDescriptorSetLayout> &aDescriptorLayouts);
 protected:
     void CreatePipelineLayout() override;
     void CreatePipeline() override;

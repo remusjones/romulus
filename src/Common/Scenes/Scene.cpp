@@ -303,7 +303,7 @@ void Scene::OnDebugGui()
 			ImGui::Indent();
 			for (const auto system : renderPipelines)
 			{
-				if (ImGui::CollapsingHeader(system->graphicsPipeline->pipelineName))
+				if (ImGui::CollapsingHeader(system->graphicsPipeline->pipelineName.data()))
 				{
 					ImGui::Indent();
 					ImGui::Text("Material Count: ");

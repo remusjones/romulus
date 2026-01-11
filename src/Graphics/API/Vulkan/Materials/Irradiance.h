@@ -6,8 +6,14 @@
 #include "Base/Common/Material.h"
 
 
-class Irradiance : Material {
+class Irradiance : Material
+{
 public:
-    void Create(MaterialBase *aBaseMaterial) override;
+    explicit Irradiance(const eastl::string_view& materialName)
+        : Material(materialName)
+    {
+    }
+
+    void Create() override;
     void Destroy() override;
 };
